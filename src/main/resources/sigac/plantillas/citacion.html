@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Citación a sesión</title>
+  <style>
+    @page { size: A4; margin: 2.5cm 2.2cm; }
+    * { font-family: 'DejaVu Sans', sans-serif; }
+    body { font-size: 10.5pt; color: #111111; line-height: 1.4; }
+    h1 { font-size: 15pt; text-align: center; margin: 0 0 4px 0; }
+    h2 { font-size: 11pt; text-align: center; margin: 2px 0; font-weight: normal; }
+    h3 { font-size: 11pt; margin-top: 18px; border-bottom: 1px solid #999999; }
+    .datos td { padding: 3px 8px 3px 0; vertical-align: top; }
+    ol li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <h1>CITACIÓN A SESIÓN</h1>
+  <h2 th:text="${tipoConsejo}">Consejo de Facultad</h2>
+  <h2 th:text="${universidad} + ' - ' + ${sede} + ' - ' + ${facultad}">Universidad - Sede - Facultad</h2>
+
+  <p>Se convoca a los integrantes del Consejo a la sesión que se realizará en las siguientes condiciones:</p>
+  <table class="datos">
+    <tr><td><strong>Fecha:</strong></td><td th:text="${fechaSesion}">15 de agosto de 2026</td></tr>
+    <tr><td><strong>Hora:</strong></td><td th:text="${horaSesion}">08:00</td></tr>
+    <tr><td><strong>Lugar:</strong></td><td th:text="${lugar}">Sala de Consejo</td></tr>
+  </table>
+
+  <h3>Orden del día</h3>
+  <ol>
+    <li th:each="o : ${orden}">
+      <strong th:text="${o.titulo}">Punto</strong>
+      <div th:if="${o.descripcion}" th:text="${o.descripcion}">Descripción</div>
+    </li>
+  </ol>
+
+  <p>Los documentos de soporte se adjuntan a la presente convocatoria.</p>
+</body>
+</html>

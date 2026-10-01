@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: sigac-backend
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/sigac?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&connectionTimeZone=UTC}
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    defer-datasource-initialization: true
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: ${DDL_AUTO:update}      # en producción: validate (con el DDL versionado)
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        jdbc:
+          time_zone: UTC
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+      data-locations: classpath:db/append-only-triggers.sql
+  servlet:
+    multipart:
+      max-file-size: 12MB
+      max-request-size: 60MB
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+      mail.smtp.connectiontimeout: 10000
+      mail.smtp.timeout: 15000
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+sigac:
+  zone: America/Bogota
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  trust-proxy-headers: ${TRUST_PROXY_HEADERS:false}
+  storage:
+    base-path: ${SIGAC_STORAGE_PATH:./storage}
+  jwt:
+    secret: ${JWT_SECRET:cambiar-este-secreto-en-produccion-sigac-2026-minimo-32}   # mínimo 32 caracteres
+    expiration-hours: 8
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200,http://127.0.0.1:4200}
+  mail:
+    enabled: ${MAIL_ENABLED:false}
+    from: ${SMTP_FROM:sigac@universidad.edu}
+  seed:
+    admin-email: ${SIGAC_ADMIN_EMAIL:admin@sigac.local}
+    admin-password: ${SIGAC_ADMIN_PASSWORD:Admin12345*}
+    dev-email: ${SIGAC_DEV_EMAIL:dev@sigac.local}
+    dev-password: ${SIGAC_DEV_PASSWORD:Dev12345*}
+    demo-data: ${SIGAC_SEED_DEMO:false}
+
+logging:
+  level:
+    com.universidad.sigac: INFO
+    com.openhtmltopdf: WARN

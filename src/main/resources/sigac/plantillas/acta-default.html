@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${consecutivo}">Acta</title>
+  <style>
+    @page { size: A4; margin: 2.2cm 2cm 2.4cm 2cm; @bottom-center { content: "Página " counter(page) " de " counter(pages); font-size: 8pt; font-family: 'DejaVu Sans'; } }
+    * { font-family: 'DejaVu Sans', sans-serif; }
+    body { font-size: 10pt; color: #111111; line-height: 1.35; }
+    h1 { font-size: 14pt; text-align: center; margin: 0; }
+    h2 { font-size: 11pt; text-align: center; margin: 2px 0; font-weight: normal; }
+    h3 { font-size: 10.5pt; margin: 14px 0 4px 0; border-bottom: 1px solid #999999; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th, td { border: 1px solid #888888; padding: 3px 5px; font-size: 9pt; text-align: left; }
+    th { background-color: #e8e8e8; }
+    .encabezado { border-bottom: 2px solid #333333; padding-bottom: 8px; margin-bottom: 10px; }
+    .acuerdo { margin-bottom: 10px; page-break-inside: avoid; }
+    .decision { font-weight: bold; }
+    .notas { font-size: 9pt; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <div class="encabezado">
+    <h1 th:text="${universidad}">UNIVERSIDAD</h1>
+    <h2 th:text="${sede} + ' - ' + ${facultad}">Sede - Facultad</h2>
+    <h2 th:text="${tipoConsejo}">Consejo de Facultad</h2>
+    <h1 th:text="${consecutivo}">ACTA-CF-2026-001</h1>
+  </div>
+
+  <table>
+    <tr>
+      <th>Fecha</th><td th:text="${fechaSesion}">15 de agosto de 2026</td>
+      <th>Lugar</th><td th:text="${lugar}">Sala de Consejo</td>
+    </tr>
+    <tr>
+      <th>Hora de inicio</th><td th:text="${horaInicio}">08:00</td>
+      <th>Hora de finalización</th><td th:text="${horaFin}">10:00</td>
+    </tr>
+  </table>
+
+  <h3>1. Verificación de asistencia y quórum</h3>
+  <table>
+    <tr><th>Integrante</th><th>Calidad</th><th>Asistencia</th></tr>
+    <tr th:each="a : ${listaAsistentes}">
+      <td th:text="${a.nombre}">Nombre</td>
+      <td th:text="${a.rol}">Rol</td>
+      <td th:text="${a.presente} ? 'Presente' : 'Ausente'">Presente</td>
+    </tr>
+  </table>
+  <p th:text="${quorum}">Quórum</p>
+
+  <h3>2. Orden del día</h3>
+  <ol>
+    <li th:each="o : ${ordenDelDia}" th:text="${o.titulo}">Punto</li>
+  </ol>
+
+  <h3>3. Desarrollo de la sesión y acuerdos</h3>
+  <div class="acuerdo" th:each="ac : ${acuerdos}">
+    <p>
+      <strong th:text="${ac.numero} + '. ' + ${ac.titulo}">1. Título</strong>
+      <span th:if="${ac.esVarios}"> (Punto vario)</span>
+    </p>
+    <p th:if="${ac.descripcion}" th:text="${ac.descripcion}">Descripción</p>
+    <p class="decision" th:text="'Decisión: ' + ${ac.decision}">Decisión: Aprobado</p>
+    <p th:text="'Votos a favor: ' + ${ac.votosFavor} + ' | En contra: ' + ${ac.votosContra} + ' | Abstenciones: ' + ${ac.abstenciones}">Votos</p>
+    <div class="notas" th:utext="${ac.notas}"></div>
+  </div>
+
+  <p>Siendo las <span th:text="${horaFin}">10:00</span> se da por terminada la sesión. Para constancia se expide la presente acta.</p>
+</body>
+</html>
