@@ -1,10 +1,10 @@
 package com.university.sigac.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.university.sigac.exception.ApiError;
-import com.university.sigac.repository.UserRepository;
-import com.university.sigac.security.JwtAuthFilter;
-import com.university.sigac.security.JwtService;
+import com.university.sigac.core.exception.ApiError;
+import com.university.sigac.core.security.ActiveUserChecker;
+import com.university.sigac.core.security.JwtAuthFilter;
+import com.university.sigac.core.security.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,7 +38,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService, UserRepository users,
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService, ActiveUserChecker activeUsers,
                                            ObjectMapper mapper) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .cors(Customizer.withDefaults())
@@ -52,7 +52,7 @@ public class SecurityConfig {
                                 "Invalid or expired session. Please sign in again"))
                         .accessDeniedHandler((req, res, ex) -> respond(mapper, req, res, HttpStatus.FORBIDDEN,
                                 "You do not have permission to perform this operation")))
-                .addFilterBefore(new JwtAuthFilter(jwtService, users), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthFilter(jwtService, activeUsers), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

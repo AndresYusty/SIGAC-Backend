@@ -5,6 +5,36 @@ Information System for Minutes and Council Management (SIGAC) — REST API built
 The naming contract shared with the frontend (entities, tables, REST paths, JSON fields, enum values)
 is documented in [`docs/GLOSSARY.md`](docs/GLOSSARY.md).
 
+## Architecture: modular monolith
+
+```
+com.university.sigac
+├── core/              Shared kernel: security (JWT), exceptions, crypto/date/HTML utilities,
+│                      append-only audit writer, PDF/A engine, storage, sequences, global parameters
+├── config/            Spring configuration: Security, async mail, OpenAPI, typed properties, initial data
+├── modules/
+│   ├── users/         Users, authentication, RBAC, institutional hierarchy and council types
+│   ├── templates/     Thymeleaf minutes templates (ROLE_DEV)
+│   ├── requests/      Filing of requests with PDF attachments, and agendas (sessions + agenda items)
+│   ├── session/       Live session: attendance, quorum, decisions and debate notes
+│   ├── minutes/       Minutes generation, PDF/A compilation and SHA-256 signature
+│   ├── repository/    Digital repository, append-only audit queries and dashboard
+│   └── notifications/ Asynchronous SMTP emails (@Async)
+└── SigacApplication   Main class (sigac-backend.jar)
+```
+
+Each module is split internally into `controller`, `dto`, `entity`, `enums`, `repository`, `service` (and `util`
+when needed). Rules, enforced on every build by `ModularArchitectureTest` (ArchUnit):
+
+- `core` never depends on a module; `core` and the modules only read `config.AppProperties` from `config`.
+- Allowed module dependencies (no cycles): `users → notifications`, `templates → users`,
+  `requests → users, notifications`, `session → requests, users`,
+  `minutes → session, requests, templates, users, notifications`,
+  `repository → minutes, requests, users, notifications`.
+- A module's repositories are private: other modules use its public services
+  (e.g. `UserLookupService`, `HierarchyService`, `MinutesQueryService`, `AgendaService`).
+- Controllers are entry points only; no class depends on them.
+
 ## Requirements
 
 - JDK 21 (e.g. `C:\Program Files\Java\jdk-21`)

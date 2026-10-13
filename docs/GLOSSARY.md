@@ -5,6 +5,8 @@ are written in English. This document is the single source of truth shared by th
 (`sigac-backend/sigac-v1`) and the frontend (`sigac-frontend`).
 
 Base package: `com.university.sigac` (was `com.universidad.sigac`). Base API path: `/api/v1`.
+Modular monolith packages (see README): `core.*`, `config`, `modules.users`, `modules.templates`, `modules.requests`,
+`modules.session`, `modules.minutes`, `modules.repository`, `modules.notifications`.
 
 ## Domain vocabulary
 
@@ -190,5 +192,5 @@ Demo hierarchy/catalog names are proper nouns and may stay as institution names
 - Password reset email link: `<frontendUrl>/reset-password?token=<token>`.
 - Attendee role labels (`AttendeeDto.role`, template `attendees[].role`): `President`, `Council member`.
 - Audit entity `AGENDA_ITEM` is used for `EVENT_DECISION_REGISTERED` / `EVENT_DECISION_MODIFIED`.
-- Extra internal records: `CouncilRequestDtos.FileContent{name,data}`, `MinutesDtos.MinutesFile{name,data,hash}`.
+- Extra internal records: `CouncilRequestDtos.FileContent{name,data}`, `RepositoryDtos.MinutesFile{name,data,hash}`.
 - Response header on repository PDF delivery: `X-SIGAC-SHA256`.
