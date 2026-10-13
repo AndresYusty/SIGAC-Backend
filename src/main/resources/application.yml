@@ -10,7 +10,7 @@ spring:
     defer-datasource-initialization: true
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
-      ddl-auto: ${DDL_AUTO:update}      # en producción: validate (con el DDL versionado)
+      ddl-auto: ${DDL_AUTO:update}      # in production: validate (with the versioned DDL)
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -57,13 +57,13 @@ sigac:
   storage:
     base-path: ${SIGAC_STORAGE_PATH:./storage}
   jwt:
-    secret: ${JWT_SECRET:cambiar-este-secreto-en-produccion-sigac-2026-minimo-32}   # mínimo 32 caracteres
+    secret: ${JWT_SECRET:change-this-secret-in-production-sigac-2026-minimum-32}   # at least 32 characters
     expiration-hours: 8
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200,http://127.0.0.1:4200}
   mail:
     enabled: ${MAIL_ENABLED:false}
-    from: ${SMTP_FROM:sigac@universidad.edu}
+    from: ${SMTP_FROM:sigac@university.edu}
   seed:
     admin-email: ${SIGAC_ADMIN_EMAIL:admin@sigac.local}
     admin-password: ${SIGAC_ADMIN_PASSWORD:Admin12345*}
@@ -73,5 +73,5 @@ sigac:
 
 logging:
   level:
-    com.universidad.sigac: INFO
+    com.university.sigac: INFO
     com.openhtmltopdf: WARN

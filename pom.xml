@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>com.universidad</groupId>
+    <groupId>com.university</groupId>
     <artifactId>sigac-backend</artifactId>
     <version>1.0.0</version>
     <name>sigac-backend</name>
-    <description>SIGAC - Sistema de Información para la Gestión de Actas y Consejos (Backend)</description>
+    <description>SIGAC - Information System for Minutes and Council Management (Backend)</description>
 
     <properties>
         <java.version>21</java.version>
@@ -96,7 +96,7 @@
             <version>${jsoup.version}</version>
         </dependency>
 
-        <!-- Documentación OpenAPI (especificación de API REST) -->
+        <!-- OpenAPI documentation (REST API specification) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

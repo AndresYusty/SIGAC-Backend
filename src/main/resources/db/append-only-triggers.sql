@@ -1,7 +1,7 @@
--- RN-19: la bitacora de auditoria es append-only: ni siquiera ADMIN o DEV pueden modificarla o borrarla.
--- Se ejecuta despues de que Hibernate crea las tablas. Requiere el privilegio TRIGGER
--- (y log_bin_trust_function_creators=1 si el binlog esta activo; ya viene en docker-compose.yml).
+-- RN-19: the audit log is append-only: not even ADMIN or DEV can modify or delete it.
+-- Runs after Hibernate creates the tables. Requires the TRIGGER privilege
+-- (and log_bin_trust_function_creators=1 if the binlog is enabled; already set in docker-compose.yml).
 DROP TRIGGER IF EXISTS trg_audit_log_no_update;
-CREATE TRIGGER trg_audit_log_no_update BEFORE UPDATE ON audit_log FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_log es append-only: UPDATE no permitido';
+CREATE TRIGGER trg_audit_log_no_update BEFORE UPDATE ON audit_log FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_log is append-only: UPDATE not allowed';
 DROP TRIGGER IF EXISTS trg_audit_log_no_delete;
-CREATE TRIGGER trg_audit_log_no_delete BEFORE DELETE ON audit_log FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_log es append-only: DELETE no permitido';
+CREATE TRIGGER trg_audit_log_no_delete BEFORE DELETE ON audit_log FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'audit_log is append-only: DELETE not allowed';

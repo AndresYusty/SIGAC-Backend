@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${serialNumber}">Minutes</title>
+  <style>
+    @page { size: A4; margin: 2.2cm 2cm 2.4cm 2cm; @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; font-family: 'DejaVu Sans'; } }
+    * { font-family: 'DejaVu Sans', sans-serif; }
+    body { font-size: 10pt; color: #111111; line-height: 1.35; }
+    h1 { font-size: 14pt; text-align: center; margin: 0; }
+    h2 { font-size: 11pt; text-align: center; margin: 2px 0; font-weight: normal; }
+    h3 { font-size: 10.5pt; margin: 14px 0 4px 0; border-bottom: 1px solid #999999; }
+    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+    th, td { border: 1px solid #888888; padding: 3px 5px; font-size: 9pt; text-align: left; }
+    th { background-color: #e8e8e8; }
+    .header { border-bottom: 2px solid #333333; padding-bottom: 8px; margin-bottom: 10px; }
+    .agreement { margin-bottom: 10px; page-break-inside: avoid; }
+    .decision { font-weight: bold; }
+    .notes { font-size: 9pt; margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 th:text="${university}">UNIVERSITY</h1>
+    <h2 th:text="${campus} + ' - ' + ${faculty}">Campus - Faculty</h2>
+    <h2 th:text="${councilType}">Faculty Council</h2>
+    <h1 th:text="${serialNumber}">MIN-CF-2026-001</h1>
+  </div>
+
+  <table>
+    <tr>
+      <th>Date</th><td th:text="${sessionDate}">August 15, 2026</td>
+      <th>Location</th><td th:text="${location}">Council Room</td>
+    </tr>
+    <tr>
+      <th>Start time</th><td th:text="${startTime}">08:00</td>
+      <th>End time</th><td th:text="${endTime}">10:00</td>
+    </tr>
+  </table>
+
+  <h3>1. Attendance and quorum verification</h3>
+  <table>
+    <tr><th>Member</th><th>Capacity</th><th>Attendance</th></tr>
+    <tr th:each="a : ${attendees}">
+      <td th:text="${a.name}">Name</td>
+      <td th:text="${a.role}">Role</td>
+      <td th:text="${a.present} ? 'Present' : 'Absent'">Present</td>
+    </tr>
+  </table>
+  <p th:text="${quorum}">Quorum</p>
+
+  <h3>2. Agenda</h3>
+  <ol>
+    <li th:each="o : ${agenda}" th:text="${o.title}">Item</li>
+  </ol>
+
+  <h3>3. Proceedings and agreements</h3>
+  <div class="agreement" th:each="ag : ${agreements}">
+    <p>
+      <strong th:text="${ag.number} + '. ' + ${ag.title}">1. Title</strong>
+      <span th:if="${ag.miscellaneous}"> (Miscellaneous item)</span>
+    </p>
+    <p th:if="${ag.description}" th:text="${ag.description}">Description</p>
+    <p class="decision" th:text="'Decision: ' + ${ag.decision}">Decision: Approved</p>
+    <p th:text="'Votes for: ' + ${ag.votesFor} + ' | Against: ' + ${ag.votesAgainst} + ' | Abstentions: ' + ${ag.abstentions}">Votes</p>
+    <div class="notes" th:utext="${ag.notes}"></div>
+  </div>
+
+  <p>The session was adjourned at <span th:text="${endTime}">10:00</span>. These minutes are issued as a record thereof.</p>
+</body>
+</html>

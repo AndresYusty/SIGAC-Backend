@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Session notice</title>
+  <style>
+    @page { size: A4; margin: 2.5cm 2.2cm; }
+    * { font-family: 'DejaVu Sans', sans-serif; }
+    body { font-size: 10.5pt; color: #111111; line-height: 1.4; }
+    h1 { font-size: 15pt; text-align: center; margin: 0 0 4px 0; }
+    h2 { font-size: 11pt; text-align: center; margin: 2px 0; font-weight: normal; }
+    h3 { font-size: 11pt; margin-top: 18px; border-bottom: 1px solid #999999; }
+    .details td { padding: 3px 8px 3px 0; vertical-align: top; }
+    ol li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <h1>SESSION NOTICE</h1>
+  <h2 th:text="${councilType}">Faculty Council</h2>
+  <h2 th:text="${university} + ' - ' + ${campus} + ' - ' + ${faculty}">University - Campus - Faculty</h2>
+
+  <p>The members of the Council are hereby convened to the session that will be held under the following conditions:</p>
+  <table class="details">
+    <tr><td><strong>Date:</strong></td><td th:text="${sessionDate}">August 15, 2026</td></tr>
+    <tr><td><strong>Time:</strong></td><td th:text="${sessionTime}">08:00</td></tr>
+    <tr><td><strong>Location:</strong></td><td th:text="${location}">Council Room</td></tr>
+  </table>
+
+  <h3>Agenda</h3>
+  <ol>
+    <li th:each="o : ${agenda}">
+      <strong th:text="${o.title}">Item</strong>
+      <div th:if="${o.description}" th:text="${o.description}">Description</div>
+    </li>
+  </ol>
+
+  <p>The supporting documents are attached to this notice.</p>
+</body>
+</html>
