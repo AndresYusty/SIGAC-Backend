@@ -29,6 +29,16 @@ class TemplateValidatorTest {
     }
 
     @Test
+    void agreementDraftIsValid() throws Exception {
+        String draft;
+        try (var in = getClass().getResourceAsStream("/sigac/templates/agreement-draft.html")) {
+            draft = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        List<String> errors = validator.validate(draft);
+        assertTrue(errors.isEmpty(), () -> "Errors: " + errors);
+    }
+
+    @Test
     void detectsUnclosedTags() {
         assertFalse(validator.validate("<html><body><p>not closed</body></html>").isEmpty());
     }

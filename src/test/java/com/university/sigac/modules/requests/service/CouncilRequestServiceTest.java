@@ -43,7 +43,7 @@ class CouncilRequestServiceTest {
                 mock(UserLookupService.class), mock(HierarchyService.class), parameters,
                 mock(StorageService.class), mock(SequenceService.class), mock(AuditService.class),
                 mock(EmailService.class), new AppProperties());
-        AuthenticatedUser u = new AuthenticatedUser(1L, "sec2@demo.edu", "Sec 2", List.of("ROLE_SECRETARY_2"), 10L, null);
+        AuthenticatedUser u = new AuthenticatedUser(1L, "sec2@demo.edu", "Sec 2", List.of("ROLE_FACULTY_SECRETARY"), 10L, null);
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(u, null, List.of()));
     }
 

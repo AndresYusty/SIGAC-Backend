@@ -104,11 +104,11 @@ public class TemplateValidator {
             }
         }
 
-        if (!used.contains("serialNumber")) {
-            errors.add("The template must include the ${serialNumber} variable");
-        }
-        if (!used.contains("agreements")) {
-            errors.add("The template must iterate over ${agreements}");
+        boolean minutes = used.contains("serialNumber") && used.contains("agreements");
+        boolean agreement = used.contains("agreementNumber") && used.contains("articles");
+        if (!minutes && !agreement) {
+            errors.add("The template must include ${serialNumber} and iterate ${agreements}, "
+                    + "or include ${agreementNumber} and iterate ${articles}");
         }
         return errors;
     }

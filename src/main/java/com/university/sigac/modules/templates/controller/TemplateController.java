@@ -25,10 +25,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** RN-05: exclusive access for the technical profile (ROLE_DEV). */
+/** RN-05: exclusive access for the administrator (templates included). */
 @RestController
 @RequestMapping("/api/v1/templates")
-@PreAuthorize("hasRole('DEV')")
+@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class TemplateController {
 
@@ -37,6 +37,12 @@ public class TemplateController {
     @GetMapping
     public List<TemplateDto> list(@RequestParam(required = false) Long councilTypeId) {
         return service.list(councilTypeId);
+    }
+
+    /** Faculty Council agreement layout, for preview against the reference documents. */
+    @GetMapping(value = "/samples/agreement", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String agreementDraft() {
+        return service.agreementDraft();
     }
 
     /** Official catalog of variables that can be used in templates (RF-11). */

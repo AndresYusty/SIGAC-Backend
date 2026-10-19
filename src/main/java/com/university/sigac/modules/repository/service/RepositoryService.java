@@ -13,12 +13,15 @@ import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.repository.dto.RepositoryDtos.MinutesFile;
 import com.university.sigac.modules.repository.dto.RepositoryDtos.RepositoryMinutesDto;
 import com.university.sigac.modules.repository.dto.RepositoryDtos.VerificationDto;
+import com.university.sigac.modules.session.service.AttendanceQueryService;
 import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.service.UserLookupService;
 import jakarta.persistence.criteria.Predicate;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -32,19 +35,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class RepositoryService {
 
     private final MinutesQueryService minutes;
+    private final AttendanceQueryService attendance;
     private final UserLookupService users;
     private final StorageService storage;
     private final AuditService audit;
     private final EmailService email;
 
-    /** RF-37: only PUBLISHED minutes, from the user's Faculty unless the profile is global (RN-02). */
+    /**
+     * RF-37: only PUBLISHED minutes, from the user's Faculty unless the profile is global (RN-02).
+     * A council member only sees the minutes of the sessions they attended.
+     */
     @Transactional(readOnly = true)
     public Page<RepositoryMinutesDto> search(String serialNumber, Long councilTypeId, LocalDate from, LocalDate to,
                                              Long campusId, Long facultyId, String text, Pageable pageable) {
         AuthenticatedUser u = SecurityUtils.current();
+        Optional<Set<Long>> attended = attendedSessionsIfRestricted(u);
         Specification<Minutes> filter = (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
             ps.add(cb.equal(root.get("status"), MinutesStatus.PUBLISHED));
+            attended.ifPresent(ids -> ps.add(ids.isEmpty() ? cb.disjunction() : root.get("session").get("id").in(ids)));
             if (!u.isGlobal()) {
                 ps.add(cb.equal(root.get("faculty").get("id"), u.facultyId()));
             } else if (facultyId != null) {
@@ -75,7 +84,7 @@ public class RepositoryService {
 
     /**
      * RN-18 / UC-07: recomputes the SHA-256 of the file on disk and compares it with the one recorded at signing.
-     * If they differ, delivery is blocked, the event is logged and the technical profile is alerted.
+     * If they differ, delivery is blocked, the event is logged and administrators are alerted.
      */
     @Transactional(readOnly = true)
     public MinutesFile readVerified(Long minutesId, String event) {
@@ -89,7 +98,7 @@ public class RepositoryService {
         if (!HashUtil.matches(computed, a.getFileHash())) {
             reportCompromise(a, "Recomputed hash " + computed + " differs from stored " + a.getFileHash());
             throw ApiException.conflict("Compromised document: the SHA-256 fingerprint does not match the one recorded at signing. "
-                    + "The download was blocked and the technical profile was notified");
+                    + "The download was blocked and administrators were notified");
         }
         audit.record(event, "MINUTES", a.getId(), a.getSerialNumber() + " sha256=" + computed);
         return new MinutesFile(a.getSerialNumber() + ".pdf", data, computed);
@@ -108,15 +117,29 @@ public class RepositoryService {
 
     private void reportCompromise(Minutes a, String detail) {
         audit.record("EVENT_INTEGRITY_VIOLATION", "MINUTES", a.getId(), a.getSerialNumber() + ": " + detail);
-        List<String> technicians = users.activeEmailsByRoles(List.of(RoleName.ROLE_DEV));
-        email.sendIntegrityAlert(technicians, a.getSerialNumber());
+        List<String> administrators = users.activeEmailsByRoles(List.of(RoleName.ROLE_ADMIN));
+        email.sendIntegrityAlert(administrators, a.getSerialNumber());
+    }
+
+    /**
+     * Sessions attended by the user when they are only a council member (no other council role);
+     * empty when the user is not restricted.
+     */
+    public Optional<Set<Long>> attendedSessionsIfRestricted(AuthenticatedUser u) {
+        boolean onlyMember = u.hasRole("ROLE_COUNCIL_MEMBER") && !u.hasAnyRole("ROLE_PRESIDENT",
+                "ROLE_COUNCIL_SECRETARY", "ROLE_FACULTY_SECRETARY", "ROLE_ADMIN");
+        return onlyMember ? Optional.of(attendance.attendedSessionIds(u.id())) : Optional.empty();
     }
 
     private Minutes loadPublished(Long id) {
+        AuthenticatedUser u = SecurityUtils.current();
         Minutes a = minutes.findById(id).orElseThrow(() -> ApiException.notFound("Minutes not found"));
-        SecurityUtils.checkFaculty(SecurityUtils.current(), a.getFaculty().getId());
+        SecurityUtils.checkFaculty(u, a.getFaculty().getId());
         if (a.getStatus() != MinutesStatus.PUBLISHED) {
             throw ApiException.conflict("Only PUBLISHED minutes are available in the repository");
+        }
+        if (attendedSessionsIfRestricted(u).map(ids -> !ids.contains(a.getSession().getId())).orElse(false)) {
+            throw ApiException.forbidden("You can only access the minutes of the sessions you attended");
         }
         return a;
     }

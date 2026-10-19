@@ -2,6 +2,7 @@ package com.university.sigac.modules.session.dto;
 
 import com.university.sigac.modules.requests.enums.DecisionOutcome;
 import com.university.sigac.modules.requests.enums.SessionStatus;
+import com.university.sigac.modules.users.enums.RoleName;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -35,10 +36,12 @@ public final class LiveSessionDtos {
     }
 
     // ---------- Responses ----------
-    public record QuorumDto(int members, int present, int required, int percentage, boolean reached) {
+    /** applicable = false for virtual sessions: no deliberative quorum is required (reached is then always true). */
+    public record QuorumDto(int members, int present, int required, int percentage, boolean reached,
+                            boolean applicable) {
     }
 
-    public record AttendeeDto(Long userId, String name, String role, boolean present) {
+    public record AttendeeDto(Long userId, String name, RoleName role, boolean present) {
     }
 
     public record AttendanceDto(SessionStatus sessionStatus, QuorumDto quorum, List<AttendeeDto> attendees) {

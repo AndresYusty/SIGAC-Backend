@@ -48,8 +48,6 @@ public class AppProperties {
     public static class Seed {
         private String adminEmail = "admin@sigac.local";
         private String adminPassword = "Admin12345*";
-        private String devEmail = "dev@sigac.local";
-        private String devPassword = "Dev12345*";
         private boolean demoData = false;
     }
 }

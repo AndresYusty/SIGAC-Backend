@@ -37,6 +37,10 @@ public class AgendaItem {
     @Column(nullable = false)
     private boolean miscellaneous = false;
 
+    /** Urgent item of an Extraordinary Council, added to the agenda without a filed request. */
+    @Column(nullable = false)
+    private boolean urgent = false;
+
     // ---- decision (null until recorded) ----
     @Enumerated(EnumType.STRING)
     @Column(length = 20)

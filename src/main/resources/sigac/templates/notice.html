@@ -30,9 +30,16 @@
   <ol>
     <li th:each="o : ${agenda}">
       <strong th:text="${o.title}">Item</strong>
+      <span th:if="${o.urgent}"> (Urgent item)</span>
       <div th:if="${o.description}" th:text="${o.description}">Description</div>
     </li>
   </ol>
+  <div th:if="${hasGuests}">
+    <h3>Invited guests (voice, no vote)</h3>
+    <ul>
+      <li th:each="g : ${guests}" th:text="${g.affiliation} ? ${g.name} + ', ' + ${g.affiliation} : ${g.name}">Guest</li>
+    </ul>
+  </div>
 
   <p>The supporting documents are attached to this notice.</p>
 </body>

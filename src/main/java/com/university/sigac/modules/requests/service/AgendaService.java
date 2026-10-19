@@ -9,12 +9,15 @@ import com.university.sigac.core.storage.StorageService;
 import com.university.sigac.core.util.DateUtil;
 import com.university.sigac.core.util.HtmlSanitizer;
 import com.university.sigac.modules.notifications.service.EmailService;
+import com.university.sigac.modules.requests.dto.SessionDtos.GuestRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
+import com.university.sigac.modules.requests.dto.SessionDtos.UrgentItemRequest;
 import com.university.sigac.modules.requests.entity.AgendaItem;
 import com.university.sigac.modules.requests.entity.CouncilRequest;
 import com.university.sigac.modules.requests.entity.Session;
+import com.university.sigac.modules.requests.entity.SessionGuest;
 import com.university.sigac.modules.requests.enums.RequestStatus;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
@@ -42,7 +45,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Module 3 (Secretary 1): sessions, agenda builder and agenda closing with notice (RF-18, RF-19). */
+/** Module 3 (Council Secretary): sessions, agenda builder and agenda closing with notice (RF-18, RF-19). */
 @Service
 @RequiredArgsConstructor
 public class AgendaService {
@@ -68,11 +71,18 @@ public class AgendaService {
             throw ApiException.forbidden("Your user is not linked to a Faculty");
         }
         CouncilType type = councilTypes.find(req.councilTypeId());
+        if (type.getKind() == null) {
+            throw ApiException.badRequest("This council type is no longer in use");
+        }
+        String location = req.location() == null || req.location().isBlank() ? null : req.location().trim();
+        if (location == null && type.getKind().requiresLocation()) {
+            throw ApiException.badRequest("The location is required for a session of type " + type.getName());
+        }
         Session s = new Session();
         s.setCouncilType(type);
         s.setFaculty(hierarchy.facultyReference(u.facultyId()));
         s.setScheduledAt(req.scheduledAt());
-        s.setLocation(req.location().trim());
+        s.setLocation(location);
         sessions.save(s);
         audit.record("EVENT_SESSION_CREATED", "SESSION", s.getId(), type.getName());
         return SessionMapper.toDto(s);
@@ -125,6 +135,25 @@ public class AgendaService {
         return SessionMapper.toDto(s);
     }
 
+    /** Extraordinary Council: an urgent matter goes on the agenda without a filed and approved request. */
+    @Transactional
+    public SessionDto addUrgentItem(Long sessionId, UrgentItemRequest req) {
+        Session s = loadWithOpenAgenda(sessionId);
+        if (!s.kind().allowsUrgentItems()) {
+            throw ApiException.conflict("Urgent items can only be added to an Extraordinary Council session");
+        }
+        AgendaItem p = new AgendaItem();
+        p.setSession(s);
+        p.setPosition(s.getItems().size() + 1);
+        p.setTitle(req.title().trim());
+        p.setDescription(req.description() == null || req.description().isBlank() ? null : req.description().trim());
+        p.setUrgent(true);
+        s.getItems().add(p);
+        sessions.saveAndFlush(s);
+        audit.record("EVENT_URGENT_ITEM_ADDED", "SESSION", s.getId(), p.getTitle());
+        return SessionMapper.toDto(s);
+    }
+
     @Transactional
     public SessionDto removeItem(Long sessionId, Long itemId) {
         AuthenticatedUser u = SecurityUtils.current();
@@ -155,12 +184,43 @@ public class AgendaService {
         return SessionMapper.toDto(s);
     }
 
-    /** Freezes the agenda (RN-09), generates the notice PDF and emails it to the members. */
+    // ---------------------------------------------------------------- Guests (Expanded Council)
+
+    @Transactional
+    public SessionDto addGuest(Long sessionId, GuestRequest req) {
+        Session s = loadWithOpenAgenda(sessionId);
+        if (!s.kind().allowsGuests()) {
+            throw ApiException.conflict("Guests can only be invited to an Expanded Council session");
+        }
+        SessionGuest g = new SessionGuest();
+        g.setSession(s);
+        g.setName(req.name().trim());
+        g.setEmail(req.email() == null || req.email().isBlank() ? null : req.email().trim().toLowerCase());
+        g.setAffiliation(req.affiliation() == null || req.affiliation().isBlank() ? null : req.affiliation().trim());
+        s.getGuests().add(g);
+        sessions.saveAndFlush(s);
+        audit.record("EVENT_SESSION_GUEST_ADDED", "SESSION", s.getId(), g.getName());
+        return SessionMapper.toDto(s);
+    }
+
+    @Transactional
+    public SessionDto removeGuest(Long sessionId, Long guestId) {
+        Session s = loadWithOpenAgenda(sessionId);
+        SessionGuest g = s.getGuests().stream().filter(x -> x.getId().equals(guestId)).findFirst()
+                .orElseThrow(() -> ApiException.notFound("The guest does not belong to this session"));
+        s.getGuests().remove(g);
+        sessions.saveAndFlush(s);
+        return SessionMapper.toDto(s);
+    }
+
+    // ---------------------------------------------------------------- Notice
+
+    /** Freezes the agenda (RN-09), generates the notice PDF and emails it to the members and guests. */
     @Transactional
     public SessionDto closeAgenda(Long sessionId) {
         Session s = loadWithOpenAgenda(sessionId);
         if (s.getItems().isEmpty()) {
-            throw ApiException.conflict("The agenda has no items: add at least one approved request");
+            throw ApiException.conflict("The agenda has no items: add at least one approved request or urgent item");
         }
         byte[] notice = pdf.generatePdfA(HtmlSanitizer.sanitizeDocument(pdf.render(NOTICE_TEMPLATE, noticeModel(s))));
         String noticePath = noticePath(s.getId());
@@ -170,15 +230,17 @@ public class AgendaService {
         attachments.add(noticePath);
         s.getItems().stream().filter(p -> p.getRequest() != null)
                 .forEach(p -> p.getRequest().getAttachments().forEach(a -> attachments.add(a.getPath())));
-        List<String> recipients = users.activeEmailsByFacultyAndRoles(s.getFaculty().getId(),
-                List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_SECRETARY_1));
+        List<String> recipients = new ArrayList<>(users.activeEmailsByFacultyAndRoles(s.getFaculty().getId(),
+                List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_COUNCIL_SECRETARY)));
+        s.getGuests().stream().map(SessionGuest::getEmail).filter(e -> e != null && !recipients.contains(e))
+                .forEach(recipients::add);
 
         s.setAgendaClosed(true);
         s.setStatus(SessionStatus.CONVENED);
         audit.record("EVENT_AGENDA_CLOSED", "SESSION", s.getId(), s.getItems().size() + " items");
         email.sendNotice(recipients, s.getCouncilType().getName(), s.getFaculty().getName(),
                 DateUtil.longDate(s.getScheduledAt().toLocalDate()), DateUtil.time(s.getScheduledAt()),
-                s.getLocation(), attachments);
+                s.documentLocation(), attachments);
         return SessionMapper.toDto(s);
     }
 
@@ -239,16 +301,19 @@ public class AgendaService {
         m.put("councilType", s.getCouncilType().getName());
         m.put("sessionDate", DateUtil.longDate(s.getScheduledAt().toLocalDate()));
         m.put("sessionTime", DateUtil.time(s.getScheduledAt()));
-        m.put("location", s.getLocation());
+        m.put("location", s.documentLocation());
         List<Map<String, Object>> agenda = new ArrayList<>();
         for (AgendaItem p : s.getItems()) {
             Map<String, Object> item = new LinkedHashMap<>();
             item.put("number", p.getPosition());
             item.put("title", p.getTitle());
             item.put("description", p.getDescription() == null || p.getDescription().isBlank() ? null : p.getDescription());
+            item.put("urgent", p.isUrgent());
             agenda.add(item);
         }
         m.put("agenda", agenda);
+        m.put("guests", SessionMapper.toGuestsModel(s));
+        m.put("hasGuests", !s.getGuests().isEmpty());
         return m;
     }
 

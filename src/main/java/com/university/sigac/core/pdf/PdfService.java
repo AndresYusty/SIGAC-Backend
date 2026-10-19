@@ -6,25 +6,29 @@ import com.university.sigac.core.exception.ApiException;
 import java.awt.color.ColorSpace;
 import java.awt.color.ICC_Profile;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.StringTemplateResolver;
 
 /**
  * Turns data into documents: (1) Thymeleaf fills a template stored as text and (2) OpenHTMLtoPDF
  * (on top of Apache PDFBox) generates a PDF/A-1b (ISO 19005, RN-14) with the embedded font.
+ * Expressions are evaluated with SpEL (SpringTemplateEngine): the plain TemplateEngine needs OGNL on the classpath.
  */
 @Slf4j
 @Service
 public class PdfService {
 
-    private final TemplateEngine engine = new TemplateEngine();
+    private final SpringTemplateEngine engine = new SpringTemplateEngine();
     private final byte[] colorProfile = ICC_Profile.getInstance(ColorSpace.CS_sRGB).getData();
 
     public PdfService() {
@@ -57,6 +61,8 @@ public class PdfService {
                     "DejaVu Sans", 400, BaseRendererBuilder.FontStyle.NORMAL, true);
             b.useFont(() -> PdfService.class.getResourceAsStream("/fonts/DejaVuSans-Bold.ttf"),
                     "DejaVu Sans", 700, BaseRendererBuilder.FontStyle.NORMAL, true);
+            useWindowsFont(b, "C:/Windows/Fonts/times.ttf", "Times New Roman", 400);
+            useWindowsFont(b, "C:/Windows/Fonts/timesbd.ttf", "Times New Roman", 700);
             b.withProducer("SIGAC");
             b.withHtmlContent(xhtml, null);
             b.toStream(out);
@@ -67,5 +73,20 @@ public class PdfService {
             throw ApiException.unprocessable("Could not generate the PDF/A from the content",
                     List.of(String.valueOf(e.getMessage())));
         }
+    }
+
+    /** Times New Roman matches the institutional Word sheets. DejaVu remains the fallback. */
+    private static void useWindowsFont(PdfRendererBuilder builder, String file, String family, int weight) {
+        Path path = Path.of(file);
+        if (!Files.exists(path)) {
+            return;
+        }
+        builder.useFont(() -> {
+            try {
+                return Files.newInputStream(path);
+            } catch (IOException e) {
+                throw new IllegalStateException("Could not read " + path, e);
+            }
+        }, family, weight, BaseRendererBuilder.FontStyle.NORMAL, true);
     }
 }

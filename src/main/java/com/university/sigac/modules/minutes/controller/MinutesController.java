@@ -33,13 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class MinutesController {
 
-    private static final String REVIEWERS = "hasAnyRole('SECRETARY_1','PRESIDENT','ADMIN')";
+    private static final String REVIEWERS = "hasAnyRole('COUNCIL_SECRETARY','PRESIDENT','ADMIN')";
 
     private final MinutesService service;
 
     @PostMapping("/session/{sessionId}")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public MinutesDto generate(@PathVariable Long sessionId) {
         return service.compile(sessionId);
     }
@@ -66,25 +66,25 @@ public class MinutesController {
     }
 
     @PutMapping("/{id}/content")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public MinutesDto edit(@PathVariable Long id, @Valid @RequestBody MinutesContentRequest req) {
         return service.edit(id, req.htmlContent());
     }
 
     @PostMapping("/{id}/send-to-signature")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public MinutesDto sendToSignature(@PathVariable Long id) {
         return service.sendToSignature(id);
     }
 
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasAnyRole('PRESIDENT','SECRETARY_1')")
+    @PreAuthorize("hasAnyRole('PRESIDENT','COUNCIL_SECRETARY')")
     public MinutesDto reject(@PathVariable Long id, @Valid @RequestBody RejectionRequest req) {
         return service.reject(id, req.note());
     }
 
     @PostMapping("/{id}/approve-and-sign")
-    @PreAuthorize("hasAnyRole('PRESIDENT','SECRETARY_1')")
+    @PreAuthorize("hasAnyRole('PRESIDENT','COUNCIL_SECRETARY')")
     public MinutesDto approveAndSign(@PathVariable Long id) {
         return service.approveAndSign(id);
     }

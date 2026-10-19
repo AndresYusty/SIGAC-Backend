@@ -1,10 +1,12 @@
 package com.university.sigac.modules.requests.controller;
 
 import com.university.sigac.modules.requests.dto.SessionDtos.AddItemRequest;
+import com.university.sigac.modules.requests.dto.SessionDtos.GuestRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.ReorderRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
+import com.university.sigac.modules.requests.dto.SessionDtos.UrgentItemRequest;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.service.AgendaService;
 import jakarta.validation.Valid;
@@ -30,19 +32,20 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Session scheduling and agenda building (Secretary 1). */
+/** Session scheduling and agenda building (Council Secretary). */
 @RestController
 @RequestMapping("/api/v1/sessions")
 @RequiredArgsConstructor
 public class SessionController {
 
-    private static final String READ = "hasAnyRole('SECRETARY_1','SECRETARY_2','PRESIDENT','COUNCIL_MEMBER','ADMIN')";
+    /** Council members only see the minutes of the sessions they attended (repository module). */
+    private static final String READ = "hasAnyRole('COUNCIL_SECRETARY','FACULTY_SECRETARY','PRESIDENT','ADMIN')";
 
     private final AgendaService service;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto create(@Valid @RequestBody SessionRequest req) {
         return service.create(req);
     }
@@ -62,26 +65,48 @@ public class SessionController {
     }
 
     @PostMapping("/{id}/items")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto addItem(@PathVariable Long id, @Valid @RequestBody AddItemRequest req) {
         return service.addItem(id, req.requestId());
     }
 
+    /** Extraordinary Council only. */
+    @PostMapping("/{id}/urgent-items")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public SessionDto addUrgentItem(@PathVariable Long id, @Valid @RequestBody UrgentItemRequest req) {
+        return service.addUrgentItem(id, req);
+    }
+
+    /** Expanded Council only. */
+    @PostMapping("/{id}/guests")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public SessionDto addGuest(@PathVariable Long id, @Valid @RequestBody GuestRequest req) {
+        return service.addGuest(id, req);
+    }
+
+    @DeleteMapping("/{id}/guests/{guestId}")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public SessionDto removeGuest(@PathVariable Long id, @PathVariable Long guestId) {
+        return service.removeGuest(id, guestId);
+    }
+
     @DeleteMapping("/{id}/items/{itemId}")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto removeItem(@PathVariable Long id, @PathVariable Long itemId) {
         return service.removeItem(id, itemId);
     }
 
     @PutMapping("/{id}/items/order")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto reorder(@PathVariable Long id, @Valid @RequestBody ReorderRequest req) {
         return service.reorder(id, req.itemIds());
     }
 
     /** Closes the agenda, generates the notice and sends it by email. */
     @PostMapping("/{id}/close-agenda")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto closeAgenda(@PathVariable Long id) {
         return service.closeAgenda(id);
     }

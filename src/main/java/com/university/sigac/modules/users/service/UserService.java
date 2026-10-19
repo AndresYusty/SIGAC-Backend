@@ -137,9 +137,6 @@ public class UserService {
 
     /** RN-01: operational roles require a Faculty; the Program, if given, must belong to that Faculty. */
     private void assignRolesAndScope(User u, Set<RoleName> roles, Long facultyId, Long programId) {
-        if (roles.contains(RoleName.ROLE_DEV) && !SecurityUtils.current().hasRole("ROLE_DEV")) {
-            throw ApiException.forbidden("Only the technical profile can assign the ROLE_DEV role");
-        }
         Faculty faculty = facultyId == null ? null
                 : faculties.findById(facultyId).orElseThrow(() -> ApiException.notFound("Faculty not found"));
         boolean onlyGlobal = roles.stream().allMatch(RoleName::isGlobal);

@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Live session conduct: write operations belong to Secretary 1. */
+/** Live session conduct: write operations belong to Council Secretary. */
 @RestController
 @RequestMapping("/api/v1/sessions/{sessionId}")
 @RequiredArgsConstructor
 public class LiveSessionController {
 
-    private static final String READ = "hasAnyRole('SECRETARY_1','PRESIDENT','COUNCIL_MEMBER','ADMIN')";
+    private static final String READ = "hasAnyRole('COUNCIL_SECRETARY','PRESIDENT','ADMIN')";
 
     private final LiveSessionService service;
 
@@ -38,51 +38,51 @@ public class LiveSessionController {
     }
 
     @PutMapping("/attendance")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public AttendanceDto recordAttendance(@PathVariable Long sessionId, @Valid @RequestBody AttendanceRequest req) {
         return service.recordAttendance(sessionId, req);
     }
 
     @PostMapping("/start")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto start(@PathVariable Long sessionId) {
         return service.start(sessionId);
     }
 
     @PostMapping("/suspend")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto suspend(@PathVariable Long sessionId) {
         return service.suspend(sessionId);
     }
 
     @PostMapping("/resume")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto resume(@PathVariable Long sessionId) {
         return service.resume(sessionId);
     }
 
     @PostMapping("/finish")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto finish(@PathVariable Long sessionId) {
         return service.finish(sessionId);
     }
 
     @PostMapping("/items/{itemId}/decision")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public AgendaItemDto decision(@PathVariable Long sessionId, @PathVariable Long itemId, @Valid @RequestBody DecisionRequest req) {
         return service.recordDecision(sessionId, itemId, req);
     }
 
     @PostMapping("/items/{itemId}/notes")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public AgendaItemDto note(@PathVariable Long sessionId, @PathVariable Long itemId, @Valid @RequestBody NoteRequest req) {
         return service.addNote(sessionId, itemId, req);
     }
 
     @PostMapping("/misc-items")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto miscItem(@PathVariable Long sessionId, @Valid @RequestBody MiscItemRequest req) {
         return service.addMiscItem(sessionId, req);
     }

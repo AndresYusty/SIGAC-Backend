@@ -2,6 +2,7 @@ package com.university.sigac.modules.templates.service;
 
 import com.university.sigac.core.audit.AuditService;
 import com.university.sigac.core.exception.ApiException;
+import com.university.sigac.core.pdf.Letterhead;
 import com.university.sigac.core.pdf.PdfService;
 import com.university.sigac.core.security.SecurityUtils;
 import com.university.sigac.core.util.HtmlSanitizer;
@@ -29,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemplateService {
 
     private static final String DEFAULT_TEMPLATE = "/sigac/templates/minutes-default.html";
+    private static final String AGREEMENT_DRAFT = "/sigac/templates/agreement-draft.html";
 
     private final MinutesTemplateRepository templates;
     private final CouncilTypeService councilTypes;
@@ -89,10 +91,15 @@ public class TemplateService {
         return toDto(p, true);
     }
 
+    /** Faculty Council agreement draft, filled on preview with Acuerdo 028 de 2026. */
+    public String agreementDraft() {
+        return readResource(AGREEMENT_DRAFT);
+    }
+
     /** RF-12: renders with sample data and returns the PDF/A, without saving anything. */
     public byte[] preview(String content) {
         requireValid(content);
-        String html = pdf.render(content, MockDataFactory.create());
+        String html = pdf.render(Letterhead.embed(content), MockDataFactory.create());
         return pdf.generatePdfA(HtmlSanitizer.sanitizeDocument(html));
     }
 
@@ -103,7 +110,7 @@ public class TemplateService {
                 .stream().findFirst();
         return own.or(() -> templates.findByCouncilTypeIdAndFacultyIsNullAndActiveTrue(councilTypeId).stream().findFirst())
                 .orElseThrow(() -> ApiException.conflict(
-                        "There is no active template for this council type. Ask the technical profile (ROLE_DEV) to publish one"));
+                        "There is no active template for this council type. Ask an administrator to publish one"));
     }
 
     /** Initial load: creates the default template if the council type does not have any yet. */
@@ -116,7 +123,7 @@ public class TemplateService {
         p.setCouncilType(type);
         p.setName("Official template - " + type.getName());
         p.setVersion(1);
-        p.setContent(readDefaultTemplate());
+        p.setContent(readResource(DEFAULT_TEMPLATE));
         p.setActive(true);
         p.setComment("Initial system template");
         p.setCreatedBy("system");
@@ -144,14 +151,14 @@ public class TemplateService {
         return templates.findById(id).orElseThrow(() -> ApiException.notFound("Template not found"));
     }
 
-    private String readDefaultTemplate() {
-        try (InputStream in = TemplateService.class.getResourceAsStream(DEFAULT_TEMPLATE)) {
+    private String readResource(String path) {
+        try (InputStream in = TemplateService.class.getResourceAsStream(path)) {
             if (in == null) {
-                throw new IllegalStateException("Missing resource " + DEFAULT_TEMPLATE);
+                throw new IllegalStateException("Missing resource " + path);
             }
             return new String(in.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalStateException("Could not read the default template", e);
+            throw new IllegalStateException("Could not read " + path, e);
         }
     }
 

@@ -24,4 +24,6 @@ public interface MinutesRepository extends JpaRepository<Minutes, Long>, JpaSpec
     Page<Minutes> findByFacultyIdAndStatus(Long facultyId, MinutesStatus status, Pageable pageable);
 
     List<Minutes> findTop5ByFacultyIdAndStatusOrderBySignedAtDesc(Long facultyId, MinutesStatus status);
+
+    List<Minutes> findTop5BySessionIdInAndStatusOrderBySignedAtDesc(Collection<Long> sessionIds, MinutesStatus status);
 }

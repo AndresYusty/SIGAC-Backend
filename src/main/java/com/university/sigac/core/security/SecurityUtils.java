@@ -27,7 +27,7 @@ public final class SecurityUtils {
     }
 
     /**
-     * RN-02: permissions are restricted to the user's assigned scope. ADMIN/DEV are not limited to a Faculty.
+     * RN-02: permissions are restricted to the user's assigned scope. ADMIN is not limited to a Faculty.
      */
     public static void checkFaculty(AuthenticatedUser u, Long facultyId) {
         if (u.isGlobal()) {

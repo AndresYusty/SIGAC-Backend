@@ -3,6 +3,7 @@ package com.university.sigac.modules.requests.entity;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.users.entity.CouncilType;
 import com.university.sigac.modules.users.entity.Faculty;
+import com.university.sigac.modules.users.enums.CouncilKind;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -17,6 +18,8 @@ import lombok.Setter;
 @Table(name = "sessions")
 @Getter @Setter @NoArgsConstructor
 public class Session {
+
+    public static final String VIRTUAL_LOCATION = "Virtual (by email)";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +36,8 @@ public class Session {
     @Column(name = "scheduled_at", nullable = false)
     private LocalDateTime scheduledAt;
 
-    @Column(nullable = false, length = 200)
+    /** null only for virtual sessions. */
+    @Column(length = 200)
     private String location;
 
     @Enumerated(EnumType.STRING)
@@ -54,10 +58,26 @@ public class Session {
     @OrderBy("position ASC")
     private List<AgendaItem> items = new ArrayList<>();
 
+    /** Guests of an Expanded Council: voice but no vote. */
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private List<SessionGuest> guests = new ArrayList<>();
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
     public boolean hasStatus(SessionStatus s) {
         return status == s;
+    }
+
+    /** Sessions of legacy council types (without a kind) behave as ordinary sessions. */
+    public CouncilKind kind() {
+        CouncilKind kind = councilType.getKind();
+        return kind != null ? kind : CouncilKind.ORDINARY;
+    }
+
+    /** Location as printed in the notice and the minutes. */
+    public String documentLocation() {
+        return location != null ? location : VIRTUAL_LOCATION;
     }
 }

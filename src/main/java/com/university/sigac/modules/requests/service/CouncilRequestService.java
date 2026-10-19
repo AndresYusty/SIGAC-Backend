@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Module 3: filing (Secretary 2) and review (Secretary 1) of council requests. */
+/** Module 3: filing (Faculty Secretary) and review (Council Secretary) of council requests. */
 @Service
 @RequiredArgsConstructor
 public class CouncilRequestService {
@@ -61,7 +61,7 @@ public class CouncilRequestService {
     private final EmailService email;
     private final AppProperties props;
 
-    // ================================================================ Secretary 2
+    // ================================================================ Faculty Secretary
 
     @Transactional
     public CouncilRequestDto file(CouncilRequestForm req, List<MultipartFile> files) {
@@ -123,8 +123,8 @@ public class CouncilRequestService {
         Specification<CouncilRequest> filter = (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
             if (!u.isGlobal()) {
-                // Secretary 2 only sees what they filed; the other roles see their Faculty (RN-02)
-                if (u.hasRole("ROLE_SECRETARY_2")) {
+                // Faculty Secretary only sees what they filed; the other roles see their Faculty (RN-02)
+                if (u.hasRole("ROLE_FACULTY_SECRETARY")) {
                     ps.add(cb.equal(root.get("filedBy").get("id"), u.id()));
                 } else {
                     ps.add(cb.equal(root.get("faculty").get("id"), u.facultyId()));
@@ -174,13 +174,13 @@ public class CouncilRequestService {
         return new FileContent(a.getOriginalName(), data);
     }
 
-    // ================================================================ Secretary 1: review
+    // ================================================================ Council Secretary: review
 
     @Transactional
     public CouncilRequestDto approve(Long id) {
         AuthenticatedUser u = SecurityUtils.current();
         CouncilRequest s = loadForReview(id, u);
-        changeStatus(s, RequestStatus.APPROVED, "Approved by Secretary 1", u.name());
+        changeStatus(s, RequestStatus.APPROVED, "Approved by Council Secretary", u.name());
         audit.record("EVENT_REQUEST_APPROVED", "REQUEST", s.getId(), s.getCode());
         return toDto(s);
     }
@@ -319,7 +319,7 @@ public class CouncilRequestService {
         AuthenticatedUser u = SecurityUtils.current();
         CouncilRequest s = load(id);
         SecurityUtils.checkFaculty(u, s.getFaculty().getId());
-        if (u.hasRole("ROLE_SECRETARY_2") && !u.isGlobal() && !s.getFiledBy().getId().equals(u.id())) {
+        if (u.hasRole("ROLE_FACULTY_SECRETARY") && !u.isGlobal() && !s.getFiledBy().getId().equals(u.id())) {
             throw ApiException.forbidden("You can only view the requests you filed");
         }
         return s;

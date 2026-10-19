@@ -210,22 +210,27 @@ public class LiveSessionService {
 
     // ---------------------------------------------------------------- Quorum and attendees (also used by the minutes generator)
 
+    /** Virtual sessions require no quorum: they are decided by the members who answer the consultation. */
     public QuorumDto computeQuorum(Session s) {
         List<User> members = members(s);
         Set<Long> ids = members.stream().map(User::getId).collect(Collectors.toSet());
         int present = (int) attendances.findBySessionId(s.getId()).stream()
                 .filter(a -> a.isPresent() && ids.contains(a.getUser().getId())).count();
+        if (!s.kind().requiresQuorum()) {
+            return new QuorumDto(members.size(), present, 0, 0, true, false);
+        }
         int percentage = parameters.getInt(ParameterService.QUORUM_PERCENTAGE, 50);
         return new QuorumDto(members.size(), present, QuorumCalculator.required(members.size(), percentage),
-                percentage, QuorumCalculator.reached(members.size(), present, percentage));
+                percentage, QuorumCalculator.reached(members.size(), present, percentage), true);
     }
 
-    /** Voting members of the Council with their role label and whether they are marked present. */
+    /** Voting members of the Council (the president also acts as a member) and whether they are marked present. */
     public List<AttendeeDto> attendees(Session s) {
         Map<Long, Boolean> present = attendances.findBySessionId(s.getId()).stream()
                 .collect(Collectors.toMap(a -> a.getUser().getId(), Attendance::isPresent));
         return members(s).stream().map(u -> new AttendeeDto(u.getId(), u.getName(),
-                u.hasRole(RoleName.ROLE_PRESIDENT) ? "President" : "Council member", present.getOrDefault(u.getId(), false))).toList();
+                u.hasRole(RoleName.ROLE_PRESIDENT) ? RoleName.ROLE_PRESIDENT : RoleName.ROLE_COUNCIL_MEMBER,
+                present.getOrDefault(u.getId(), false))).toList();
     }
 
     // ---------------------------------------------------------------- private

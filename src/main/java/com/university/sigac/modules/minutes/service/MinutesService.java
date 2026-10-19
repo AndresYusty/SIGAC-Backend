@@ -3,6 +3,7 @@ package com.university.sigac.modules.minutes.service;
 import com.university.sigac.config.AppProperties;
 import com.university.sigac.core.audit.AuditService;
 import com.university.sigac.core.exception.ApiException;
+import com.university.sigac.core.pdf.Letterhead;
 import com.university.sigac.core.pdf.PdfService;
 import com.university.sigac.core.security.AuthenticatedUser;
 import com.university.sigac.core.security.ClientIpResolver;
@@ -21,6 +22,7 @@ import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.service.AgendaService;
+import com.university.sigac.modules.session.service.AttendanceQueryService;
 import com.university.sigac.modules.templates.entity.MinutesTemplate;
 import com.university.sigac.modules.templates.service.TemplateService;
 import com.university.sigac.modules.users.enums.RoleName;
@@ -28,6 +30,7 @@ import com.university.sigac.modules.users.service.UserLookupService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +51,7 @@ public class MinutesService {
 
     private final MinutesRepository minutes;
     private final UserLookupService users;
+    private final AttendanceQueryService attendance;
     private final AgendaService agenda;
     private final TemplateService templates;
     private final MinutesModelBuilder modelBuilder;
@@ -59,7 +63,7 @@ public class MinutesService {
     private final EmailService email;
     private final AppProperties props;
 
-    // ---------------------------------------------------------------- Generate and edit (Secretary 1)
+    // ---------------------------------------------------------------- Generate and edit (Council Secretary)
 
     /** UC-05: compiles the minutes of a FINISHED session with the active template and assigns the serial number (RN-13). */
     @Transactional
@@ -82,7 +86,7 @@ public class MinutesService {
         long number = sequences.next("MIN-" + code + "-" + date.getYear());
         String serialNumber = String.format("MIN-%s-%d-%03d", code, date.getYear(), number);
 
-        String html = pdf.render(template.getContent(), modelBuilder.build(s, serialNumber));
+        String html = pdf.render(Letterhead.embed(template.getContent()), modelBuilder.build(s, serialNumber));
         html = HtmlSanitizer.sanitizeDocument(html);
         pdf.generatePdfA(html); // checks right away that the document can be compiled to PDF/A
 
@@ -99,7 +103,7 @@ public class MinutesService {
         return toDto(a, true);
     }
 
-    /** RF-28: Secretary 1 polishes the wording before sending it for signature. */
+    /** RF-28: Council Secretary polishes the wording before sending it for signature. */
     @Transactional
     public MinutesDto edit(Long id, String htmlContent) {
         Minutes a = load(id);
@@ -136,7 +140,7 @@ public class MinutesService {
         return toDto(a, false);
     }
 
-    // ---------------------------------------------------------------- Approval (President / Secretary 1)
+    // ---------------------------------------------------------------- Approval (President / Council Secretary)
 
     /** RF-35: returns the draft to editing with notes. */
     @Transactional
@@ -191,8 +195,10 @@ public class MinutesService {
         }
         audit.record("EVENT_MINUTES_SIGNED", "MINUTES", a.getId(), a.getSerialNumber() + " sha256=" + a.getFileHash());
 
-        List<String> recipients = users.activeEmailsByFacultyAndRoles(a.getFaculty().getId(),
-                List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_SECRETARY_1));
+        List<String> recipients = new ArrayList<>(users.activeEmailsByFacultyAndRoles(a.getFaculty().getId(),
+                List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_SECRETARY)));
+        attendance.presentEmails(a.getSession().getId()).stream().filter(e -> !recipients.contains(e))
+                .forEach(recipients::add);
         email.sendMinutesPublished(recipients, a.getSerialNumber(), a.getFaculty().getName(), path);
         return toDto(a, false);
     }

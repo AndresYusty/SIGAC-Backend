@@ -39,14 +39,14 @@ import org.springframework.web.multipart.MultipartFile;
 @RequiredArgsConstructor
 public class CouncilRequestController {
 
-    private static final String SECRETARIES = "hasAnyRole('SECRETARY_1','SECRETARY_2','ADMIN')";
+    private static final String SECRETARIES = "hasAnyRole('COUNCIL_SECRETARY','FACULTY_SECRETARY','ADMIN')";
 
     private final CouncilRequestService service;
 
     /** UC-03: multipart/form-data with the request fields and the PDFs in the "attachments" part. */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('SECRETARY_2')")
+    @PreAuthorize("hasRole('FACULTY_SECRETARY')")
     public CouncilRequestDto file(@Valid @ModelAttribute CouncilRequestForm form,
                                   @RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
         return service.file(form, attachments);
@@ -54,7 +54,7 @@ public class CouncilRequestController {
 
     /** Corrects a FILED/RETURNED request; new attachments may be added. */
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('SECRETARY_2')")
+    @PreAuthorize("hasRole('FACULTY_SECRETARY')")
     public CouncilRequestDto update(@PathVariable Long id, @Valid @ModelAttribute CouncilRequestForm form,
                                     @RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
         return service.update(id, form, attachments);
@@ -91,22 +91,22 @@ public class CouncilRequestController {
                 .body(f.data());
     }
 
-    // ---------- Review by Secretary 1 ----------
+    // ---------- Review by Council Secretary ----------
 
     @PostMapping("/{id}/approve")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public CouncilRequestDto approve(@PathVariable Long id) {
         return service.approve(id);
     }
 
     @PostMapping("/{id}/reject")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public CouncilRequestDto reject(@PathVariable Long id, @Valid @RequestBody ReasonRequest req) {
         return service.reject(id, req.reason());
     }
 
     @PostMapping("/{id}/return")
-    @PreAuthorize("hasRole('SECRETARY_1')")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public CouncilRequestDto returnRequest(@PathVariable Long id, @Valid @RequestBody ReasonRequest req) {
         return service.returnRequest(id, req.reason());
     }

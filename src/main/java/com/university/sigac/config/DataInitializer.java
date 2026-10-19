@@ -8,6 +8,7 @@ import com.university.sigac.modules.users.entity.Faculty;
 import com.university.sigac.modules.users.entity.Program;
 import com.university.sigac.modules.users.entity.University;
 import com.university.sigac.modules.users.entity.User;
+import com.university.sigac.modules.users.enums.CouncilKind;
 import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.repository.CampusRepository;
 import com.university.sigac.modules.users.repository.CouncilTypeRepository;
@@ -24,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Idempotent initial load: council types, parameters, technical users, default template and demo data. */
+/** Idempotent initial load: council types, parameters, administrator, default template and demo data. */
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -44,16 +45,15 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        createCouncilType("CF", "Faculty Council");
-        createCouncilType("CA", "Academic Council");
-        createCouncilType("CS", "Superior Council");
+        for (CouncilKind kind : CouncilKind.values()) {
+            createCouncilType(kind);
+        }
 
         parameters.ensure(ParameterService.ATTACHMENTS_MAX_MB, "10", "Maximum size per attached file (MB)");
         parameters.ensure(ParameterService.QUORUM_PERCENTAGE, "50",
                 "Base percentage for the deliberative quorum (minimum = percentage of members + 1)");
 
         createUser("SIGAC Administrator", props.getSeed().getAdminEmail(), props.getSeed().getAdminPassword(), RoleName.ROLE_ADMIN, null, null);
-        createUser("SIGAC Developer", props.getSeed().getDevEmail(), props.getSeed().getDevPassword(), RoleName.ROLE_DEV, null, null);
         councilTypes.findAll().forEach(templates::createDefaultIfMissing);
 
         if (props.getSeed().isDemoData() && universities.count() == 0) {
@@ -61,9 +61,9 @@ public class DataInitializer implements ApplicationRunner {
         }
     }
 
-    private void createCouncilType(String code, String name) {
-        if (councilTypes.findByCode(code).isEmpty()) {
-            councilTypes.save(new CouncilType(code, name));
+    private void createCouncilType(CouncilKind kind) {
+        if (councilTypes.findByKind(kind).isEmpty()) {
+            councilTypes.save(new CouncilType(kind));
         }
     }
 
@@ -101,8 +101,8 @@ public class DataInitializer implements ApplicationRunner {
         programs.save(prog);
 
         String password = "Demo12345*";
-        createUser("Demo Managing Secretary", "sec1@demo.edu", password, RoleName.ROLE_SECRETARY_1, fac, null);
-        createUser("Demo Assistant Secretary", "sec2@demo.edu", password, RoleName.ROLE_SECRETARY_2, fac, prog);
+        createUser("Demo Council Secretary", "sec1@demo.edu", password, RoleName.ROLE_COUNCIL_SECRETARY, fac, null);
+        createUser("Demo Faculty Secretary", "sec2@demo.edu", password, RoleName.ROLE_FACULTY_SECRETARY, fac, prog);
         createUser("Demo President (Dean)", "presidente@demo.edu", password, RoleName.ROLE_PRESIDENT, fac, null);
         createUser("Council Member One", "consejero1@demo.edu", password, RoleName.ROLE_COUNCIL_MEMBER, fac, null);
         createUser("Council Member Two", "consejero2@demo.edu", password, RoleName.ROLE_COUNCIL_MEMBER, fac, null);

@@ -43,33 +43,33 @@ public class UserController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','DEV')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Page<UserDto> list(@RequestParam(required = false) String q,
                               @PageableDefault(size = 20, sort = "name") Pageable pageable) {
         return service.list(q, pageable);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','DEV')")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto get(@PathVariable Long id) {
         return service.get(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN','DEV')")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto create(@Valid @RequestBody UserCreateRequest req) {
         return service.create(req);
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','DEV')")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto update(@PathVariable Long id, @Valid @RequestBody UserUpdateRequest req) {
         return service.update(id, req);
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN','DEV')")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDto changeStatus(@PathVariable Long id, @RequestParam boolean active) {
         return service.changeStatus(id, active);
     }

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="'ACUERDO No. ' + ${agreementNumber} + ' DE ' + ${agreementYear}">Acuerdo</title>
+  <style>
+    @page { size: letter; margin: 2.5cm 3cm 2.8cm 3cm; }
+    * { font-family: 'Times New Roman', 'DejaVu Sans', serif; }
+    body { font-size: 12pt; color: #111111; line-height: 1.15; }
+    .letterhead { position: fixed; top: 0; left: 0; width: 21.59cm; height: 27.94cm; z-index: -1; }
+    h1 { font-size: 13pt; text-align: center; margin: 14px 0 0 0; }
+    .date { text-align: center; margin: 2px 0 8px 0; }
+    .subject { text-align: center; font-style: italic; margin: 8px 2.2cm; }
+    .authority { text-align: center; font-weight: bold; margin: 12px 0 0 0; }
+    .legal { text-align: center; margin: 0 0 10px 0; }
+    h2 { font-size: 12pt; text-align: center; margin: 12px 0 8px 0; }
+    p { text-align: justify; margin: 0 0 8px 0; }
+    table.students { width: 100%; border-collapse: collapse; margin: 4px 0 10px 0; }
+    table.students th, table.students td { border: 1px solid #333333; padding: 3px 6px; font-size: 9pt; text-align: center; }
+    table.students th { font-weight: bold; }
+    .article { margin: 0 0 8px 0; text-align: justify; }
+    .closing { text-align: center; font-weight: bold; margin: 16px 0 10px 0; }
+    .issued { text-align: justify; margin-bottom: 28px; }
+    table.signs { width: 100%; border-collapse: collapse; margin-top: 36px; }
+    table.signs td { width: 50%; border: none; text-align: center; vertical-align: top; font-size: 10pt; }
+    .foot { margin-top: 28px; font-size: 8pt; color: #333333; }
+  </style>
+</head>
+<body>
+  <img class="letterhead" src="letterhead:usco" alt=""/>
+
+  <h1 th:text="'ACUERDO No. ' + ${agreementNumber} + ' DE ' + ${agreementYear}">ACUERDO No. 028 DE 2026</h1>
+  <p class="date" th:text="'(' + ${agreementDate} + ')'">(27 DE ENERO)</p>
+  <p class="subject" th:text="'&quot;' + ${agreementSubject} + '&quot;'">Epígrafe</p>
+
+  <p class="authority" th:text="${councilTitle}">EL CONSEJO DE FACULTAD DE INGENIERÍA</p>
+  <p class="legal">En uso de sus atribuciones legales y,</p>
+
+  <h2>CONSIDERANDO:</h2>
+  <div th:each="recital : ${recitals}">
+    <p th:text="${recital.text}">Que...</p>
+    <table class="students" th:if="${recital.showTable}">
+      <tr>
+        <th>CODIGO</th>
+        <th>ESTUDIANTE</th>
+        <th>CRED.</th>
+        <th>PROGRAMA</th>
+      </tr>
+      <tr th:each="st : ${students}">
+        <td th:text="${st.code}">20251233689</td>
+        <td th:text="${st.name}">ESTUDIANTE</td>
+        <td th:text="${st.credits}">1</td>
+        <td th:text="${st.program}">PROGRAMA</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>ACUERDA:</h2>
+  <div th:each="article : ${articles}">
+    <p class="article">
+      <strong th:text="'ARTÍCULO ' + ${article.number} + '°. '">ARTÍCULO 1°.</strong>
+      <span th:text="${article.text}">Texto</span>
+    </p>
+    <table class="students" th:if="${article.showTable}">
+      <tr>
+        <th>CODIGO</th>
+        <th>ESTUDIANTE</th>
+        <th>CRED.</th>
+        <th>PROGRAMA</th>
+      </tr>
+      <tr th:each="st : ${students}">
+        <td th:text="${st.code}">20251233689</td>
+        <td th:text="${st.name}">ESTUDIANTE</td>
+        <td th:text="${st.credits}">1</td>
+        <td th:text="${st.program}">PROGRAMA</td>
+      </tr>
+    </table>
+  </div>
+
+  <p class="closing">COMUNÍQUESE Y CÚMPLASE</p>
+  <p class="issued" th:text="${issuedOn}">Dado en Neiva.</p>
+
+  <table class="signs">
+    <tr>
+      <td>
+        <strong th:text="${presidentName}">PRESIDENTE</strong><br/>
+        Presidente
+      </td>
+      <td>
+        <strong th:text="${secretaryName}">SECRETARIA</strong><br/>
+        Secretaria.
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

@@ -49,9 +49,20 @@
   </table>
   <p th:text="${quorum}">Quorum</p>
 
+  <div th:if="${hasGuests}">
+    <p><strong>Invited guests (voice, no vote; not counted for the quorum):</strong></p>
+    <table>
+      <tr><th>Guest</th><th>Capacity</th></tr>
+      <tr th:each="g : ${guests}">
+        <td th:text="${g.name}">Name</td>
+        <td th:text="${g.affiliation}">Affiliation</td>
+      </tr>
+    </table>
+  </div>
+
   <h3>2. Agenda</h3>
   <ol>
-    <li th:each="o : ${agenda}" th:text="${o.title}">Item</li>
+    <li th:each="o : ${agenda}" th:text="${o.urgent} ? ${o.title} + ' (Urgent item)' : ${o.title}">Item</li>
   </ol>
 
   <h3>3. Proceedings and agreements</h3>
@@ -59,6 +70,7 @@
     <p>
       <strong th:text="${ag.number} + '. ' + ${ag.title}">1. Title</strong>
       <span th:if="${ag.miscellaneous}"> (Miscellaneous item)</span>
+      <span th:if="${ag.urgent}"> (Urgent item)</span>
     </p>
     <p th:if="${ag.description}" th:text="${ag.description}">Description</p>
     <p class="decision" th:text="'Decision: ' + ${ag.decision}">Decision: Approved</p>

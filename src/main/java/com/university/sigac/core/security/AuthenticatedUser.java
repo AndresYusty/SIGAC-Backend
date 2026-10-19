@@ -18,8 +18,8 @@ public record AuthenticatedUser(Long id, String email, String name, List<String>
         return false;
     }
 
-    /** ADMIN and DEV are not scoped to a Faculty. */
+    /** ADMIN is not scoped to a Faculty. */
     public boolean isGlobal() {
-        return roles.contains("ROLE_ADMIN") || roles.contains("ROLE_DEV");
+        return roles.contains("ROLE_ADMIN");
     }
 }

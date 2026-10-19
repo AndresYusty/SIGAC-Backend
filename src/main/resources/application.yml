@@ -20,7 +20,7 @@ spring:
     init:
       mode: always
       continue-on-error: true
-      data-locations: classpath:db/append-only-triggers.sql
+      data-locations: classpath:db/migrations.sql,classpath:db/append-only-triggers.sql
   servlet:
     multipart:
       max-file-size: 12MB
@@ -67,8 +67,6 @@ sigac:
   seed:
     admin-email: ${SIGAC_ADMIN_EMAIL:admin@sigac.local}
     admin-password: ${SIGAC_ADMIN_PASSWORD:Admin12345*}
-    dev-email: ${SIGAC_DEV_EMAIL:dev@sigac.local}
-    dev-password: ${SIGAC_DEV_PASSWORD:Dev12345*}
     demo-data: ${SIGAC_SEED_DEMO:false}
 
 logging:

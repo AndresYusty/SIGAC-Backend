@@ -39,4 +39,10 @@ public class MinutesQueryService {
     public List<Minutes> latestSigned(Long facultyId, MinutesStatus status) {
         return minutes.findTop5ByFacultyIdAndStatusOrderBySignedAtDesc(facultyId, status);
     }
+
+    /** The 5 most recently signed minutes of the given sessions in the given status. */
+    public List<Minutes> latestSignedOfSessions(Collection<Long> sessionIds, MinutesStatus status) {
+        return sessionIds.isEmpty() ? List.of()
+                : minutes.findTop5BySessionIdInAndStatusOrderBySignedAtDesc(sessionIds, status);
+    }
 }

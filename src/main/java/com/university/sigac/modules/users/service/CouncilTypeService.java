@@ -5,12 +5,13 @@ import com.university.sigac.modules.users.dto.CouncilTypeDtos.CouncilTypeDto;
 import com.university.sigac.modules.users.dto.CouncilTypeDtos.CouncilTypeRequest;
 import com.university.sigac.modules.users.entity.CouncilType;
 import com.university.sigac.modules.users.repository.CouncilTypeRepository;
+import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** RF-08: catalog of council types (Faculty, Academic, Superior). */
+/** RF-08: the four council types (Ordinary, Extraordinary, Virtual, Expanded). They are fixed: only renamed. */
 @Service
 @RequiredArgsConstructor
 public class CouncilTypeService {
@@ -19,16 +20,9 @@ public class CouncilTypeService {
 
     @Transactional(readOnly = true)
     public List<CouncilTypeDto> list() {
-        return repository.findAll().stream().map(this::toDto).toList();
-    }
-
-    @Transactional
-    public CouncilTypeDto create(CouncilTypeRequest r) {
-        String code = r.code().trim().toUpperCase();
-        if (repository.findByCode(code).isPresent()) {
-            throw ApiException.conflict("A council type with that code already exists");
-        }
-        return toDto(repository.save(new CouncilType(code, r.name().trim())));
+        return repository.findByKindIsNotNull().stream()
+                .sorted(Comparator.comparing(CouncilType::getKind))
+                .map(this::toDto).toList();
     }
 
     /** The code cannot be changed: it is part of the serial numbers already issued (RN-13). */
@@ -46,6 +40,6 @@ public class CouncilTypeService {
     }
 
     private CouncilTypeDto toDto(CouncilType t) {
-        return new CouncilTypeDto(t.getId(), t.getCode(), t.getName());
+        return new CouncilTypeDto(t.getId(), t.getCode(), t.getName(), t.getKind());
     }
 }

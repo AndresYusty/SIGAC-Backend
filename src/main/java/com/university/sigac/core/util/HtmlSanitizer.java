@@ -78,7 +78,8 @@ public final class HtmlSanitizer {
             r.add("<meta http-equiv> is not allowed");
         }
         for (Element img : doc.select("img")) {
-            if (!img.attr("src").trim().toLowerCase().startsWith("data:image/")) {
+            String src = img.attr("src").trim();
+            if (!src.toLowerCase().startsWith("data:image/") && !src.equals("letterhead:usco")) {
                 r.add("Only embedded images (data:image/...;base64) are allowed. Source not allowed in <img>");
             }
         }

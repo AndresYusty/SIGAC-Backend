@@ -14,7 +14,7 @@ com.university.sigac
 ├── config/            Spring configuration: Security, async mail, OpenAPI, typed properties, initial data
 ├── modules/
 │   ├── users/         Users, authentication, RBAC, institutional hierarchy and council types
-│   ├── templates/     Thymeleaf minutes templates (ROLE_DEV)
+│   ├── templates/     Thymeleaf minutes templates (ROLE_ADMIN)
 │   ├── requests/      Filing of requests with PDF attachments, and agendas (sessions + agenda items)
 │   ├── session/       Live session: attendance, quorum, decisions and debate notes
 │   ├── minutes/       Minutes generation, PDF/A compilation and SHA-256 signature
@@ -30,7 +30,7 @@ when needed). Rules, enforced on every build by `ModularArchitectureTest` (ArchU
 - Allowed module dependencies (no cycles): `users → notifications`, `templates → users`,
   `requests → users, notifications`, `session → requests, users`,
   `minutes → session, requests, templates, users, notifications`,
-  `repository → minutes, requests, users, notifications`.
+  `repository → minutes, session, requests, users, notifications`.
 - A module's repositories are private: other modules use its public services
   (e.g. `UserLookupService`, `HierarchyService`, `MinutesQueryService`, `AgendaService`).
 - Controllers are entry points only; no class depends on them.
@@ -78,20 +78,22 @@ Always created:
 | Email               | Password      | Role       |
 |---------------------|---------------|------------|
 | `admin@sigac.local` | `Admin12345*` | ROLE_ADMIN |
-| `dev@sigac.local`   | `Dev12345*`   | ROLE_DEV   |
 
 Created only when `SIGAC_SEED_DEMO=true` and the database has no universities (password `Demo12345*`):
 
-| Email                 | Role                |
-|-----------------------|---------------------|
-| `sec1@demo.edu`       | ROLE_SECRETARY_1    |
-| `sec2@demo.edu`       | ROLE_SECRETARY_2    |
-| `presidente@demo.edu` | ROLE_PRESIDENT      |
-| `consejero1@demo.edu` | ROLE_COUNCIL_MEMBER |
-| `consejero2@demo.edu` | ROLE_COUNCIL_MEMBER |
-| `consejero3@demo.edu` | ROLE_COUNCIL_MEMBER |
+| Email                 | Role                   |
+|-----------------------|------------------------|
+| `sec1@demo.edu`       | ROLE_COUNCIL_SECRETARY |
+| `sec2@demo.edu`       | ROLE_FACULTY_SECRETARY |
+| `presidente@demo.edu` | ROLE_PRESIDENT         |
+| `consejero1@demo.edu` | ROLE_COUNCIL_MEMBER    |
+| `consejero2@demo.edu` | ROLE_COUNCIL_MEMBER    |
+| `consejero3@demo.edu` | ROLE_COUNCIL_MEMBER    |
 
 Change the initial passwords before using the system outside a development environment.
+
+Existing databases are upgraded at startup by `src/main/resources/db/migrations.sql` (idempotent), because
+`ddl-auto=update` never alters existing columns.
 
 ## Quick check
 

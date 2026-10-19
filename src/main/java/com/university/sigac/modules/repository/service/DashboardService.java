@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ public class DashboardService {
     private final CouncilRequestService requests;
     private final AgendaService sessions;
     private final MinutesQueryService minutes;
+    private final RepositoryService repository;
     private final UserLookupService users;
 
     @Transactional(readOnly = true)
@@ -35,27 +38,26 @@ public class DashboardService {
         Long fac = u.facultyId();
         Map<String, Object> ind = new LinkedHashMap<>();
 
-        if (u.hasRole("ROLE_SECRETARY_2")) {
+        if (u.hasRole("ROLE_FACULTY_SECRETARY")) {
             Map<String, Long> byStatus = new LinkedHashMap<>();
             for (RequestStatus s : RequestStatus.values()) {
                 byStatus.put(s.name(), requests.countFiledBy(u.id(), s));
             }
             ind.put("myRequestsByStatus", byStatus);
         }
-        if (u.hasRole("ROLE_SECRETARY_1") && fac != null) {
+        if (u.hasRole("ROLE_COUNCIL_SECRETARY") && fac != null) {
             ind.put("requestsPendingReview", requests.countByFaculty(fac, RequestStatus.FILED));
             ind.put("approvedRequestsWithoutAgenda", requests.countByFaculty(fac, RequestStatus.APPROVED));
             ind.put("upcomingSessions", sessions.countByFaculty(fac, List.of(SessionStatus.SCHEDULED, SessionStatus.CONVENED)));
             ind.put("minutesInProgress", minutes.countByFaculty(fac, List.of(MinutesStatus.DRAFT, MinutesStatus.EDITING)));
         }
-        if (u.hasAnyRole("ROLE_SECRETARY_1", "ROLE_PRESIDENT", "ROLE_COUNCIL_MEMBER") && fac != null) {
+        Optional<Set<Long>> attended = repository.attendedSessionsIfRestricted(u);
+        if (attended.isPresent()) {
+            ind.put("latestPublishedMinutes", summaries(minutes.latestSignedOfSessions(attended.get(), MinutesStatus.PUBLISHED)));
+        } else if (u.hasAnyRole("ROLE_COUNCIL_SECRETARY", "ROLE_PRESIDENT") && fac != null) {
             ind.put("minutesPendingSignature", minutes.countByFaculty(fac, List.of(MinutesStatus.PENDING_SIGNATURE)));
             ind.put("finishedSessions", sessions.countByFaculty(fac, List.of(SessionStatus.FINISHED)));
-            List<Map<String, Object>> latest = new ArrayList<>();
-            for (Minutes a : minutes.latestSigned(fac, MinutesStatus.PUBLISHED)) {
-                latest.add(Map.of("id", a.getId(), "serialNumber", a.getSerialNumber(), "sessionDate", a.getSessionDate()));
-            }
-            ind.put("latestPublishedMinutes", latest);
+            ind.put("latestPublishedMinutes", summaries(minutes.latestSigned(fac, MinutesStatus.PUBLISHED)));
         }
         if (u.hasRole("ROLE_ADMIN")) {
             ind.put("activeUsers", users.countByActive(true));
@@ -63,5 +65,13 @@ public class DashboardService {
             ind.put("publishedMinutesTotal", minutes.countByStatus(MinutesStatus.PUBLISHED));
         }
         return new DashboardDto(u.name(), ind);
+    }
+
+    private static List<Map<String, Object>> summaries(List<Minutes> list) {
+        List<Map<String, Object>> latest = new ArrayList<>();
+        for (Minutes a : list) {
+            latest.add(Map.of("id", a.getId(), "serialNumber", a.getSerialNumber(), "sessionDate", a.getSessionDate()));
+        }
+        return latest;
     }
 }

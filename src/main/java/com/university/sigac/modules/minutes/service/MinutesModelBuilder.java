@@ -3,8 +3,10 @@ package com.university.sigac.modules.minutes.service;
 import com.university.sigac.core.util.DateUtil;
 import com.university.sigac.modules.requests.entity.AgendaItem;
 import com.university.sigac.modules.requests.entity.Session;
+import com.university.sigac.modules.requests.service.SessionMapper;
 import com.university.sigac.modules.session.dto.LiveSessionDtos.QuorumDto;
 import com.university.sigac.modules.session.service.LiveSessionService;
+import com.university.sigac.modules.users.enums.RoleName;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,25 +37,26 @@ public class MinutesModelBuilder {
         m.put("sessionDate", DateUtil.longDate(reference.toLocalDate()));
         m.put("startTime", DateUtil.time(s.getActualStart()));
         m.put("endTime", DateUtil.time(s.getActualEnd()));
-        m.put("location", s.getLocation());
+        m.put("location", s.documentLocation());
         m.put("councilType", s.getCouncilType().getName());
         m.put("university", s.getFaculty().getCampus().getUniversity().getName());
         m.put("campus", s.getFaculty().getCampus().getName());
         m.put("faculty", s.getFaculty().getName());
 
         QuorumDto q = liveSessionService.computeQuorum(s);
-        m.put("quorum", q.present() + " of " + q.members() + " voting members present (minimum required: "
-                + q.required() + "). " + (q.reached() ? "The deliberative quorum was verified." : "The quorum was not reached."));
+        m.put("quorum", quorumSummary(q));
 
         List<Map<String, Object>> attendees = new ArrayList<>();
         liveSessionService.attendees(s).forEach(attendee -> {
             Map<String, Object> a = new LinkedHashMap<>();
             a.put("name", attendee.name());
-            a.put("role", attendee.role());
+            a.put("role", attendee.role() == RoleName.ROLE_PRESIDENT ? "President" : "Council member");
             a.put("present", attendee.present());
             attendees.add(a);
         });
         m.put("attendees", attendees);
+        m.put("guests", SessionMapper.toGuestsModel(s));
+        m.put("hasGuests", !s.getGuests().isEmpty());
 
         List<Map<String, Object>> agenda = new ArrayList<>();
         List<Map<String, Object>> agreements = new ArrayList<>();
@@ -64,6 +67,7 @@ public class MinutesModelBuilder {
                 o.put("number", p.getPosition());
                 o.put("title", p.getTitle());
                 o.put("description", description);
+                o.put("urgent", p.isUrgent());
                 agenda.add(o);
             }
             Map<String, Object> ag = new LinkedHashMap<>();
@@ -76,10 +80,20 @@ public class MinutesModelBuilder {
             ag.put("abstentions", p.getAbstentions());
             ag.put("notes", p.getDebateNotes() == null ? "" : p.getDebateNotes()); // already sanitized XHTML
             ag.put("miscellaneous", p.isMiscellaneous());
+            ag.put("urgent", p.isUrgent());
             agreements.add(ag);
         }
         m.put("agenda", agenda);
         m.put("agreements", agreements);
         return m;
+    }
+
+    private static String quorumSummary(QuorumDto q) {
+        if (!q.applicable()) {
+            return "Virtual session: no deliberative quorum is required. " + q.present() + " of " + q.members()
+                    + " voting members took part in the consultation.";
+        }
+        return q.present() + " of " + q.members() + " voting members present (minimum required: " + q.required()
+                + "). " + (q.reached() ? "The deliberative quorum was verified." : "The quorum was not reached.");
     }
 }
