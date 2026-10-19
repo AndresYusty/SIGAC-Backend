@@ -28,6 +28,15 @@ class HtmlSanitizerTest {
     }
 
     @Test
+    void stylesAcceptQuotedDataUrisOnly() {
+        String html = "<html><head><style>@page { background-image: url('data:image/png;base64,AAAA'); }</style>"
+                + "<style>p { background: url('http://evil/a.png'); }</style></head><body><p>ok</p></body></html>";
+        String clean = HtmlSanitizer.sanitizeDocument(html);
+        assertTrue(clean.contains("data:image/png"));
+        assertFalse(clean.contains("evil"));
+    }
+
+    @Test
     void signatureBlockEscapesContent() {
         String out = HtmlSanitizer.appendSignatureBlock("<html><body><p>minutes</p></body></html>", List.of("Signed by: <b>x</b> & y"));
         assertTrue(out.contains("&lt;b&gt;x&lt;/b&gt; &amp; y"));

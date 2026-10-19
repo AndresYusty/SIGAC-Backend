@@ -19,7 +19,7 @@ public final class HtmlSanitizer {
 
     private static final String FORBIDDEN_TAGS =
             "script,iframe,object,embed,link,base,form,input,button,textarea,select,applet,frame,frameset";
-    private static final Pattern CSS_EXTERNAL_URL = Pattern.compile("(?i)url\\(\\s*['\"]?\\s*(?!data:)");
+    private static final Pattern CSS_EXTERNAL_URL = Pattern.compile("(?i)url\\(\\s*(?!['\"]?\\s*data:)");
     private static final Pattern CSS_IMPORT = Pattern.compile("(?i)@import|expression\\(");
 
     private HtmlSanitizer() {
