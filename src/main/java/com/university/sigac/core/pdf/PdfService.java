@@ -1,6 +1,7 @@
 package com.university.sigac.core.pdf;
 
 import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder;
+import com.openhtmltopdf.outputdevice.helper.BaseRendererBuilder.FontStyle;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.university.sigac.core.exception.ApiException;
 import java.awt.color.ColorSpace;
@@ -61,8 +62,19 @@ public class PdfService {
                     "DejaVu Sans", 400, BaseRendererBuilder.FontStyle.NORMAL, true);
             b.useFont(() -> PdfService.class.getResourceAsStream("/fonts/DejaVuSans-Bold.ttf"),
                     "DejaVu Sans", 700, BaseRendererBuilder.FontStyle.NORMAL, true);
-            useWindowsFont(b, "C:/Windows/Fonts/times.ttf", "Times New Roman", 400);
-            useWindowsFont(b, "C:/Windows/Fonts/timesbd.ttf", "Times New Roman", 700);
+            useSystemFont(b, "Times New Roman", 400, FontStyle.NORMAL, "C:/Windows/Fonts/times.ttf",
+                    "/System/Library/Fonts/Supplemental/Times New Roman.ttf");
+            useSystemFont(b, "Times New Roman", 700, FontStyle.NORMAL, "C:/Windows/Fonts/timesbd.ttf",
+                    "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf");
+            useSystemFont(b, "Arial", 400, FontStyle.NORMAL, "C:/Windows/Fonts/arial.ttf",
+                    "/System/Library/Fonts/Supplemental/Arial.ttf", "/usr/share/fonts/truetype/msttcorefonts/Arial.ttf");
+            useSystemFont(b, "Arial", 700, FontStyle.NORMAL, "C:/Windows/Fonts/arialbd.ttf",
+                    "/System/Library/Fonts/Supplemental/Arial Bold.ttf", "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf");
+            useSystemFont(b, "Arial", 400, FontStyle.ITALIC, "C:/Windows/Fonts/ariali.ttf",
+                    "/System/Library/Fonts/Supplemental/Arial Italic.ttf", "/usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf");
+            useSystemFont(b, "Arial", 700, FontStyle.ITALIC, "C:/Windows/Fonts/arialbi.ttf",
+                    "/System/Library/Fonts/Supplemental/Arial Bold Italic.ttf",
+                    "/usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf");
             b.withProducer("SIGAC");
             b.withHtmlContent(xhtml, null);
             b.toStream(out);
@@ -75,18 +87,24 @@ public class PdfService {
         }
     }
 
-    /** Times New Roman matches the institutional Word sheets. DejaVu remains the fallback. */
-    private static void useWindowsFont(PdfRendererBuilder builder, String file, String family, int weight) {
-        Path path = Path.of(file);
-        if (!Files.exists(path)) {
-            return;
-        }
-        builder.useFont(() -> {
-            try {
-                return Files.newInputStream(path);
-            } catch (IOException e) {
-                throw new IllegalStateException("Could not read " + path, e);
+    /**
+     * Times New Roman and Arial match the institutional Word sheets; they are taken from the operating system
+     * (Windows, macOS or Linux with msttcorefonts). DejaVu remains the fallback.
+     */
+    private static void useSystemFont(PdfRendererBuilder builder, String family, int weight, FontStyle style,
+                                      String... candidates) {
+        for (String file : candidates) {
+            Path path = Path.of(file);
+            if (Files.exists(path)) {
+                builder.useFont(() -> {
+                    try {
+                        return Files.newInputStream(path);
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Could not read " + path, e);
+                    }
+                }, family, weight, style, true);
+                return;
             }
-        }, family, weight, BaseRendererBuilder.FontStyle.NORMAL, true);
+        }
     }
 }

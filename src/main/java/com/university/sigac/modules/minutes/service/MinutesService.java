@@ -56,6 +56,7 @@ public class MinutesService {
     private final TemplateService templates;
     private final MinutesModelBuilder modelBuilder;
     private final PdfService pdf;
+    private final Letterhead letterhead;
     private final SequenceService sequences;
     private final StorageService storage;
     private final ClientIpResolver ipResolver;
@@ -86,7 +87,7 @@ public class MinutesService {
         long number = sequences.next("MIN-" + code + "-" + date.getYear());
         String serialNumber = String.format("MIN-%s-%d-%03d", code, date.getYear(), number);
 
-        String html = pdf.render(Letterhead.embed(template.getContent()), modelBuilder.build(s, serialNumber));
+        String html = pdf.render(letterhead.embed(template.getContent()), modelBuilder.build(s, serialNumber));
         html = HtmlSanitizer.sanitizeDocument(html);
         pdf.generatePdfA(html); // checks right away that the document can be compiled to PDF/A
 

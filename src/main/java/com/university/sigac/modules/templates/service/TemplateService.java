@@ -37,6 +37,7 @@ public class TemplateService {
     private final HierarchyService hierarchy;
     private final TemplateValidator validator;
     private final PdfService pdf;
+    private final Letterhead letterhead;
     private final AuditService audit;
 
     @Transactional(readOnly = true)
@@ -99,7 +100,7 @@ public class TemplateService {
     /** RF-12: renders with sample data and returns the PDF/A, without saving anything. */
     public byte[] preview(String content) {
         requireValid(content);
-        String html = pdf.render(Letterhead.embed(content), MockDataFactory.create());
+        String html = pdf.render(letterhead.embed(content), MockDataFactory.create());
         return pdf.generatePdfA(HtmlSanitizer.sanitizeDocument(html));
     }
 
