@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${title}">Acuerdo</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 2.5cm 3cm 2.8cm 3cm;
+      background-image: url('letterhead:usco');
+      background-size: 21.59cm 27.94cm;
+      background-repeat: no-repeat;
+    }
+    * { font-family: 'Arial', 'DejaVu Sans', sans-serif; }
+    body { font-size: 12pt; color: #000000; line-height: 1.15; }
+    .head { text-align: center; margin: 0; }
+    h1 { font-size: 14pt; text-align: center; margin: 0; }
+    .date { font-weight: bold; }
+    .subject { margin: 0 0 14pt 0; }
+    .authority { font-weight: bold; }
+    .legal { margin: 0 0 14pt 0; }
+    h2 { font-size: 12pt; text-align: center; margin: 0 0 14pt 0; }
+    p { text-align: justify; margin: 0 0 14pt 0; }
+    table.data { width: 100%; border-collapse: collapse; margin: 0 0 14pt 0; }
+    table.data th, table.data td { border: 0.5pt solid #000000; padding: 2pt 4pt; font-size: 10pt; text-align: center; }
+    table.data th { font-weight: bold; }
+    .closing { text-align: center; font-weight: bold; margin: 0 0 14pt 0; }
+    table.signs { width: 100%; border-collapse: collapse; margin-top: 50pt; page-break-inside: avoid; }
+    table.signs td { width: 50%; text-align: center; vertical-align: top; }
+    .missing { background: #fff2a8; color: #7a5b00; }
+  </style>
+</head>
+<body>
+  <h1 th:text="${title}">ACUERDO No. 028 DE 2026</h1>
+  <p class="head date" th:text="${dateLine}">(27 DE ENERO)</p>
+  <p class="head subject">“<span th:utext="${subject}">Epígrafe</span>”</p>
+
+  <p class="head authority" th:utext="${councilTitle}">EL CONSEJO DE FACULTAD DE INGENIERIA</p>
+  <p class="head legal" th:utext="${legalBasis}">En uso de sus facultades legales y,</p>
+
+  <h2>CONSIDERANDO:</h2>
+  <th:block th:each="block : ${recitals}">
+    <p th:if="${block.type != 'table'}" th:utext="${block.html}">Que...</p>
+    <table class="data" th:if="${block.type == 'table'}">
+      <tr><th th:each="c : ${block.columns}" th:utext="${c}">CODIGO</th></tr>
+      <tr th:each="row : ${block.rows}"><td th:each="cell : ${row}" th:utext="${cell}">valor</td></tr>
+    </table>
+  </th:block>
+
+  <h2>ACUERDA:</h2>
+  <th:block th:each="block : ${articles}">
+    <p th:if="${block.type == 'article'}"><strong th:text="'ARTÍCULO ' + ${block.number} + '°.'">ARTÍCULO 1°.</strong> <span th:utext="${block.html}">Texto</span></p>
+    <p th:if="${block.type == 'paragraph'}" th:utext="${block.html}">Parágrafo</p>
+    <table class="data" th:if="${block.type == 'table'}">
+      <tr><th th:each="c : ${block.columns}" th:utext="${c}">CODIGO</th></tr>
+      <tr th:each="row : ${block.rows}"><td th:each="cell : ${row}" th:utext="${cell}">valor</td></tr>
+    </table>
+  </th:block>
+
+  <p class="closing" th:utext="${closing}">COMUNÍQUESE Y CÚMPLASE</p>
+  <p th:text="${issuedOn}">Dado en Neiva.</p>
+
+  <table class="signs">
+    <tr>
+      <td><strong th:text="${presidentName}">PRESIDENTE</strong><br/>Presidente</td>
+      <td><strong th:text="${secretaryName}">SECRETARIA</strong><br/>Secretaria.</td>
+    </tr>
+  </table>
+</body>
+</html>

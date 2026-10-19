@@ -35,7 +35,8 @@ class ModularArchitectureTest {
             "requests", Set.of("users", "notifications"),
             "session", Set.of("requests", "users"),
             "minutes", Set.of("session", "requests", "templates", "users", "notifications"),
-            "repository", Set.of("minutes", "session", "requests", "users", "notifications"));
+            "repository", Set.of("minutes", "session", "requests", "users", "notifications"),
+            "agreements", Set.of("users"));
 
     private static final JavaClasses CLASSES = new ClassFileImporter()
             .withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)

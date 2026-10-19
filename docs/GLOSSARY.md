@@ -37,6 +37,12 @@ Modular monolith packages (see README): `core.*`, `config`, `modules.users`, `mo
 | Repositorio        | repository                    |
 | Auditoría          | audit                         |
 | Usuario            | User                          |
+| Acuerdo            | Agreement                     |
+| Tipo de acuerdo    | AgreementType / typeCode      |
+| Considerando       | recitals                      |
+| Artículos (acuerda)| articles                      |
+| Epígrafe           | subject                       |
+| Hoja membreteada   | letterhead sheet              |
 
 ## Enums (persisted as strings)
 
@@ -70,6 +76,7 @@ Modular monolith packages (see README): `core.*`, `config`, `modules.users`, `mo
 | `RequestHistory`  | `request_history`      | request→`request_id`, previousStatus, newStatus, reason, userName, occurredAt                                                                                                                                                                                                         |
 | `Parameter`       | `parameters`           | paramKey (PK), paramValue, description                                                                                                                                                                                                                                                  |
 | `PasswordResetToken` | `password_reset_tokens` | user→`user_id`, tokenHash, expiresAt, used                                                                                                                                                                                                                                           |
+| `Agreement`       | `agreements`           | faculty→`faculty_id`, typeCode, number, year→`agreement_year`, issueDate, subject, councilTitle, legalBasis, closing, presidentName, secretaryName, content (JSON `{values, recitals, articles}`), createdBy, createdAt, updatedAt (unique faculty_id+agreement_year+number) |
 | `MinutesTemplate` | `minutes_templates`    | name, councilType→`council_type_id`, faculty→`faculty_id`, version, content, active, comment, createdBy, createdAt                                                                                                                                                                    |
 | `AgendaItem`      | `agenda_items`         | session→`session_id`, position, title, description, request→`request_id`, miscellaneous, urgent, outcome, votesFor, votesAgainst, abstentions, decidedBy, debateNotes                                                                                                                        |
 | `Session`         | `sessions`             | councilType→`council_type_id`, faculty→`faculty_id`, scheduledAt, location (null if virtual), status, agendaClosed, actualStart, actualEnd, items, guests, createdAt                                                                                                                                          |
@@ -85,9 +92,9 @@ Code formats: minutes serial number `MIN-<councilCode>-<year>-<nnn>` (counter ke
 request code `REQ-<year>-<nnnnnn>` (counter key `REQ-<year>`). Global parameter key: `quorum.percentage`.
 Storage folders: `minutes/…`, `requests/…`.
 
-Audit entity names: `MINUTES`, `SESSION`, `AGENDA_ITEM`, `TEMPLATE`, `REQUEST`, `ATTACHMENT`, `USER`.
+Audit entity names: `MINUTES`, `SESSION`, `AGENDA_ITEM`, `TEMPLATE`, `REQUEST`, `ATTACHMENT`, `USER`, `AGREEMENT`.
 Audit events: `EVENT_MINUTES_COMPILED`, `EVENT_MINUTES_EDITED`, `EVENT_MINUTES_SENT_TO_SIGN`,
-`EVENT_MINUTES_REJECTED`, `EVENT_MINUTES_SIGNED`, `EVENT_AGENDA_ITEM_ADDED`, `EVENT_MISC_ITEM_ADDED`, `EVENT_URGENT_ITEM_ADDED`, `EVENT_SESSION_GUEST_ADDED`;
+`EVENT_MINUTES_REJECTED`, `EVENT_MINUTES_SIGNED`, `EVENT_AGREEMENT_CREATED`, `EVENT_AGREEMENT_EDITED`, `EVENT_AGENDA_ITEM_ADDED`, `EVENT_MISC_ITEM_ADDED`, `EVENT_URGENT_ITEM_ADDED`, `EVENT_SESSION_GUEST_ADDED`;
 all other existing `EVENT_*` names keep their current (already English) value.
 
 ## REST endpoints
@@ -119,6 +126,12 @@ Live session (`/sessions/{sessionId}`): `GET|PUT /attendance`, `POST /start`, `P
 
 Minutes (`/minutes`): `POST /session/{sessionId}`, `GET ?status&page&size`, `GET /{id}`, `GET /{id}/preview` (PDF),
 `PUT /{id}/content`, `POST /{id}/send-to-signature`, `POST /{id}/reject`, `POST /{id}/approve-and-sign`.
+
+Agreements (`/agreements`): `GET /types`, `GET /defaults`, `GET ?year&typeCode&text&page&size`, `GET /{id}`, `POST`,
+`PUT /{id}`, `POST /preview` (PDF), `GET /{id}/pdf?inline=false`.
+
+Letterhead (`/letterhead`): `GET` (`{customSheet, logo}`), `GET /sheet`, `GET /logo`, `PUT /sheet` and `PUT /logo`
+(multipart `file`, PNG/JPG up to 5 MB, ADMIN), `DELETE /sheet`, `DELETE /logo` (ADMIN).
 
 Repository & audit: `GET /repository/minutes?serialNumber&councilTypeId&from&to&campusId&facultyId&text&page&size`,
 `GET /repository/minutes/{id}/verify`, `GET /repository/minutes/{id}/viewer` (PDF),
@@ -176,13 +189,13 @@ Error body: `ApiError{timestamp,status,error,message,path,details[]}`. Error mes
 
 ## Frontend conventions
 
-Modules mirror the backend: `src/app/modules/{users,templates,requests,session,minutes,repository}`, each
+Modules mirror the backend: `src/app/modules/{users,templates,requests,session,minutes,agreements,repository}`, each
 with `<module>.api.ts` (`UsersApi`, `TemplatesApi`, `RequestsApi`, `LiveSessionApi`, `MinutesApi`,
 `RepositoryApi`), `<module>.models.ts`, `<module>.routes.ts`, `index.ts` and `pages/`.
 
 Routes: `/login`, `/forgot-password`, `/reset-password`, `/dashboard`, `/requests`, `/requests/new`,
 `/requests/:id`, `/requests/:id/edit`, `/sessions`, `/sessions/new`, `/sessions/:id`, `/sessions/:id/live`,
-`/minutes`, `/minutes/:id`, `/repository`, `/users`, `/hierarchy`, `/settings`, `/templates`, `/audit`, `/profile`.
+`/minutes`, `/minutes/:id`, `/agreements`, `/agreements/new`, `/agreements/:id`, `/repository`, `/users`, `/hierarchy`, `/settings`, `/templates`, `/audit`, `/profile`.
 
 UI text lives in `src/app/i18n/en.json` and `src/app/i18n/es.json` (same keys), served by `I18nService`
 and the `t` pipe; the language switch (EN/ES) is in the top bar and on the login screen, persisted in
@@ -200,7 +213,9 @@ Demo hierarchy/catalog names are proper nouns and may stay as institution names
 - JWT claims: `uid`, `name` (was `nombre`), `roles`, `fac`, `prog`.
 - Notice template variables (`/sigac/templates/notice.html`): `university`, `campus`, `faculty`, `councilType`,
   `sessionDate`, `sessionTime`, `location`, `agenda` (items `{number,title,description,urgent}`), `guests`, `hasGuests`.
-- Classpath templates: `/sigac/templates/minutes-default.html`, `/sigac/templates/notice.html`.
+- Classpath templates: `/sigac/templates/minutes-default.html`, `/sigac/templates/notice.html`,
+  `/sigac/templates/agreement.html`; agreement types in `/sigac/agreements/types.json`.
+- Storage folder `branding/` (`sheet`, `logo`): letterhead uploaded by the administrator.
 - Storage folder `notices/<sessionId>/notice.pdf` (was `citaciones/…`).
 - Password reset email link: `<frontendUrl>/reset-password?token=<token>`.
 - `AttendeeDto.role` is a `RoleName` (`ROLE_PRESIDENT` / `ROLE_COUNCIL_MEMBER`); template `attendees[].role` labels: `President`, `Council member`.

@@ -1,0 +1,3059 @@
+[
+  {
+    "code": "CREDIT_ADDITION",
+    "name": "Adición de créditos",
+    "nameEn": "Credit addition",
+    "subject": "Por medio del cual se resuelve una solicitud de adición de créditos académicos",
+    "legalBasis": "En uso de sus facultades legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-1"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código estudiantil",
+        "labelEn": "Student code",
+        "example": "20221204587"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "ANDRÉS FELIPE TRUJILLO CHARRY"
+      },
+      {
+        "key": "credits",
+        "label": "Créditos adicionales",
+        "labelEn": "Additional credits",
+        "example": "2"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "TEC. OBRAS CIVILES"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "27 de enero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "002 C.V."
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo Superior de las Universidad Surcolombiana mediante Acuerdo No. 046 del 14 de diciembre de 2012 modificó el Acuerdo No. 027 de 2011;"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en ese sentido, el parágrafo 2° del artículo 1° del Acuerdo 046 de 2012, establece que el número máximo de créditos que puede registrar el estudiante en un periodo académico será hasta veinte (20), sin embargo, los estudiantes podrán solicitar ante el Consejo de Facultad respectivo, en única instancia, cursar hasta veinticuatro (24) créditos en un periodo académico."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante relacionado a continuación, solicitó ampliación de créditos académicos para el periodo {{period}}"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO",
+          "ESTUDIANTE",
+          "CRED.",
+          "PROGRAMA"
+        ],
+        "rows": [
+          [
+            "{{studentCode}}",
+            "{{studentName}}",
+            "{{credits}}",
+            "{{program}}"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}} en consulta virtual del día {{sessionDate}}, según Acta No. {{minutesNumber}} de la misma fecha, luego de analizar la solicitud presentad y consultar la ficha académica del estudiante, resolvió dar APROBACION."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR** con fundamento en lo expuesto en la parte motiva, la solicitud de {{credits}} crédito adicional a los 20 permitidos, según lo establecido en el artículo 1° del Acuerdo 027 de 2011, modificado por el artículo 2° del Acuerdo 046 de 2012, para el periodo {{period}} al estudiante relacionado a continuación."
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO",
+          "ESTUDIANTE",
+          "CRED.",
+          "PROGRAMA"
+        ],
+        "rows": [
+          [
+            "{{studentCode}}",
+            "{{studentName}}",
+            "{{credits}}",
+            "{{program}}"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Notificar el contenido del presente Acto Administrativo al estudiante relacionado en el artículo primero, informándole que contra el mismo proceden los recursos de Reposición y Apelación, los cuales deberán ser presentados por escrito ante el Consejo de Facultad de {{facultyName}} dentro de los diez (10) días hábiles siguientes, contados a partir del día hábil siguiente a la fecha de su notificación."
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente Acto Administrativo a la Oficina de Registro y Control Académico, para su conocimiento y trámite respectivo."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "READMISSION",
+    "name": "Reingreso",
+    "nameEn": "Readmission",
+    "subject": "Por medio del cual se resuelve una solicitud de reingreso",
+    "legalBasis": "En uso de sus atribuciones legales y",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "memoNumber",
+        "label": "Número del memorando",
+        "labelEn": "Memo number",
+        "example": "012"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-1"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "MARÍA JOSÉ CASTRO VARGAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código estudiantil",
+        "labelEn": "Student code",
+        "example": "20221204587"
+      },
+      {
+        "key": "recessPeriod",
+        "label": "Periodo desde el que está en receso",
+        "labelEn": "Period since recess",
+        "example": "2024-1"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "20 de enero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "001"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que los reingresos se encuentran regulados en el artículo 13 del Acuerdo No. 049 de 2004, por el cual se expide el Manual de Convivencia Estudiantil de Pregrado de la Universidad Surcolombiana, el cual dispone: “El aspirante a reingreso es aquel estudiante en receso que habiendo estado matriculado en algún programa de pregrado en la Universidad, desea recuperar su condición de activo, para lo cual el estudiante deberá presentar solicitud escrita al respectivo jefe de Programa, quien deberá comunicar la decisión al Consejo de Programa correspondiente(…)”."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que mediante el memorando No.{{memoNumber}}, el jefe de programa de {{program}}, remite la solicitud de reingreso para el periodo {{period}} de la estudiante {{studentName}} código {{studentCode}}, quien anexó el formato MI-FOR-FO-28 debidamente diligenciado, por hallarse en receso desde la terminación del semestre {{recessPeriod}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}} en sesión ordinaria de fecha {{sessionDate}}, según consta en Acta No. {{minutesNumber}}, decidió APROBAR la solicitud de reingreso para el periodo **{{period}}**"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR** el reingreso al programa de {{program}} a la estudiante {{studentName}} código {{studentCode}}, por encontrar que cumple los requisitos exigidos en la normatividad vigente."
+      },
+      {
+        "type": "article",
+        "text": "**COMUNICAR** y enviar copia del presente Acuerdo al Centro de Admisiones Registro y Control Académico y a la Oficina de Liquidación de Derechos Pecuniarios para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "**NOTIFICAR** el contenido del presente Acuerdo a la estudiante {{studentName}} código {{studentCode}}, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra el presente Acuerdo proceden los recursos de reposición y apelación los cuales deberán interponerse por escrito ante el Consejo de Facultad de {{facultyName}} dentro de los diez (10) días hábiles siguientes al de la notificación del mismo."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "READMISSION_APPEAL",
+    "name": "Reingreso por apelación al Acuerdo 046",
+    "nameEn": "Readmission by appeal (Agreement 046)",
+    "subject": "Por medio del cual se resuelve una solicitud de reingreso por apelación al 046",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CRISTIAN DAVID MOTTA SALAZAR"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código estudiantil",
+        "labelEn": "Student code",
+        "example": "20221204587"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "lossPeriod",
+        "label": "Periodo de pérdida del cupo",
+        "labelEn": "Period when place was lost",
+        "example": "2025-2"
+      },
+      {
+        "key": "commitmentDate",
+        "label": "Fecha del acta de compromiso",
+        "labelEn": "Commitment record date",
+        "example": "14 de enero de 2026"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-1"
+      },
+      {
+        "key": "courseCode",
+        "label": "Código del curso",
+        "labelEn": "Course code",
+        "example": "BEINCIV019"
+      },
+      {
+        "key": "courseName",
+        "label": "Nombre del curso",
+        "labelEn": "Course name",
+        "example": "HIDRÁULICA DE CANALES"
+      },
+      {
+        "key": "credits",
+        "label": "Créditos",
+        "labelEn": "Credits",
+        "example": "3"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "20 de enero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "001"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante {{studentName}} con código {{studentCode}}, perteneciente al programa de {{program}}, perdió el cupo por aplicación del acuerdo No. 046 de 2012 en el periodo {{lossPeriod}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante mencionado solicitó al programa elevar la petición de aprobación de continuidad de pregrado, ante el consejo de facultad con el fin de culminar sus estudios, acogiéndose a lo dispuesto en el Parágrafo 1º del artículo 4 del acuerdo 046 de 2012, que señala lo siguiente:"
+      },
+      {
+        "type": "paragraph",
+        "text": "“**PARAGRAFO 1º**. Los estudiantes que pierdan el cupo en un programa Académico y hayan cursado como mínimo el 70% de los créditos académicos programados en el mismo, podrán apelar ante el Consejo de Facultad su posibilidad de continuar estudiando, organismo que definirá en última instancia la continuidad o no del estudiante previa reglamentación expedida por el Consejo Académico”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de facultad encontró probado que el estudiante cumple con el requisito dispuesto en el Parágrafo 1º del artículo 4 del Acuerdo 046 de 2012, pues cuenta con más del 70% de los créditos académicos cursados."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el artículo 3 del Acuerdo No. 013 de 2013, dispone:"
+      },
+      {
+        "type": "paragraph",
+        "text": "**ARTÍCULO 3°.** El Consejo de Facultad podrá aprobar las apelaciones previo el cumplimiento de los siguientes requisitos:"
+      },
+      {
+        "type": "paragraph",
+        "text": "• El apelante deberá suscribir con el acompañamiento del Consejero o del Jefe de Programa un Acta donde exprese su compromiso de superar las dificultades académicas, su continuidad en el Programa y su interés de obtener el título que le confiere el correspondiente Programa Académico"
+      },
+      {
+        "type": "paragraph",
+        "text": "• El apelante deberá comprometerse a suscribir un Plan de Mejoramiento junto con su Consejero o Jefe de Programa donde se establezca el número de créditos a registrar en el periodo académico siguiente, las actividades complementarias a los cursos con o sin el acompañamiento de docente o funcionario de Bienestar Universitario y el calendario de presentación de avances ante el Jefe de Programa. El Plan de Mejoramiento será evaluado por el estudiante con el Consejero o Jefe de Programa al finalizar el respectivo periodo académico para su ajuste acorde con los avances y desempeño académico.”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que se observa el cumplimiento de los requisitos expuestos, mediante acta de compromiso del {{commitmentDate}}, y plan de mejoramiento suscritos por el estudiante {{studentName}} con código {{studentCode}}, perteneciente al programa de {{program}} y por el jefe de programa."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante se compromete a cumplir con el siguiente plan de mejoramiento"
+      },
+      {
+        "type": "paragraph",
+        "text": "**PERIODO {{period}}**"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CÓDIGO CURSO",
+          "NOMBRE DEL CURSO",
+          "CRÉDITOS"
+        ],
+        "rows": [
+          [
+            "{{courseCode}}",
+            "{{courseName}}",
+            "{{credits}}"
+          ],
+          [
+            "BEINCIV022",
+            "DISEÑO DE ESTRUCTURAS",
+            "3"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}} en sesión ordinaria del día {{sessionDate}} mediante acta No.{{minutesNumber}} de la misma fecha, decidió aprobar la solicitud de Reingreso para que el estudiante pueda culminar su plan de estudios., a partir del periodo académico {{period}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo anterior, el Consejo de Facultad de {{facultyName}}:"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Aprobar, con fundamento en lo expuesto en la parte motiva, la solicitud de Reingreso del estudiante {{studentName}} con código {{studentCode}}, perteneciente al programa de {{program}} a partir del periodo académico {{period}}."
+      },
+      {
+        "type": "article",
+        "text": "Remitir copia del presente Acto Administrativo a la Oficina de Registro y Control y a la oficina de liquidación de derechos pecuniarios, para su conocimiento y fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "Notificar el presente Acuerdo al estudiante mencionado en el artículo primero, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021"
+      },
+      {
+        "type": "article",
+        "text": "Contra el presente acto administrativo no procede recurso alguno."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de expedición."
+      }
+    ]
+  },
+  {
+    "code": "PERIOD_CANCELLATION",
+    "name": "Cancelación de periodo académico",
+    "nameEn": "Academic period cancellation",
+    "subject": "Por medio del cual se resuelve una cancelación de periodo académico {{period}}",
+    "legalBasis": "En uso de sus atribuciones legales y estatutarias establecidas en el Acuerdo No. 049 de 2004 “Manual de Convivencia estudiantil” y,",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CAMILO ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231198452"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-2"
+      },
+      {
+        "key": "reason",
+        "label": "Justificación de la solicitud",
+        "labelEn": "Request justification",
+        "example": "Calamidad doméstica"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "Quince (15) de junio del dos mil veintiséis (2026)"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "011"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Manual de Convivencia Estudiantil de la Universidad Surcolombiana, Acuerdo No. 049 de 2004- establece en su artículo 16 el procedimiento para la cancelación extemporánea de un periodo académico, el cual a su tenor literal expresa:"
+      },
+      {
+        "type": "paragraph",
+        "text": "“El estudiante podrá solicitar cancelación extemporánea del periodo académico al Consejo de Facultad, hasta la última semana de clases del respectivo periodo académico, (…)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante {{studentName}} código {{studentCode}}, perteneciente al programa de {{program}}, presentó solicitud para la cancelación del periodo académico {{period}}, con la debida justificación ({{reason}})."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}} en sesión ordinaria desarrollada el día {{sessionDate}}, según consta en Acta No. {{minutesNumber}} de la misma fecha, al ocuparse de analizar el caso objeto de la solicitud en mención decidió APROBAR la cancelación, por encontrarla debidamente justificada."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}} de la Universidad Surcolombiana,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR,** con fundamento en lo expuesto en la parte motiva, la cancelación extraordinaria de la matrícula académica, correspondiente al periodo {{period}} al estudiante {{studentName}} código {{studentCode}}, perteneciente al programa de {{program}}"
+      },
+      {
+        "type": "article",
+        "text": "Comunicar el contenido del presente Acto Administrativo al estudiante relacionado anteriormente, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra él proceden los recursos de reposición y/o apelación, los cuales deben interponerse de manera escrita ante el Consejo de Facultad dentro de los diez (10) días hábiles siguientes a su notificación."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar y enviar copia del presente Acuerdo al Centro de Admisiones Registro y Control Académico para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "PERIOD_CANCELLATION_DENIED",
+    "name": "Cancelación de periodo negada",
+    "nameEn": "Period cancellation denied",
+    "subject": "Por medio del cual se niega una cancelación extemporánea de periodo {{period}}",
+    "legalBasis": "En uso de sus atribuciones legales y estatutarias establecidas en el Acuerdo No. 049 de 2004 “Manual de Convivencia estudiantil” y,",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-1"
+      },
+      {
+        "key": "academicCalendarAgreement",
+        "label": "Acuerdo del calendario académico",
+        "labelEn": "Academic calendar agreement",
+        "example": "021 de 2025"
+      },
+      {
+        "key": "periodEndDate",
+        "label": "Fecha de finalización del periodo",
+        "labelEn": "Period end date",
+        "example": "30 de mayo de 2026"
+      },
+      {
+        "key": "requestDate",
+        "label": "Fecha de la solicitud",
+        "labelEn": "Request date",
+        "example": "12 de mayo de 2026"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "JUAN SEBASTIÁN MOTTA ARIAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20212201876"
+      },
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería de Software"
+      },
+      {
+        "key": "requestReason",
+        "label": "Motivo alegado por el estudiante",
+        "labelEn": "Reason claimed by the student",
+        "example": "afectación por situaciones familiares y de salud"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "veintisiete (27) de enero del dos mil veintiséis (2026)"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "009"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Manual de Convivencia Estudiantil de la Universidad Surcolombiana, Acuerdo No. 049 de 2004- establece en su artículo 16 el procedimiento para la cancelación extemporánea de un periodo académico, el cual a su tenor literal expresa:"
+      },
+      {
+        "type": "paragraph",
+        "text": "“El estudiante podrá solicitar cancelación extemporánea del periodo académico al Consejo de Facultad, hasta la última semana de clases del respectivo periodo académico, (…)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el acuerdo {{academicCalendarAgreement}}, estableció fecha de finalización del periodo académico {{period}} el {{periodEndDate}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el {{requestDate}} el estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, presentó solicitud para la cancelación extemporánea del periodo académico {{period}}, argumentando {{requestReason}}, pero sin presentar ningún soporte de lo alegado."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que revisado el historial académico del estudiante se encuentra un bajo rendimiento durante el periodo {{period}}, lo que hace presumir que el estudiante intenta evadir la sanción del artículo 16 del acuerdo 049 de 2004"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}} en sesión ordinaria desarrollada el día {{sessionDate}}, según consta en Acta No. {{minutesNumber}} de la misma fecha, al ocuparse de analizar el caso objeto de la solicitud en mención decidió NEGAR la cancelación por encontrar que el estudiante estaría intentando evadir una sanción académica al no presentar una razón de fuerza mayor que le impidiera cancelar el semestre a tiempo."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}} de la Universidad Surcolombiana,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**NO APROBAR**, con fundamento en lo expuesto en la parte motiva, la cancelación extemporánea de la matrícula académica, correspondiente al periodo **{{period}}** al estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, por presumir que el estudiante intenta evadir una sanción académica."
+      },
+      {
+        "type": "article",
+        "text": "**COMUNICAR** el contenido del presente Acto Administrativo al estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra él proceden los recursos de reposición y/o apelación, los cuales deben interponerse de manera escrita ante el Consejo de Facultad dentro de los diez (10) días hábiles siguientes a su notificación."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición"
+      }
+    ]
+  },
+  {
+    "code": "COURSE_CANCELLATION",
+    "name": "Cancelación extraordinaria de curso",
+    "nameEn": "Extraordinary course cancellation",
+    "subject": "Por medio del cual se resuelve una solicitud de cancelación extraordinaria de curso",
+    "legalBasis": "En uso de sus facultades legales y estatutarias establecidas en el Acuerdo No. 049 de 2004 “Manual de Convivencia Estudiantil” y,",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "calendarAgreement",
+        "label": "Acuerdo de calendario académico (número y fecha)",
+        "labelEn": "Academic calendar agreement (number and date)",
+        "example": "021 del 15 de octubre del 2025"
+      },
+      {
+        "key": "cancellationStartDate",
+        "label": "Inicio de cancelaciones extemporáneas",
+        "labelEn": "Late cancellation start date",
+        "example": "03 de agosto"
+      },
+      {
+        "key": "cancellationEndDate",
+        "label": "Fin de cancelaciones extemporáneas",
+        "labelEn": "Late cancellation end date",
+        "example": "11 de septiembre de 2026"
+      },
+      {
+        "key": "requestDate",
+        "label": "Fecha de la solicitud",
+        "labelEn": "Request date",
+        "example": "2 de junio de 2026"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CAMILO ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231198452"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería de Software"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-2"
+      },
+      {
+        "key": "courseName",
+        "label": "Nombre del curso",
+        "labelEn": "Course name",
+        "example": "CÁLCULO INTEGRAL"
+      },
+      {
+        "key": "reason",
+        "label": "Motivo de la solicitud",
+        "labelEn": "Request reason",
+        "example": "a que presentó problemas de salud que le impidieron asistir a clases"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "15 de junio de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "011"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo No. 039 del 26 de octubre de 2011, del Consejo Superior Universitario en su artículo 1° modifica el artículo 15° del Acuerdo 049 de 2004, en el que se establece el procedimiento que debe surtirse para realizar adiciones y cancelaciones de cursos extraordinarios, cuyo parágrafo 2° dice:"
+      },
+      {
+        "type": "paragraph",
+        "text": "“Se autorizarán cancelaciones extraordinarias de curso entre la primera y la sexta semana de clases ante el Consejo de Programa, previo concepto del consejero Académico…”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo No. {{calendarAgreement}} estableció la fecha para cancelación extemporánea de cursos del {{cancellationStartDate}} al {{cancellationEndDate}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el {{requestDate}}, el estudiante {{studentName}} código {{studentCode}}, perteneciente a programa de {{program}}, solicitó estudiar la posibilidad de cancelar extemporáneamente en el periodo {{period}}, el curso {{courseName}} debido {{reason}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el Consejo de Facultad de {{facultyName}} en sesión ordinaria del {{sessionDate}}, según consta en Acta No. {{minutesNumber}} de la misma fecha, al ocuparse de analizar la solicitud en cuestión decidió APROBAR la cancelación del curso {{courseName}} al estudiante mencionado."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}} de la Universidad Surcolombiana,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR,** con fundamento en lo expuesto en la parte motiva, la cancelación extraordinaria del curso {{courseName}} al estudiante {{studentName}} código {{studentCode}}, perteneciente a programa de {{program}}, en el periodo académico **{{period}}**"
+      },
+      {
+        "type": "article",
+        "text": "**NOTIFICAR** el contenido del presente Acuerdo al estudiante relacionado en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra el presente Acto Administrativo proceden los recursos de reposición y apelación, los cuales deberán presentarse por escrito ante el Consejo de Facultad de {{facultyName}} dentro del término de diez (10) días hábiles siguientes al de su notificación."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "DEGREE_MODALITY_CANCELLATION",
+    "name": "Cancelación de modalidad de grado",
+    "nameEn": "Degree modality cancellation",
+    "subject": "Por medio del cual se resuelve una solicitud de cancelación de modalidad de grado",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "memoNumber",
+        "label": "Número del memorando",
+        "labelEn": "Memo number",
+        "example": "014"
+      },
+      {
+        "key": "memoDate",
+        "label": "Fecha del memorando",
+        "labelEn": "Memo date",
+        "example": "20 de mayo de 2026"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Electrónica"
+      },
+      {
+        "key": "programDirectorName",
+        "label": "Jefe de programa",
+        "labelEn": "Program director",
+        "example": "Andrés Felipe Quintero Losada"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CAMILO ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231198452"
+      },
+      {
+        "key": "projectTitle",
+        "label": "Título del trabajo de grado",
+        "labelEn": "Degree project title",
+        "example": "SISTEMA DE MONITOREO DE CALIDAD DEL AIRE CON SENSORES DE BAJO COSTO E INTERNET DE LAS COSAS"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "15 de junio de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "010"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo N°.071 del 26 de mayo de 2023 en su artículo 4° al tratar lo concerniente a “Procedimientos generales” y, más exactamente, en su ítem “Cancelación forzosa de modalidad de grado” en su literal a), fija lo siguiente: “El Consejo de Facultad, a solicitud del Consejo de Programa, podrá cancelar sin reprobación una modalidad de grado por imposibilidad económica, tecnológica o de fuerza mayor para su realización, mediante solicitud escrita y sustentada del Director, en este caso se cancelará la inscripción de la modalidad de grado a los estudiantes sin que afecte el tiempo máximo establecido por la reglamentación para la culminación de la modalidad de grado”."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, mediante memorando No, {{memoNumber}} del {{memoDate}}, el jefe de Programa de {{program}} {{programDirectorName}}, solicitó la cancelación del trabajo de grado aprobado a la estudiante {{studentName}}, código {{studentCode}} denominado “{{projectTitle}}”."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad en sesión ordinaria del {{sessionDate}}, según Acta No.{{minutesNumber}} de la misma fecha, estudió la solicitud de cancelación de modalidad de grado de la estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}} y por unanimidad decidió CANCELAR sin reprobación la referida modalidad."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**CANCELAR** sin reprobación la modalidad de grado de la estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar el contenido del presente Acto Administrativo a la estudiante relacionada en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra el presente acuerdo proceden los recursos de reposición y apelación, los cuales deberán presentarse por escrito ante el Consejo de Facultad de {{facultyName}} dentro del término de 10 días hábiles siguientes al de su notificación."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar y enviar copia del presente Acuerdo al programa de {{program}}, para su conocimiento y trámite respectivo."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acto Administrativo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "HOMOLOGATION",
+    "name": "Homologación de asignaturas",
+    "nameEn": "Course homologation",
+    "subject": "Por medio del cual se aprueba la homologación de asignaturas a un estudiante de la Facultad de {{facultyName}}",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE, PUBLÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "ANDRÉS FELIPE ROJAS MORENO"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231215874"
+      },
+      {
+        "key": "originProgram",
+        "label": "Programa de origen",
+        "labelEn": "Origin program",
+        "example": "INGENIERIA DE PETROLEOS"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "16 de febrero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "003"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-1"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el programa de {{program}} presentó el estudio realizado a la solicitud de homologación del estudiante {{studentName}}, código {{studentCode}}, sometiéndolo a consideración del Consejo de Facultad."
+      },
+      {
+        "type": "table",
+        "columns": [
+          "ASIGNATURA",
+          "NOTA",
+          "ASIGNATURA",
+          "NOTA"
+        ],
+        "rows": [
+          [
+            "{{originProgram}}- USCO",
+            "",
+            "{{program}} -USCO",
+            ""
+          ],
+          [
+            "ELECTIVA DE CIENCIAS BASICAS (ESTADISTICA APLICADA)",
+            "3.8",
+            "ELECTIVA DE CIENCIAS BASICAS (ESTADISTICA APLICADA)",
+            "3.8"
+          ],
+          [
+            "ELECTIVA SOCIO HUMANISTICA (ETICA PROFESIONAL)",
+            "4.1",
+            "ELECTIVA SOCIO HUMANISTICA I (ETICA PROFESIONAL)",
+            "4.1"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el Consejo de Facultad en sesión ordinaria del {{sessionDate}}, según acta No.{{minutesNumber}} de la misma fecha, decidió autorizar la homologación al estudiante mencionado."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo anterior, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**AUTORIZAR** la HOMOLOGACIÓN de asignaturas al estudiante {{studentName}}, código {{studentCode}} perteneciente al programa de {{program}} en el periodo **{{period}}** como se detalla a continuación:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "ASIGNATURA",
+          "NOTA",
+          "ASIGNATURA",
+          "NOTA"
+        ],
+        "rows": [
+          [
+            "{{originProgram}}- USCO",
+            "",
+            "{{program}} -USCO",
+            ""
+          ],
+          [
+            "ELECTIVA DE CIENCIAS BASICAS (ESTADISTICA APLICADA)",
+            "3.8",
+            "ELECTIVA DE CIENCIAS BASICAS (ESTADISTICA APLICADA)",
+            "3.8"
+          ],
+          [
+            "ELECTIVA SOCIO HUMANISTICA (ETICA PROFESIONAL)",
+            "4.1",
+            "ELECTIVA SOCIO HUMANISTICA I (ETICA PROFESIONAL)",
+            "4.1"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Declarar que las asignaturas y su respectiva calificación corresponden al original de la ficha académica de la Universidad Surcolombiana."
+      },
+      {
+        "type": "article",
+        "text": "Remitir copia del presente Acuerdo al Centro de Admisiones, Registro y Control Académico y al programa de {{program}} para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "**NOTIFICAR** el contenido del presente Acuerdo al estudiante relacionado en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra él proceden los recursos de reposición y/o apelación, los cuales deberán presentarse ante el Consejo de Facultad de {{facultyName}}, dentro del término de 10 días hábiles siguientes al de la notificación."
+      },
+      {
+        "type": "article",
+        "text": "**CANCELAR** en la plataforma los cursos homologados al estudiante relacionado, si estos se encuentran matriculados."
+      },
+      {
+        "type": "article",
+        "text": "Este Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "GRADE_TRANSFER",
+    "name": "Traslado de notas",
+    "nameEn": "Grade transfer",
+    "subject": "Por medio del cual se aprueba el traslado de notas a un estudiante de la Facultad de {{facultyName}}",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE, PUBLÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "SEBASTIÁN CAMILO TRUJILLO PENAGOS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231215874"
+      },
+      {
+        "key": "originProgram",
+        "label": "Programa(s) de origen",
+        "labelEn": "Origin program(s)",
+        "example": "TECNOLOGIA EN OBRAS CIVILES"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "03 de febrero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "002"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el programa de {{program}} presentó el estudio realizado a la solicitud de traslado de notas del estudiante {{studentName}}, código {{studentCode}}, sometiéndolo a consideración del Consejo de Facultad."
+      },
+      {
+        "type": "table",
+        "columns": [
+          "ASIGNATURA",
+          "NOTA",
+          "ASIGNATURA"
+        ],
+        "rows": [
+          [
+            "{{originProgram}}",
+            "",
+            "{{program}}"
+          ],
+          [
+            "CALCULO DIFERENCIAL",
+            "3.7",
+            "CALCULO DIFERENCIAL"
+          ],
+          [
+            "FISICA MECANICA",
+            "4.0",
+            "FISICA MECANICA"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el Consejo de Facultad en sesión ordinaria del {{sessionDate}}, según acta No.{{minutesNumber}} de la misma fecha, decidió autorizar el traslado de notas al estudiante mencionado."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo anterior, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**AUTORIZAR** el traslado de notas al estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, como se detalla a continuación:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "ASIGNATURA",
+          "NOTA",
+          "ASIGNATURA"
+        ],
+        "rows": [
+          [
+            "{{originProgram}}",
+            "",
+            "{{program}}"
+          ],
+          [
+            "CALCULO DIFERENCIAL",
+            "3.7",
+            "CALCULO DIFERENCIAL"
+          ],
+          [
+            "FISICA MECANICA",
+            "4.0",
+            "FISICA MECANICA"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Declarar que las asignaturas y su respectiva calificación corresponden al original de la ficha académica de la Universidad Surcolombiana."
+      },
+      {
+        "type": "article",
+        "text": "Remitir copia del presente Acuerdo al Centro de Admisiones, Registro y Control Académico y al Programa de {{program}}, para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "**NOTIFICAR** el contenido del presente Acuerdo al estudiante relacionado en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra él proceden los recursos de reposición y/o apelación, los cuales deberán presentarse ante el Consejo de Facultad de {{facultyName}}, dentro del término de 10 días hábiles siguientes al de la notificación."
+      },
+      {
+        "type": "article",
+        "text": "Este Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "GRADE_CORRECTION",
+    "name": "Corrección de nota",
+    "nameEn": "Grade correction",
+    "subject": "Por medio del cual se aprueba la corrección de una nota",
+    "legalBasis": "En uso de sus atribuciones legales y estatutarias establecidas en el Acuerdo No. 049 de 2004 “Manual de Convivencia estudiantil” y,",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "professorName",
+        "label": "Nombre del docente",
+        "labelEn": "Professor name",
+        "example": "CARLOS ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "courseName",
+        "label": "Nombre del curso",
+        "labelEn": "Course name",
+        "example": "ESTÁTICA"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2025-2"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "LAURA MARCELA GÓMEZ RUIZ"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231215874"
+      },
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "correctionReason",
+        "label": "Motivo de la corrección",
+        "labelEn": "Correction reason",
+        "example": "quien había presentado el parcial final y este no fue registrado en la plataforma, por lo cual no se tuvo en cuenta para la calificación"
+      },
+      {
+        "key": "grade",
+        "label": "Nota corregida",
+        "labelEn": "Corrected grade",
+        "example": "3.5"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "veintisiete (27) de enero del dos mil veintiséis (2026)"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "003"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el docente {{professorName}} solicitó la corrección de nota definitiva del curso {{courseName}} en el periodo {{period}} a la estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, {{correctionReason}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "El docente al notar el error solicitó corrección de la nota a la estudiante, informando que la nota real debe ser **{{grade}}**"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}} en sesión ordinaria desarrollada el día {{sessionDate}}, según consta en Acta No. {{minutesNumber}} de la misma fecha, al ocuparse de analizar el caso objeto de la solicitud en mención decidió APROBAR la corrección de nota, por ajustarse a lo establecido en la normatividad."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}} de la Universidad Surcolombiana,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR**, con fundamento en lo expuesto en la parte motiva, la corrección de la nota definitiva del curso {{courseName}}, en el periodo {{period}} a la estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, por estar justificada y ajustarse a lo establecido en la normatividad, siendo la nota real **{{grade}}**"
+      },
+      {
+        "type": "article",
+        "text": "**CANCELAR** en la plataforma el curso {{courseName}} a la estudiante si este se encuentra matriculado"
+      },
+      {
+        "type": "article",
+        "text": "Comunicar el contenido del presente Acto Administrativo a la estudiante relacionada anteriormente, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra él proceden los recursos de reposición y/o apelación, los cuales deben interponerse de manera escrita ante el Consejo de Facultad dentro de los diez (10) días hábiles siguientes a su notificación."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar y enviar copia del presente Acuerdo al Centro de Admisiones, Registro y Control Académico para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "VALIDATION",
+    "name": "Validación de cursos",
+    "nameEn": "Course validation",
+    "subject": "Por medio del cual se autoriza una Validación",
+    "legalBasis": "En uso de sus atribuciones Legales y Estatuarias, y en especial las establecidas en el Manual de Convivencia y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería Agroindustrial"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20211197623"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "MARÍA FERNANDA OSORIO TRUJILLO"
+      },
+      {
+        "key": "courseName",
+        "label": "Curso a validar",
+        "labelEn": "Course to validate",
+        "example": "OPERACIONES UNITARIAS I"
+      },
+      {
+        "key": "juror1Name",
+        "label": "Jurado 1",
+        "labelEn": "Juror 1",
+        "example": "HERNÁN DARÍO LOSADA CAMPOS"
+      },
+      {
+        "key": "juror2Name",
+        "label": "Jurado 2",
+        "labelEn": "Juror 2",
+        "example": "PAOLA ANDREA RAMÍREZ SILVA"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "13 de mayo de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "004 C.E."
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo 067 del 17 de septiembre de 2013, reglamenta las solicitudes de evaluación de validaciones contenidas en el Artículo 25 del Acuerdo 049 de 2004, expedido por el Consejo Superior Universitario."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Artículo 25 del Acuerdo 049 de 2004, expedido por el Consejo Superior de la Universidad Surcolombiana”, señala los requisitos, procedimientos y trámites respectivos para las validaciones."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que en concordancia con el artículo 25 del Acuerdo No. 049 de 2004, “Por el cual se expide el Manual de Convivencia Estudiantil de pregrado de la Universidad Surcolombiana”, le corresponde al Consejo de Facultad expedir el respectivo Acuerdo de autorización de validaciones."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la estudiante relacionada en la siguiente tabla, perteneciente al programa de {{program}} solicitó autorización para la validación de cursos."
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO",
+          "ESTUDIANTE",
+          "CURSOS A VALIDAR",
+          "JURADOS"
+        ],
+        "rows": [
+          [
+            "{{studentCode}}",
+            "{{studentName}}",
+            "{{courseName}}",
+            "-{{juror1Name}}.\n-{{juror2Name}}"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Programa de {{program}}, luego de realizar el estudio de la solicitud de validación citada en precedencia, decidió otorgar su respectivo concepto favorable, previa revisión del cumplimiento de requisitos por parte de los jurados arriba relacionados."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la estudiante presentó dentro del término establecido, la solicitud de validación ante el Programa de {{program}}, con el formato MI-FOR-FO-28 debidamente diligenciado."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, por lo anterior, el Consejo de Facultad de {{facultyName}} en sesión extraordinaria del {{sessionDate}}, según consta en Acta No. {{minutesNumber}}, luego de estudiar la solicitud, resolvió por unanimidad **AUTORIZAR** la validación de cursos a la estudiante anteriormente mencionada."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que en mérito de lo expuesto el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**AUTORIZAR**, con fundamento en lo expuesto en la parte motiva, la solicitud de validación de la estudiante del programa de {{program}}, cuyos datos se relacionan a continuación, previa presentación del recibo de pago de los derechos pecuniarios correspondientes ante la Secretaría Académica de la Facultad."
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO",
+          "ESTUDIANTE",
+          "CURSOS A VALIDAR",
+          "JURADOS"
+        ],
+        "rows": [
+          [
+            "{{studentCode}}",
+            "{{studentName}}",
+            "{{courseName}}",
+            "-{{juror1Name}}.\n-{{juror2Name}}"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Designar como jurados para elaborar y evaluar el examen de validación a los docentes relacionados anteriormente."
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente Acuerdo a la Jefatura del Programa de {{program}}, a los docentes designados como jurados y al Centro de Admisiones, Registro y Control Académico para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "Remitir al Centro de Admisiones, Registro y Control Académico, por intermedio de la Jefatura del Programa de {{program}}, la nota obtenida por el estudiante en el respectivo examen de validación."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "PROGRAM_TRANSFER",
+    "name": "Traslado definitivo de sede",
+    "nameEn": "Permanent campus transfer",
+    "subject": "Por el cual se resuelve una solicitud de traslado definitivo a un estudiante del Programa de {{program}} de la Universidad Surcolombiana de la Sede {{originCampus}} a la Sede {{destinationCampus}}",
+    "legalBasis": "En uso de sus atribuciones legales y",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE.",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "originCampus",
+        "label": "Sede de origen",
+        "labelEn": "Origin campus",
+        "example": "Pitalito"
+      },
+      {
+        "key": "destinationCampus",
+        "label": "Sede de destino",
+        "labelEn": "Destination campus",
+        "example": "Neiva"
+      },
+      {
+        "key": "memoNumber",
+        "label": "Número del memorando",
+        "labelEn": "Memo number",
+        "example": "142"
+      },
+      {
+        "key": "memoDate",
+        "label": "Fecha del memorando",
+        "labelEn": "Memo date",
+        "example": "8 de junio de 2026"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CAMILO ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231198452"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-2"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "15 de junio de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "015 C.V."
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo Académico mediante Acuerdo CA Número 037 del 26 de agosto de 2019, creó las figuras de estancias cortas y traslados definitivos entre sedes de la Universidad Surcolombiana."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que de conformidad con lo establecido en el artículo 6° del Acuerdo CA No. 037 de 2019, se entiende por traslado definitivo entre las sedes de Neiva, Garzón, La Plata y Pitalito de la Universidad Surcolombiana, como la posibilidad que tienen sus estudiantes activos de realizar un cambio definitivo de sede dentro del mismo Programa Académico de Pregrado. El traslado definitivo, podrá solicitarse por una sola vez."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que en el artículo 8° del Acuerdo CA No. 037 de 2019, establece que, para presentar una solicitud de traslado definitivo, el estudiante deberá cumplir con los siguientes requisitos:"
+      },
+      {
+        "type": "paragraph",
+        "text": "a) Expresar los motivos de la solicitud de traslado definitivo."
+      },
+      {
+        "type": "paragraph",
+        "text": "b) Tener puntaje calificado igual o superior a 3.50"
+      },
+      {
+        "type": "paragraph",
+        "text": "c) Tener aprobado como mínimo el cuarenta (40%) de los créditos académicos del programa."
+      },
+      {
+        "type": "paragraph",
+        "text": "d) Adjuntar copia del contrato de trabajo de la entidad y el pago de la seguridad social, en la cual labore el padre de familia o estudiante."
+      },
+      {
+        "type": "paragraph",
+        "text": "e) No estar sancionado disciplinariamente en la Universidad Surcolombiana.”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que mediante memorando No. {{memoNumber}} de fecha {{memoDate}}, la jefe de programa de {{program}}, remitió al Consejo de Facultad la solicitud de traslado definitivo de la sede {{originCampus}} a la sede {{destinationCampus}}, del estudiante {{studentName}}, código {{studentCode}}, a partir del periodo académico **{{period}}.**"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante cumple con los requisitos establecidos en el Acuerdo No. 037 de 2019."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, con fundamento en las anteriores consideraciones, el Consejo de Facultad de {{facultyName}}, en consulta virtual del {{sessionDate}}, según consta en Acta No.{{minutesNumber}}, al ocuparse de analizar la solicitud de traslado definitivo presentada por el estudiante {{studentName}}, código {{studentCode}} del programa de {{program}} de la sede {{originCampus}} a la sede {{destinationCampus}}, decidió **APROBARLA**."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR**, con fundamento en lo expuesto en la parte motiva, el traslado definitivo de la sede {{originCampus}} a la sede {{destinationCampus}}, del estudiante {{studentName}}, código {{studentCode}} del programa de {{program}} para el periodo {{period}}"
+      },
+      {
+        "type": "article",
+        "text": "Notificar el contenido del presente acuerdo al estudiante mencionado en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra este Acto Administrativo proceden el recurso de reposición y/o apelación, los cuales deberán ser presentados por escrito ante el Consejo de Facultad de {{facultyName}}, dentro de los diez (10) días hábiles siguientes a la diligencia de notificación."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar y enviar copia del presente Acuerdo al Centro de Admisiones, Registro y Control Académico y a la oficina de Liquidación de Derechos Pecuniarios, para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "PLAN_CHANGE",
+    "name": "Cambio de plan académico",
+    "nameEn": "Academic plan change",
+    "subject": "Por el cual se aprueba el CAMBIO DE PLAN ACADEMICO a un estudiante de la Facultad de {{facultyName}}",
+    "legalBasis": "En uso de sus atribuciones legales, y",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería de Software"
+      },
+      {
+        "key": "oldPlan",
+        "label": "Plan de origen",
+        "labelEn": "Original plan",
+        "example": "0141132-981"
+      },
+      {
+        "key": "newPlan",
+        "label": "Plan de destino",
+        "labelEn": "New plan",
+        "example": "0141192-981"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "JUAN CAMILO OSORIO PEÑA"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código estudiantil",
+        "labelEn": "Student code",
+        "example": "20221204587"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "20 de enero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "001"
+      },
+      {
+        "key": "courseCode",
+        "label": "Código de la asignatura",
+        "labelEn": "Course code",
+        "example": "BEINSOF05"
+      },
+      {
+        "key": "oldCourseName",
+        "label": "Asignatura en el plan de origen",
+        "labelEn": "Course in original plan",
+        "example": "ESTRUCTURAS DE DATOS - 60268"
+      },
+      {
+        "key": "newCourseName",
+        "label": "Asignatura en el plan de destino",
+        "labelEn": "Course in new plan",
+        "example": "ESTRUCTURAS DE DATOS - 62440"
+      },
+      {
+        "key": "grade",
+        "label": "Nota definitiva",
+        "labelEn": "Final grade",
+        "example": "4.1"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el jefe de programa de {{program}} presentó solicitud de cambio de plan académico del {{oldPlan}} al {{newPlan}} al estudiante {{studentName}}, código {{studentCode}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en sesión ordinaria del Consejo de Facultad realizada el {{sessionDate}} (Acta {{minutesNumber}}) se estudió la solicitud de cambio de plan de estudio del estudiante {{studentName}}, código {{studentCode}}, perteneciente al programa de {{program}}, decidiendo AUTORIZARLO."
+      },
+      {
+        "type": "paragraph",
+        "text": "En virtud de lo anterior,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Autorizar el cambio de plan de estudio del estudiante {{studentName}}, código {{studentCode}}, del programa de {{program}} del plan {{oldPlan}} al plan {{newPlan}} así:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "Código",
+          "Asignatura (PLAN {{oldPlan}})",
+          "Nota Def. (PLAN {{oldPlan}})",
+          "Asignatura (PLAN {{newPlan}})",
+          "Nota Def. (PLAN {{newPlan}})"
+        ],
+        "rows": [
+          [
+            "{{courseCode}}",
+            "{{oldCourseName}}",
+            "{{grade}}",
+            "{{newCourseName}}",
+            "{{grade}}"
+          ],
+          [
+            "BFINEL01",
+            "CALCULO DIFERENCIAL - 54932",
+            "3.8",
+            "CALCULO DIFERENCIAL - 54932",
+            "3.8"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente Acuerdo al Centro de Admisiones Registro y Control Académico, para su conocimiento y fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "DOUBLE_DEGREE",
+    "name": "Doble titulación",
+    "nameEn": "Double degree",
+    "subject": "Por el cual se aprueba la solicitud de DOBLE TITULACION a un estudiante de la Universidad Surcolombiana para ingresar como programa alterno a los programas de pregrado de la Facultad de {{facultyName}}",
+    "legalBasis": "En uso de sus atribuciones legales, y",
+    "closing": "COMUNIQUESE, PUBLIQUESE Y CUMPLASE",
+    "fields": [
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "MIGUEL ÁNGEL QUINTERO CABRERA"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20212201345"
+      },
+      {
+        "key": "program",
+        "label": "Programa actual del estudiante",
+        "labelEn": "Student current program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "targetProgram",
+        "label": "Programa de doble titulación",
+        "labelEn": "Double degree program",
+        "example": "Ingeniería Civil"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-2"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "20 de abril de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "007"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que en virtud de lo estipulado en el artículo 10 del acuerdo número 049 del 15 de diciembre de 2004-Manual de Convivencia Estudiantil de Pregrado-, la Universidad Surcolombiana “(…permitirá la doble titulación de acuerdo con la reglamentación que expida el Consejo Académico”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la modalidad de transferencia entre programas ya está regulada dentro de la Universidad Surcolombiana, permitiéndose de esa forma la movilidad de los estudiantes entre programas de pregrado, especialmente en aquellos que tienen afinidad académica."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en la Universidad Surcolombiana se encuentra regulada la homologación de cursos aprobados en otros programas académicos de pregrado de la misma institución o de otra."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, por lo anterior, el Consejo Académico en sesión ordinaria del 13 de diciembre de 2022, según Acta No. 034 de la misma fecha, avaló el proyecto de Acuerdo “Por el cual se reglamenta la doble titulación de pregrado en la Universidad Surcolombiana”."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo Superior Universitario en sesión ordinaria del 19 de enero de 2023, según Acata de la misma fecha, al analizar la importancia y pertinencia del proyecto de Acuerdo 01 de 2023” Por el cual se reglamenta la doble titulación de pregrado en la Universidad Surcolombiana”, decidió aprobarlo"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante {{studentName}} código{{studentCode}}, del programa de {{program}}, presentó solicitud de doble titulación al programa de {{targetProgram}}, a partir del periodo {{period}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Comité de Currículo del programa de {{targetProgram}}, presentó al Consejo de Facultad el estudio realizado a la solicitud de doble titulación del estudiante {{studentName}} código{{studentCode}}, encontrándola ajustada a la reglamentación vigente, sometiendo los respectivos formatos de calidad a consideración del Consejo de Facultad."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en sesión ordinaria realizada el {{sessionDate}}, según Acta {{minutesNumber}} de la misma fecha, al estudiar la solicitud mencionada, el Consejo de Facultad de {{facultyName}} decidió aprobarla por encontrarla ajustada a la reglamentación vigente."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Aprobar la doble titulación de asignaturas a {{studentName}} código{{studentCode}} como se detalla a continuación:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "ASIGNATURA",
+          "NOTA",
+          "ASIGNATURA"
+        ],
+        "rows": [
+          [
+            "PLAN DE ESTUDIOS PROGRAMA DE {{program}} EN CREDITOS ACADEMICOS- USCO",
+            "",
+            "PLAN DE ESTUDIOS PROGRAMA DE {{targetProgram}} EN CREDITOS ACADEMICOS- USCO"
+          ],
+          [
+            "Cálculo Diferencial",
+            "3.9",
+            "Cálculo Diferencial"
+          ],
+          [
+            "Química General",
+            "4.2",
+            "Química General"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Establecer que los cursos que el estudiante deberá matricular para cumplir con el plan de estudios para el programa de {{targetProgram}} son:"
+      },
+      {
+        "type": "paragraph",
+        "text": "**Primer semestre**"
+      },
+      {
+        "type": "paragraph",
+        "text": "Introducción a la Ingeniería Civil"
+      },
+      {
+        "type": "paragraph",
+        "text": "Comunicación Lingüística"
+      },
+      {
+        "type": "paragraph",
+        "text": "**Segundo semestre**"
+      },
+      {
+        "type": "paragraph",
+        "text": "Dibujo de Ingeniería Civil"
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente acuerdo a la oficina de Admisiones, Registro y Control Académico, a la oficina de liquidaciones, para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "Notificar el contenido del presente Acuerdo al estudiante relacionado en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011,reformada por la Ley 2080 de 2021, informándole que contra este acto administrativo proceden los recursos de reposición y/o apelación los cuales deberán presentarse ante el Consejo de Facultad de {{facultyName}}, dentro del término de 10 días hábiles siguientes al de la notificación."
+      },
+      {
+        "type": "article",
+        "text": "Este Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "AMNESTY",
+    "name": "Amnistía académica",
+    "nameEn": "Academic amnesty",
+    "subject": "Por el cual se aprueba la amnistía a una estudiante de la Facultad de {{facultyName}}",
+    "legalBasis": "En uso de sus atribuciones legales, y",
+    "closing": "COMUNIQUESE, PUBLIQUESE Y CUMPLASE",
+    "fields": [
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "DIEGO ALEJANDRO CHARRY PERDOMO"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20181163045"
+      },
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería Agroindustrial"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "02 de marzo de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "004"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo 045 de 2022 del CSU, modificado por el Acuerdo No. 037 de 2023 autoriza por los periodos académicos 2023-1, 2023-2, 2024-1 2024-2 y 2025-1 una amnistía académica para los estudiantes de pregrado de la Universidad Surcolombiana que hayan cursado y aprobado la totalidad del plan de estudios y que no han optado por el título."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo No. 071 del 26 de mayo de 2023 de la Facultad de Ingeniería reglamentó las modalidades de grado para los estudiantes de la Facultad de Ingeniería."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el acuerdo 039 de 2025 del CSU extendió la amnistía por los periodos 2025-2. 2026-1 y 2026-2"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante {{studentName}}, código {{studentCode}}, del programa de {{program}}, solicitó amnistía para desarrollar su modalidad de grado y optar al título."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en sesión ordinaria realizada el {{sessionDate}}, según Acta {{minutesNumber}} de la misma fecha, al estudiar la solicitud mencionada, el Consejo de Facultad de {{facultyName}} decidió aprobarla por encontrar que se cumplen los requisitos del acuerdo 045 de 2022, modificado por el acuerdo 037 de 2023 y el acuerdo 039 de 2025."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Aprobar la solicitud de amnistía al estudiante {{studentName}}, código {{studentCode}}, del programa de {{program}}"
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente acuerdo a la oficina de Admisiones, Registro y Control Académico, a la oficina de liquidaciones y al programa de {{program}}, para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "Notificar el contenido del presente Acuerdo al estudiante relacionado en el artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011,reformada por la Ley 2080 de 2021, informándole que contra este acto administrativo proceden los recursos de reposición y/o apelación los cuales deberán presentarse ante el Consejo de Facultad de {{facultyName}}, dentro del término de 10 días hábiles siguientes al de la notificación."
+      },
+      {
+        "type": "article",
+        "text": "Este Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "LOSS_OF_PLACE",
+    "name": "Pérdida de cupo",
+    "nameEn": "Loss of place",
+    "subject": "Por medio del cual se decide una pérdida de cupo",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CAMILO ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231198452"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-1"
+      },
+      {
+        "key": "courseCode",
+        "label": "Código del curso",
+        "labelEn": "Course code",
+        "example": "BEINAG08"
+      },
+      {
+        "key": "courseName",
+        "label": "Nombre del curso",
+        "labelEn": "Course name",
+        "example": "HIDRÁULICA"
+      },
+      {
+        "key": "credits",
+        "label": "Número de créditos",
+        "labelEn": "Credits",
+        "example": "4"
+      },
+      {
+        "key": "grade",
+        "label": "Nota obtenida",
+        "labelEn": "Grade",
+        "example": "2.6"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "15 de junio de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "011 C.E."
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el artículo 6° artículo 6° del Acuerdo 013 del 24 de julio de 2013, que reglamenta el parágrafo del artículo 4° del Acuerdo No. 046 de 2012, establece:"
+      },
+      {
+        "type": "paragraph",
+        "text": "ARTICULO 6°. Si el estudiante incumple las obligaciones establecidas en el Acta de Compromiso y en el Plan de Mejoramiento, será retirado definitivamente del programa académico."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante {{studentName}}, con código {{studentCode}}, perteneciente al programa de {{program}}, firmó acta de compromiso y plan de mejoramiento para reintegrarse al programa en el periodo {{period}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el estudiante mencionado incumplió el plan de mejoramiento durante el periodo {{period}} al obtener las siguientes notas:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO DEL CURSO",
+          "NOMBRE DEL CURSO",
+          "NO. CREDITOS",
+          "NOTA"
+        ],
+        "rows": [
+          [
+            "{{courseCode}}",
+            "{{courseName}}",
+            "{{credits}}",
+            "{{grade}}"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la jefe de programa de {{program}} presentó el informe de cumplimiento del plan de mejoramiento durante el periodo académico {{period}} del estudiante {{studentName}}, con código {{studentCode}}, donde consta que perdió una asignatura de dicho plan."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad en sesión extraordinaria del {{sessionDate}}, según consta en acta No.{{minutesNumber}} de la misma fecha decidió retirar definitivamente del programa al estudiante mencionado, por incumplimiento del plan de mejoramiento, en atención a lo establecido en el artículo 6° del acuerdo 013 de 2013."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**RETIRAR** definitivamente del programa de {{program}} al estudiante {{studentName}}, con código {{studentCode}}, por aplicación del artículo 6° del acuerdo 013 de 2013, que reglamenta el parágrafo primero del artículo 4° del acuerdo 046 de 2012."
+      },
+      {
+        "type": "article",
+        "text": "Remitir copia del presente Acto Administrativo a la Oficina de Registro y Control y a la Oficina de Liquidación de Derechos Pecuniarios, para su conocimiento y fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "Notificar el presente Acuerdo al estudiante mencionado en el artículo primero, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021."
+      },
+      {
+        "type": "article",
+        "text": "Contra el presente acto administrativo no procede recurso alguno"
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de expedición."
+      }
+    ]
+  },
+  {
+    "code": "THESIS_EXTENSION",
+    "name": "Prórroga de proyecto de grado",
+    "nameEn": "Degree project extension",
+    "subject": "Por el cual se resuelve una solicitud de prórroga de proyecto de grado",
+    "legalBasis": "En uso de sus atribuciones legales, y",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231198452"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "CAMILO ANDRÉS PERDOMO VARGAS"
+      },
+      {
+        "key": "campus",
+        "label": "Sede",
+        "labelEn": "Campus",
+        "example": "GARZÓN"
+      },
+      {
+        "key": "projectTitle",
+        "label": "Título del proyecto de grado",
+        "labelEn": "Degree project title",
+        "example": "“Diseño de un sistema de riego por goteo para cultivos de café en zona de ladera”"
+      },
+      {
+        "key": "studentCode2",
+        "label": "Código del segundo estudiante",
+        "labelEn": "Second student code",
+        "example": "20231197730"
+      },
+      {
+        "key": "studentName2",
+        "label": "Nombre del segundo estudiante",
+        "labelEn": "Second student name",
+        "example": "DIANA MARCELA TOVAR ROJAS"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "15 de junio de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "011"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-2"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el artículo 4° del acuerdo 071 de 2023 establece dentro de los procedimientos adicionales: “El Consejo de Facultad podrá prorrogar el tiempo de ejecución hasta por dos períodos académicos adicionales previo aval del Consejo de Programa por solicitud de los estudiantes y aceptación del director”."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que los estudiantes relacionados a continuación, pertenecientes al programa de {{program}}, solicitaron prórroga para terminar su modalidad de grado"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO",
+          "ESTUDIANTE",
+          "SEDE",
+          "PROYECTO"
+        ],
+        "rows": [
+          [
+            "{{studentCode}}",
+            "{{studentName}}",
+            "{{campus}}",
+            "{{projectTitle}}"
+          ],
+          [
+            "{{studentCode2}}",
+            "{{studentName2}}",
+            "{{campus}}",
+            "{{projectTitle}}"
+          ]
+        ]
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el Consejo de Facultad mediante sesión ordinaria del {{sessionDate}}, según acta N°{{minutesNumber}} de la misma fecha, estudió y aprobó la solicitud de la estudiante relacionada, para ser otorgada prórroga por dos periodos académicos en el desarrollo y culminación de su modalidad de grado, a partir del periodo {{period}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "PRORROGAR por dos periodos académicos más a partir de la vigencia del presente acto administrativo la modalidad de grado de la estudiante relacionada a continuación, perteneciente al programade {{program}}"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "CODIGO",
+          "ESTUDIANTE",
+          "SEDE",
+          "PROYECTO"
+        ],
+        "rows": [
+          [
+            "{{studentCode}}",
+            "{{studentName}}",
+            "{{campus}}",
+            "{{projectTitle}}"
+          ],
+          [
+            "{{studentCode2}}",
+            "{{studentName2}}",
+            "{{campus}}",
+            "{{projectTitle}}"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente acuerdo al Programa de {{program}}, para su conocimiento y fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "NOTIFICAR el contenido del presente Acto Administrativo a la estudiante relacionada en el     artículo 1°, de conformidad con lo dispuesto en el artículo 56 de la Ley 1437 de 2011, reformada por la Ley 2080 de 2021, informándole que contra el presente Acuerdo proceden los recursos de reposición y apelación los cuales deberán presentarse por escrito ante el Consejo de Facultad de {{facultyName}} dentro de los diez (10) días hábiles siguientes a su notificación."
+      },
+      {
+        "type": "article",
+        "text": "El presente acuerdo rige a partir de la fecha de su ejecutoria."
+      }
+    ]
+  },
+  {
+    "code": "SHORT_STAY",
+    "name": "Estancia corta",
+    "nameEn": "Short stay",
+    "subject": "Por el cual se autoriza una estancia corta a una estudiante del Programa de {{program}} de la Universidad Surcolombiana",
+    "legalBasis": "En uso de sus atribuciones legales, estatutarias y",
+    "closing": "NOTIFÍQUESE, COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa",
+        "labelEn": "Program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "memoNumber",
+        "label": "Número de memorando",
+        "labelEn": "Memo number",
+        "example": "92"
+      },
+      {
+        "key": "memoDate",
+        "label": "Fecha del memorando",
+        "labelEn": "Memo date",
+        "example": "14 de abril"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "VALENTINA ANDREA CUÉLLAR POLANÍA"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del estudiante",
+        "labelEn": "Student code",
+        "example": "20231216032"
+      },
+      {
+        "key": "originCampus",
+        "label": "Sede de origen",
+        "labelEn": "Origin campus",
+        "example": "Pitalito"
+      },
+      {
+        "key": "destinationCampus",
+        "label": "Sede de destino",
+        "labelEn": "Destination campus",
+        "example": "Neiva"
+      },
+      {
+        "key": "period",
+        "label": "Periodo académico",
+        "labelEn": "Academic period",
+        "example": "2026-2"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "20 de abril de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "007"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo Académico, mediante Acuerdo CA Número 037 de 2019, creó las figuras de estancias cortas y traslados definitivos entre sedes de la Universidad Surcolombiana."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que de conformidad con lo establecido en el artículo 1° del Acuerdo CA No. 037 de 2019,"
+      },
+      {
+        "type": "paragraph",
+        "text": "“Se entiende por estancias cortas entre las sedes de Neiva, Garzón, La Plata y Pitalito de la Universidad Surcolombiana, como la posibilidad que tienen sus estudiantes activos de cursar un periodo académico en una sede diferente a su sede de origen. El estudiante tendrá derecho a máximo dos (2) periodos académicos de estancia corta continuos o discontinuos."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el artículo 3° del mencionado Acuerdo establece: “Para presentar la solicitud de estancia corta, el estudiante deberá cumplir con los siguientes requisitos:"
+      },
+      {
+        "type": "paragraph",
+        "text": "a. Tener matricula vigente en un Programa Curricular de Pregrado de la Universidad Surcolombiana."
+      },
+      {
+        "type": "paragraph",
+        "text": "b. No estar sancionado disciplinariamente en la Universidad Surcolombiana."
+      },
+      {
+        "type": "paragraph",
+        "text": "c. Expresar los motivos de la solicitud de estancia corta."
+      },
+      {
+        "type": "paragraph",
+        "text": "d. Tener aprobado como mínimo el treinta (30%) de los créditos académicos del Programa, en el que se encuentran matriculado."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que conforme lo establece el artículo 4° del Acuerdo CA No.037 de 2019, “Los Consejos de Facultad serán los encargados de estudiar y aprobar la solicitud de estancia corta. En caso de aprobarla, debe remitirse el acto de aprobación al Centro de Admisión, Registro y Control Académico de la Universidad, para el trámite correspondiente."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que mediante memorando No. {{memoNumber}} del {{memoDate}}, la jefe de Programa de {{program}} remitió al Consejo de Facultad el visto bueno a la solicitud de estancia corta de la estudiante {{studentName}} , código {{studentCode}} de la sede {{originCampus}} a la sede {{destinationCampus}}, durante el periodo académico {{period}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la estudiante adjuntó la documentación requerida para acreditar los requisitos arriba citados."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, con fundamento en las anteriores consideraciones, el Consejo de Facultad en sesión ordinaria del {{sessionDate}}, según consta en Acta No. {{minutesNumber}}, decidió APROBAR la solicitud de estancia corta presentada."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR**, con fundamento en lo expuesto en la parte motiva, la estancia corta de la estudiante {{studentName}} , código {{studentCode}}, perteneciente al programa de {{program}} en la sede {{destinationCampus}} durante el periodo académico **{{period}}**"
+      },
+      {
+        "type": "article",
+        "text": "Notificar el contenido del presente Acuerdo a la estudiante en mención, de acuerdo a lo establecido en el artículo 56 de la Ley 1437 de 2011 reformada por la Ley 2080 de 2021 informándole que contra el presente Acto Administrativo proceden los recursos de Reposición y/o Apelación, los cuales deberán ser presentados por escrito ante el Consejo de Facultad de {{facultyName}} dentro de los diez (10) días hábiles siguientes a la diligencia de notificación."
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente Acuerdo al Centro de Admisiones, Registro y Control Académico, a la Oficina de Liquidación de Derechos Pecuniarios y al Programa de {{program}}, para lo de su competencia."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "VACATION_COURSE",
+    "name": "Curso vacacional",
+    "nameEn": "Vacation course",
+    "subject": "Por medio del cual se autoriza la creación de un curso vacacional para el programa de {{program}}",
+    "legalBasis": "En uso de sus atribuciones Legales y estatutarias y en especial las establecidas en el Manual de Convivencia y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "courseName",
+        "label": "Nombre del curso",
+        "labelEn": "Course name",
+        "example": "MECÁNICA DE FLUIDOS"
+      },
+      {
+        "key": "teacherName",
+        "label": "Docente del curso",
+        "labelEn": "Course teacher",
+        "example": "CARLOS EDUARDO RAMÍREZ SILVA"
+      },
+      {
+        "key": "startDate",
+        "label": "Fecha de inicio",
+        "labelEn": "Start date",
+        "example": "06 de julio"
+      },
+      {
+        "key": "endDate",
+        "label": "Fecha de finalización",
+        "labelEn": "End date",
+        "example": "17 de julio de 2026"
+      },
+      {
+        "key": "hours",
+        "label": "Intensidad horaria",
+        "labelEn": "Hours",
+        "example": "48"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "19 de junio"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "016 C.V."
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Acuerdo No. 049 de 2004 en su artículo 23 reza: “Son cursos vacacionales aquellos cursos programados en periodo de vacaciones para estudiantes activos."
+      },
+      {
+        "type": "paragraph",
+        "text": "Estos cursos podrán ofrecerse en uno de los casos siguientes:"
+      },
+      {
+        "type": "paragraph",
+        "text": "• Cuando se necesite utilizar los servicios de un profesor que siendo el indicado para orientar un determinado curso, no pueda prestar sus servicios en las condiciones del horario regular para el periodo académico correspondiente."
+      },
+      {
+        "type": "paragraph",
+        "text": "• Cuando por ajuste o cambios en el plan de estudios se necesite programar un determinado curso."
+      },
+      {
+        "type": "paragraph",
+        "text": "• Cuando se requiera la utilización de materiales y equipos que en otro tiempo no estarían disponibles."
+      },
+      {
+        "type": "paragraph",
+        "text": "• Cuando sea solicitado por un número mayor a cinco (5) estudiantes para desarrollar un curso perdido, atrasado o para adelantarlo."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que un número mayor a cinco (5) estudiantes del Programa de {{program}}, solicitaron la apertura de un curso vacacional de {{courseName}}, el cual será dirigido por el docente {{teacherName}}, del {{startDate}} al {{endDate}}, con una intensidad de {{hours}} horas."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad, en consulta virtual del {{sessionDate}}, según consta en acta No. {{minutesNumber}} al estudiar la solicitud decidió aprobarla."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "**APROBAR** la creación del curso vacacional de {{courseName}}, solicitado por el programa e {{program}}, el cual será dirigido por el docente {{teacherName}}, del {{startDate}} al {{endDate}}, con una intensidad de {{hours}} horas."
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente Acuerdo a la jefatura del programa de {{program}}, al Centro de Admisiones, Registro y Control Académico y a la Oficina de Liquidación y Derechos Pecuniarios para lo de su competencia."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "ACADEMIC_STIMULUS",
+    "name": "Estímulo académico y exoneración de modalidad de grado",
+    "nameEn": "Academic stimulus and degree modality exemption",
+    "subject": "Por el cual se otorga un estímulo al buen desempeño académico y se exonera de la presentación de modalidad de grado a un estudiante de {{program}}",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería de Software"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "DANIELA FERNANDA ROJAS PERDOMO"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código estudiantil",
+        "labelEn": "Student code",
+        "example": "20221204587"
+      },
+      {
+        "key": "gpa",
+        "label": "Promedio de carrera",
+        "labelEn": "Cumulative GPA",
+        "example": "4.51"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "23 de enero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "001 C.V."
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que según el artículo 5° del Acuerdo 010 del 2016 (Plan Educativo Universitario), la autonomía de la Facultad y los Programas permite determinar con base en sus principios y criterios las políticas, acciones y metas para cumplir su misión y visión."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el parágrafo 2 del artículo 33 Acuerdo 049 de 2004 (Manual de Convivencia Estudiantil) establece que cada Facultad definirá y reglamentará las Modalidades de Grado que tiene el estudiante para optar al título, lo cual será adoptado mediante Acuerdo del Consejo Académico a solicitud del Consejo de Facultad respectivo."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el Consejo Académico mediante Acuerdo CA 008 del 4 de octubre de 2022, aprobó las modalidades de grado para la Facultad de Ingeniería"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, mediante Acuerdo No. 071 del 26 de mayo de 2023, el Consejo de Facultad de Ingeniería reglamentó las modalidades de grado de la Facultad."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el parágrafo del artículo 2° del acuerdo anteriormente mencionado, establece como estímulo al buen desempeño académico la exoneración de presentación de modalidad de grado, a los estudiantes que, al finalizar su ciclo académico cuenten con uno de los requisitos establecidos a continuación: “a) poseer un promedio final calificado que se encuentre en el cinco por ciento (5%) de los más altos de los graduados del Programa de los últimos cinco (5) años y sea igual o superior a 4.2” (…)"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Programa de {{program}} avaló la solicitud de la estudiante **{{studentName}},** identificada con código estudiantil {{studentCode}}, por medio de la cual pretende obtener el estímulo al BUEN DESEMPEÑO ACADÉMICO y ser EXONERADO DE LA MODALIDAD DE GRADO, cuyo promedio durante la carrera es de {{gpa}} y no perdió ninguna asignatura durante la carrera."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, el Consejo de Facultad en consulta virtual del {{sessionDate}}, según acta No. {{minutesNumber}} de la misma fecha, luego de analizar la solicitud en mención y una vez verificado que la ficha académica de la estudiante cumpliera con lo establecido en el literal a) del parágrafo del artículo 2° del Acuerdo 071 de 2023, resolvió por unanimidad aprobarla."
+      },
+      {
+        "type": "paragraph",
+        "text": "En mérito de lo expuesto, el Consejo de Facultad de {{facultyName}},"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "APROBAR, con fundamento en lo expuesto en la parte motiva, el estímulo por Buen Desempeño Académico a la estudiante **{{studentName}},** identificada con código estudiantil {{studentCode}}, del programa de {{program}}."
+      },
+      {
+        "type": "article",
+        "text": "EXONERAR de la presentación de Modalidad de Grado a la estudiante **{{studentName}},** identificada con código estudiantil {{studentCode}}, del programa de {{program}}."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar el contenido del presente acuerdo a la estudiante **{{studentName}},** identificada con código estudiantil {{studentCode}}, del programa de {{program}}."
+      },
+      {
+        "type": "article",
+        "text": "Enviar copia del presente Acuerdo a la Oficina de Registro y Control Académico y al Programa de {{program}}, para su conocimiento y fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de su expedición."
+      }
+    ]
+  },
+  {
+    "code": "MERIT_DISTINCTION",
+    "name": "Distinción meritoria",
+    "nameEn": "Merit distinction",
+    "subject": "Por el cual se otorga la Distinción de MERITORIO a la modalidad de grado de una estudiante de {{program}}",
+    "legalBasis": "En uso de sus atribuciones legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "juror1Name",
+        "label": "Nombre del primer jurado",
+        "labelEn": "First juror name",
+        "example": "CLAUDIA PATRICIA SÁNCHEZ ORTIZ"
+      },
+      {
+        "key": "juror2Name",
+        "label": "Nombre del segundo jurado",
+        "labelEn": "Second juror name",
+        "example": "HERNÁN DARÍO POLANÍA CUÉLLAR"
+      },
+      {
+        "key": "projectTitle",
+        "label": "Título del trabajo de grado",
+        "labelEn": "Thesis title",
+        "example": "Evaluación del secado solar de cacao en fincas del norte del Huila"
+      },
+      {
+        "key": "studentName",
+        "label": "Nombre del estudiante",
+        "labelEn": "Student name",
+        "example": "PAULA ANDREA TOVAR QUINTERO"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código estudiantil",
+        "labelEn": "Student code",
+        "example": "20221204587"
+      },
+      {
+        "key": "degreeTitle",
+        "label": "Título profesional al que opta",
+        "labelEn": "Degree title",
+        "example": "Ingeniera Agrícola"
+      },
+      {
+        "key": "juryArguments",
+        "label": "Argumentos de los jurados (texto de la solicitud)",
+        "labelEn": "Jury arguments (request text)",
+        "example": "Consideramos que merece la mención meritoria por su aporte metodológico y su impacto en los productores de la región."
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "04 de diciembre de 2025"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "020"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad es un organismo colegiado con capacidad decisoria en los asuntos académicos y administrativos de su competencia, de conformidad con el Artículo 47 Modificado por el Acuerdo No. 025 del 2 de julio de 2004, Artículo 8°, del Estatuto General de la Universidad Surcolombiana, proferido mediante Acuerdo Número 075 del 7 de diciembre de 1994."
+      },
+      {
+        "type": "paragraph",
+        "text": "Dentro de las funciones atribuidas a la instancia se consagra en el numeral 10) del Artículo 48 de la norma en cita, “Conceder el otorgamiento de honores a tesis y trabajos de grado previa solicitud de los respectivos jurados, así como otras distinciones estudiantiles”."
+      },
+      {
+        "type": "paragraph",
+        "text": "El literal a del Parágrafo 3 del Artículo 33 del Acuerdo Número 049 del año 2004, contempla que las modalidades de grado calificadas como aprobadas podrán recibir, además, las menciones de a. MERITORIO y b. LAUREADA “La mención MERITORIA será otorgada por el Consejo de Facultad a solicitud motivada y unánime del jurado calificador."
+      },
+      {
+        "type": "paragraph",
+        "text": "Los jurados {{juror1Name}} y {{juror2Name}} mediante oficio solicitaron al Consejo de Facultad mención MERITORIA al trabajo de grado titulado **“{{projectTitle}}”**, realizado por la estudiante {{studentName}}, código {{studentCode}}, como requisito para optar al título de {{degreeTitle}}."
+      },
+      {
+        "type": "paragraph",
+        "text": "A través de solicitud motivada y unánime, exaltan como aportes del trabajo de grado los siguientes:"
+      },
+      {
+        "type": "paragraph",
+        "text": "{{juryArguments}}"
+      },
+      {
+        "type": "paragraph",
+        "text": "El Consejo de Facultad de {{facultyName}} en sesión ordinaria realizada el día {{sessionDate}}, según consta en Acta No. {{minutesNumber}}, aprobó la distinción de meritorio a la modalidad de grado presentada por la estudiante {{studentName}}, código {{studentCode}}, del programa de {{program}}, tras considerar acreditadas las condiciones establecidas en el parágrafo 3 del Artículo 33 del Acuerdo número 049 de 2004 proferido por el Consejo superior Universitario, y atendiendo los argumentos planteados por los jurados y la competencia atribuida a esta instancia académica para conceder este tipo de reconocimiento."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo expuesto,"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Otorgar la distinción de MERITORIO al trabajo de grado titulado **“{{projectTitle}}”**, realizado por la estudiante {{studentName}}, código {{studentCode}}, para optar al título de {{degreeTitle}}."
+      },
+      {
+        "type": "article",
+        "text": "Entregar la presente mención MERITORIA en la siguiente ceremonia de grados que se programe."
+      },
+      {
+        "type": "article",
+        "text": "Comunicar el presente Acuerdo al Centro de Admisiones, Registro y Control Académico para los fines pertinentes."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de su fecha de expedición."
+      }
+    ]
+  },
+  {
+    "code": "RESEARCH_GROUP_UPDATE",
+    "name": "Actualización de grupo de investigación",
+    "nameEn": "Research group update",
+    "subject": "Por el cual se actualiza el grupo de Investigación “{{researchGroupName}}”",
+    "legalBasis": "En uso de sus atribuciones legales, y",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "researchGroupName",
+        "label": "Nombre del grupo de investigación",
+        "labelEn": "Research group name",
+        "example": "GEOAMBIENTAL-USCO"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "17 de febrero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "003"
+      },
+      {
+        "key": "directorName",
+        "label": "Docente director del grupo",
+        "labelEn": "Group director",
+        "example": "RICARDO ANDRÉS CERQUERA LOSADA"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "memberName",
+        "label": "Nombre del integrante",
+        "labelEn": "Member name",
+        "example": "Natalia Andrea Ramírez Silva"
+      },
+      {
+        "key": "memberRole",
+        "label": "Vinculación del integrante",
+        "labelEn": "Member affiliation",
+        "example": "Docente de planta"
+      },
+      {
+        "key": "memberEducation",
+        "label": "Formación del integrante",
+        "labelEn": "Member education",
+        "example": "Maestría"
+      },
+      {
+        "key": "memberHours",
+        "label": "Horas de dedicación",
+        "labelEn": "Dedicated hours",
+        "example": "10"
+      },
+      {
+        "key": "memberJoinDate",
+        "label": "Fecha de vinculación",
+        "labelEn": "Join date",
+        "example": "Febrero 2026"
+      },
+      {
+        "key": "memberEmail",
+        "label": "Correo del integrante",
+        "labelEn": "Member email",
+        "example": "natalia.ramirez@usco.edu.co"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que la Universidad Surcolombiana ha establecido como política de Investigación la conformación de Semilleros de Investigación, para la formación profesional integral y el fomento de la investigación."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la Facultad de {{facultyName}} busca fomentar la práctica investigativa de sus estudiantes de carácter eminentemente investigativo, formativo y con libre conformación y adscrito a una línea de investigación de la Facultad."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}}, en sesión ordinaria del {{sessionDate}}, según acta No. {{minutesNumber}}, aprobó la solicitud del docente {{directorName}}, perteneciente al programa de {{program}}, quien solicitó actualización del grupo de investigación “{{researchGroupName}}”"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo anterior, el Consejo de Facultad de {{facultyName}}:"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Aprobar, con fundamento en lo expuesto en la parte motiva, la actualización del grupo de investigación “{{researchGroupName}}”, bajo la tutoría del docente {{directorName}}, perteneciente al programa de {{program}}, de la Facultad de {{facultyName}}, cuyos integrantes se relacionan a continuación:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "NOMBRE",
+          "VINCULACIÓN",
+          "FORMACIÓN",
+          "HORAS",
+          "FECHA DE VINCULACIÓN",
+          "CORREO ELECTRÓNICO"
+        ],
+        "rows": [
+          [
+            "{{memberName}}",
+            "{{memberRole}}",
+            "{{memberEducation}}",
+            "{{memberHours}}",
+            "{{memberJoinDate}}",
+            "{{memberEmail}}"
+          ],
+          [
+            "Jorge Eduardo Perdomo Lara",
+            "Estudiante",
+            "-",
+            "10",
+            "Febrero 2026",
+            "u20231210045@usco.edu.co"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Remitir copia del presente Acto Administrativo para su conocimiento y fines pertinentes a la Vicerrectoría de Investigaciones y Proyección Social, a la Coordinación de Investigación de la Facultad de {{facultyName}}, a la jefatura de programa de {{program}} y al docente director del grupo de Investigación."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de expedición."
+      }
+    ]
+  },
+  {
+    "code": "SEEDBED_UPDATE",
+    "name": "Actualización de semillero de investigación",
+    "nameEn": "Research seedbed update",
+    "subject": "Por el cual se actualiza el semillero de Investigación “{{seedbedName}}”, adscrito al grupo de investigación {{researchGroupName}}",
+    "legalBasis": "En uso de sus atribuciones legales, y",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [
+      {
+        "key": "seedbedName",
+        "label": "Nombre del semillero",
+        "labelEn": "Seedbed name",
+        "example": "Suelos y Aguas del Huila SAH"
+      },
+      {
+        "key": "researchGroupName",
+        "label": "Grupo de investigación al que se adscribe",
+        "labelEn": "Parent research group",
+        "example": "GEOAMBIENTAL-USCO"
+      },
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "17 de febrero de 2026"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "003"
+      },
+      {
+        "key": "tutorName",
+        "label": "Docente tutor del semillero",
+        "labelEn": "Seedbed tutor",
+        "example": "FABIO ANDRÉS LOSADA CABRERA"
+      },
+      {
+        "key": "program",
+        "label": "Programa académico",
+        "labelEn": "Academic program",
+        "example": "Ingeniería Agrícola"
+      },
+      {
+        "key": "studentName",
+        "label": "Estudiante coordinador(a)",
+        "labelEn": "Student coordinator",
+        "example": "KAREN DAYANA ROJAS VEGA"
+      },
+      {
+        "key": "studentId",
+        "label": "Cédula del coordinador(a)",
+        "labelEn": "Coordinator ID number",
+        "example": "1.075.612.348"
+      },
+      {
+        "key": "studentCode",
+        "label": "Código del coordinador(a)",
+        "labelEn": "Coordinator student code",
+        "example": "20231215532"
+      },
+      {
+        "key": "memberName",
+        "label": "Nombre del integrante",
+        "labelEn": "Member name",
+        "example": "Santiago Andrés Muñoz Trujillo"
+      },
+      {
+        "key": "memberId",
+        "label": "Cédula del integrante",
+        "labelEn": "Member ID number",
+        "example": "1075698421"
+      },
+      {
+        "key": "memberCode",
+        "label": "Código del integrante",
+        "labelEn": "Member student code",
+        "example": "20241221176"
+      },
+      {
+        "key": "memberJoinDate",
+        "label": "Fecha de ingreso al semillero",
+        "labelEn": "Seedbed join date",
+        "example": "09/02/2026"
+      },
+      {
+        "key": "memberEmail",
+        "label": "Correo del integrante",
+        "labelEn": "Member email",
+        "example": "u20241221176@usco.edu.co"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que la Universidad Surcolombiana ha establecido como política de Investigación la conformación de Semilleros de Investigación, para la formación profesional integral y el fomento de la investigación."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que la Facultad de {{facultyName}} busca fomentar la práctica investigativa de sus estudiantes de carácter eminentemente investigativo, formativo y con libre conformación y adscrito a una línea de investigación de la Facultad."
+      },
+      {
+        "type": "paragraph",
+        "text": "Que el Consejo de Facultad de {{facultyName}}, en sesión ordinaria del {{sessionDate}}, según acta No. {{minutesNumber}} aprobó la solicitud del docente {{tutorName}}, perteneciente al programa de {{program}}, quien solicitó actualización del Semillero de Investigación “{{seedbedName}}”, adscrito al Grupo de Investigación {{researchGroupName}},"
+      },
+      {
+        "type": "paragraph",
+        "text": "Que, en mérito de lo anterior, el Consejo de Facultad de {{facultyName}}:"
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": "Aprobar, con fundamento en lo expuesto en la parte motiva, la actualización del Semillero de Investigación “{{seedbedName}}”, adscrito al Grupo de Investigación {{researchGroupName}}, bajo la tutoría del docente {{tutorName}}, perteneciente al programa de {{program}}, de la Facultad de {{facultyName}}, y con la coordinación de la estudiante {{studentName}}, perteneciente al Programa de {{program}}, identificada con cédula de ciudadanía No. {{studentId}} y código estudiantil {{studentCode}}, conformado por los estudiantes del Programa de {{program}}, cuyos nombres se relacionan a continuación:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "Nombre y Apellidos",
+          "Cédula de Ciudadanía",
+          "Código del Estudiante",
+          "Fecha de Ingreso al Semillero",
+          "Correo Electrónico"
+        ],
+        "rows": [
+          [
+            "{{memberName}}",
+            "{{memberId}}",
+            "{{memberCode}}",
+            "{{memberJoinDate}}",
+            "{{memberEmail}}"
+          ],
+          [
+            "Valentina Cortés Rivera",
+            "1081734520",
+            "20231214409",
+            "09/02/2026",
+            "u20231214409@usco.edu.co"
+          ]
+        ]
+      },
+      {
+        "type": "article",
+        "text": "Remitir copia del presente Acto Administrativo para su conocimiento y fines pertinentes a la Vicerrectoría de Investigaciones y Proyección Social, a la Coordinación de Investigación de la Facultad de {{facultyName}}, a la jefatura de programa de {{program}} y al docente tutor del Semillero de Investigación."
+      },
+      {
+        "type": "article",
+        "text": "El presente Acuerdo rige a partir de la fecha de expedición."
+      }
+    ]
+  }
+]
