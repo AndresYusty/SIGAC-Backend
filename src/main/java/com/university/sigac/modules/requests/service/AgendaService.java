@@ -2,6 +2,7 @@ package com.university.sigac.modules.requests.service;
 
 import com.university.sigac.core.audit.AuditService;
 import com.university.sigac.core.exception.ApiException;
+import com.university.sigac.core.pdf.Letterhead;
 import com.university.sigac.core.pdf.PdfService;
 import com.university.sigac.core.security.AuthenticatedUser;
 import com.university.sigac.core.security.SecurityUtils;
@@ -60,6 +61,7 @@ public class AgendaService {
     private final UserLookupService users;
     private final CouncilRequestService requestService;
     private final PdfService pdf;
+    private final Letterhead letterhead;
     private final StorageService storage;
     private final EmailService email;
     private final AuditService audit;
@@ -222,7 +224,7 @@ public class AgendaService {
         if (s.getItems().isEmpty()) {
             throw ApiException.conflict("The agenda has no items: add at least one approved request or urgent item");
         }
-        byte[] notice = pdf.generatePdfA(HtmlSanitizer.sanitizeDocument(pdf.render(NOTICE_TEMPLATE, noticeModel(s))));
+        byte[] notice = renderNotice(s);
         String noticePath = noticePath(s.getId());
         storage.save(noticePath, notice);
 
@@ -250,7 +252,12 @@ public class AgendaService {
         if (!s.isAgendaClosed()) {
             throw ApiException.conflict("The notice has not been issued yet: the agenda is not closed");
         }
-        return storage.read(noticePath(s.getId()));
+        return renderNotice(s);
+    }
+
+    private byte[] renderNotice(Session s) {
+        String html = pdf.render(letterhead.embed(NOTICE_TEMPLATE), noticeModel(s));
+        return pdf.generatePdfA(HtmlSanitizer.sanitizeDocument(html));
     }
 
     // ---------------------------------------------------------------- used by the session, minutes and repository modules

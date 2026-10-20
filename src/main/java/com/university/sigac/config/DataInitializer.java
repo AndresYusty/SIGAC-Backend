@@ -1,6 +1,7 @@
 package com.university.sigac.config;
 
 import com.university.sigac.core.parameter.ParameterService;
+import com.university.sigac.modules.minutes.service.MinutesService;
 import com.university.sigac.modules.templates.service.TemplateService;
 import com.university.sigac.modules.users.entity.Campus;
 import com.university.sigac.modules.users.entity.CouncilType;
@@ -39,6 +40,7 @@ public class DataInitializer implements ApplicationRunner {
     private final FacultyRepository faculties;
     private final ProgramRepository programs;
     private final TemplateService templates;
+    private final MinutesService minutes;
     private final PasswordEncoder encoder;
     private final AppProperties props;
 
@@ -55,6 +57,8 @@ public class DataInitializer implements ApplicationRunner {
 
         createUser("SIGAC Administrator", props.getSeed().getAdminEmail(), props.getSeed().getAdminPassword(), RoleName.ROLE_ADMIN, null, null);
         councilTypes.findAll().forEach(templates::createDefaultIfMissing);
+        templates.replaceBundledMinutesLayout();
+        minutes.refreshOpenLayout();
 
         if (props.getSeed().isDemoData() && universities.count() == 0) {
             loadDemo();

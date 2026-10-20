@@ -36,7 +36,7 @@ class DefaultTemplateRenderingTest {
         data.put("guests", List.of());
         data.put("hasGuests", false);
         String html = pdf.render(defaultTemplate(), data);
-        assertFalse(html.contains("Invited guests"));
+        assertFalse(html.contains("Invitados"));
     }
 
     @Test

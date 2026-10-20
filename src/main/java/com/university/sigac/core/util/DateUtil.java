@@ -9,10 +9,10 @@ import java.util.Locale;
 
 public final class DateUtil {
 
-    private static final Locale EN = Locale.ENGLISH;
-    private static final DateTimeFormatter LONG_DATE = DateTimeFormatter.ofPattern("MMMM d, yyyy", EN);
-    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm", EN);
-    private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("MMMM d, yyyy, HH:mm:ss", EN);
+    private static final Locale ES = Locale.forLanguageTag("es-CO");
+    private static final DateTimeFormatter LONG_DATE = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", ES);
+    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm", ES);
+    private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, HH:mm:ss", ES);
 
     private DateUtil() {
     }

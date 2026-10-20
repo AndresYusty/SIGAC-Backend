@@ -40,6 +40,6 @@ class HtmlSanitizerTest {
     void signatureBlockEscapesContent() {
         String out = HtmlSanitizer.appendSignatureBlock("<html><body><p>minutes</p></body></html>", List.of("Signed by: <b>x</b> & y"));
         assertTrue(out.contains("&lt;b&gt;x&lt;/b&gt; &amp; y"));
-        assertTrue(out.contains("ELECTRONIC SIGNATURE"));
+        assertTrue(out.contains("FIRMA ELECTRÓNICA"));
     }
 }

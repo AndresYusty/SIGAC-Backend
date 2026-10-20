@@ -104,6 +104,22 @@ public class MinutesService {
         return toDto(a, true);
     }
 
+    /** Rewrites unpublished minutes that were compiled on the previous sheet. */
+    @Transactional
+    public void refreshOpenLayout() {
+        for (Minutes a : minutes.findByStatusIn(List.of(
+                MinutesStatus.DRAFT, MinutesStatus.EDITING, MinutesStatus.PENDING_SIGNATURE))) {
+            if (a.getHtmlContent() != null && a.getHtmlContent().contains("<h1>ACTA ")) {
+                continue;
+            }
+            Session s = a.getSession();
+            MinutesTemplate template = templates.getActive(s.getCouncilType().getId(), s.getFaculty().getId());
+            String html = pdf.render(letterhead.embed(template.getContent()), modelBuilder.build(s, a.getSerialNumber()));
+            a.setHtmlContent(HtmlSanitizer.sanitizeDocument(html));
+            a.setTemplateVersion(template.getVersion());
+        }
+    }
+
     /** RF-28: Council Secretary polishes the wording before sending it for signature. */
     @Transactional
     public MinutesDto edit(Long id, String htmlContent) {
@@ -167,14 +183,14 @@ public class MinutesService {
         Instant now = Instant.now();
         ZoneId zone = ZoneId.of(props.getZone());
         String ip = ipResolver.current();
-        String role = u.hasRole("ROLE_PRESIDENT") ? "Council President" : "Council Secretary";
+        String role = u.hasRole("ROLE_PRESIDENT") ? "Presidente del Consejo" : "Secretaría del Consejo";
         String contentHash = HashUtil.sha256Hex(a.getHtmlContent());
 
         String finalHtml = HtmlSanitizer.appendSignatureBlock(a.getHtmlContent(), List.of(
-                "Signed by: " + u.name() + " (" + role + ")",
-                "Official server date and time: " + DateUtil.longDateTime(now, zone) + " (" + zone + ")",
-                "Source IP address: " + ip,
-                "SHA-256 hash of the approved content: " + contentHash));
+                "Firmado por: " + u.name() + " (" + role + ")",
+                "Fecha y hora oficial del servidor: " + DateUtil.longDateTime(now, zone) + " (" + zone + ")",
+                "Dirección IP de origen: " + ip,
+                "Huella SHA-256 del contenido aprobado: " + contentHash));
         byte[] file = pdf.generatePdfA(finalHtml);
 
         String path = repositoryPath(a);

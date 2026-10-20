@@ -50,7 +50,7 @@ public class MinutesModelBuilder {
         liveSessionService.attendees(s).forEach(attendee -> {
             Map<String, Object> a = new LinkedHashMap<>();
             a.put("name", attendee.name());
-            a.put("role", attendee.role() == RoleName.ROLE_PRESIDENT ? "President" : "Council member");
+            a.put("role", attendee.role() == RoleName.ROLE_PRESIDENT ? "Presidente" : "Consejero");
             a.put("present", attendee.present());
             attendees.add(a);
         });
@@ -74,7 +74,7 @@ public class MinutesModelBuilder {
             ag.put("number", p.getPosition());
             ag.put("title", p.getTitle());
             ag.put("description", description);
-            ag.put("decision", p.hasDecision() ? p.getOutcome().label() : "No decision");
+            ag.put("decision", p.hasDecision() ? p.getOutcome().label() : "Sin decisión");
             ag.put("votesFor", p.getVotesFor());
             ag.put("votesAgainst", p.getVotesAgainst());
             ag.put("abstentions", p.getAbstentions());
@@ -90,10 +90,10 @@ public class MinutesModelBuilder {
 
     private static String quorumSummary(QuorumDto q) {
         if (!q.applicable()) {
-            return "Virtual session: no deliberative quorum is required. " + q.present() + " of " + q.members()
-                    + " voting members took part in the consultation.";
+            return "Sesión virtual: no se exige quórum deliberatorio. Participaron " + q.present() + " de " + q.members()
+                    + " integrantes con voto.";
         }
-        return q.present() + " of " + q.members() + " voting members present (minimum required: " + q.required()
-                + "). " + (q.reached() ? "The deliberative quorum was verified." : "The quorum was not reached.");
+        return "Presentes " + q.present() + " de " + q.members() + " integrantes con voto (mínimo exigido: " + q.required()
+                + "). " + (q.reached() ? "Se verificó el quórum deliberatorio." : "No se alcanzó el quórum.");
     }
 }

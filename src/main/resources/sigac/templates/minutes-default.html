@@ -1,83 +1,86 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
   <meta charset="UTF-8"/>
-  <title th:text="${serialNumber}">Minutes</title>
+  <title th:text="${serialNumber}">Acta</title>
   <style>
-    @page { size: A4; margin: 2.2cm 2cm 2.4cm 2cm; @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; font-family: 'DejaVu Sans'; } }
-    * { font-family: 'DejaVu Sans', sans-serif; }
-    body { font-size: 10pt; color: #111111; line-height: 1.35; }
-    h1 { font-size: 14pt; text-align: center; margin: 0; }
-    h2 { font-size: 11pt; text-align: center; margin: 2px 0; font-weight: normal; }
-    h3 { font-size: 10.5pt; margin: 14px 0 4px 0; border-bottom: 1px solid #999999; }
-    table { width: 100%; border-collapse: collapse; margin-top: 6px; }
-    th, td { border: 1px solid #888888; padding: 3px 5px; font-size: 9pt; text-align: left; }
-    th { background-color: #e8e8e8; }
-    .header { border-bottom: 2px solid #333333; padding-bottom: 8px; margin-bottom: 10px; }
-    .agreement { margin-bottom: 10px; page-break-inside: avoid; }
+    @page {
+      size: letter;
+      margin: 2.5cm 3cm 2.8cm 3cm;
+      background-image: url('letterhead:usco');
+      background-size: 21.59cm 27.94cm;
+      background-repeat: no-repeat;
+    }
+    * { font-family: 'Arial', 'DejaVu Sans', sans-serif; }
+    body { font-size: 12pt; color: #000000; line-height: 1.15; }
+    h1 { font-size: 14pt; text-align: center; margin: 0 0 4pt 0; }
+    h3 { font-size: 12pt; text-align: center; margin: 14pt 0 8pt 0; }
+    p { text-align: justify; margin: 0 0 10pt 0; }
+    .center { text-align: center; margin: 0 0 4pt 0; }
+    table.data { width: 100%; border-collapse: collapse; margin: 0 0 12pt 0; }
+    table.data th, table.data td { border: 0.5pt solid #000000; padding: 3pt 5pt; font-size: 10pt; text-align: left; }
+    table.data th { font-weight: bold; text-align: center; }
     .decision { font-weight: bold; }
-    .notes { font-size: 9pt; margin-left: 10px; }
+    ol { margin: 0 0 12pt 1.2em; }
+    li { margin-bottom: 4pt; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1 th:text="${university}">UNIVERSITY</h1>
-    <h2 th:text="${campus} + ' - ' + ${faculty}">Campus - Faculty</h2>
-    <h2 th:text="${councilType}">Faculty Council</h2>
-    <h1 th:text="${serialNumber}">MIN-CF-2026-001</h1>
-  </div>
+  <h1>ACTA <span th:text="${serialNumber}">MIN-CO-2026-001</span></h1>
+  <p class="center" th:text="${councilType}">Consejo ordinario</p>
+  <p class="center" th:text="${faculty}">Facultad de Ingeniería</p>
 
-  <table>
+  <table class="data">
     <tr>
-      <th>Date</th><td th:text="${sessionDate}">August 15, 2026</td>
-      <th>Location</th><td th:text="${location}">Council Room</td>
+      <th>Fecha</th><td th:text="${sessionDate}">15 de agosto de 2026</td>
+      <th>Lugar</th><td th:text="${location}">Sala del consejo</td>
     </tr>
     <tr>
-      <th>Start time</th><td th:text="${startTime}">08:00</td>
-      <th>End time</th><td th:text="${endTime}">10:00</td>
+      <th>Inicio</th><td th:text="${startTime}">08:00</td>
+      <th>Finalización</th><td th:text="${endTime}">10:00</td>
     </tr>
   </table>
 
-  <h3>1. Attendance and quorum verification</h3>
-  <table>
-    <tr><th>Member</th><th>Capacity</th><th>Attendance</th></tr>
+  <h3>Asistencia y quórum</h3>
+  <table class="data">
+    <tr><th>Integrante</th><th>Calidad</th><th>Asistencia</th></tr>
     <tr th:each="a : ${attendees}">
-      <td th:text="${a.name}">Name</td>
-      <td th:text="${a.role}">Role</td>
-      <td th:text="${a.present} ? 'Present' : 'Absent'">Present</td>
+      <td th:text="${a.name}">Nombre</td>
+      <td th:text="${a.role}">Presidente</td>
+      <td th:text="${a.present} ? 'Presente' : 'Ausente'">Presente</td>
     </tr>
   </table>
-  <p th:text="${quorum}">Quorum</p>
+  <p th:text="${quorum}">Quórum</p>
 
   <div th:if="${hasGuests}">
-    <p><strong>Invited guests (voice, no vote; not counted for the quorum):</strong></p>
-    <table>
-      <tr><th>Guest</th><th>Capacity</th></tr>
+    <h3>Invitados (voz y sin voto)</h3>
+    <table class="data">
+      <tr><th>Invitado</th><th>Calidad</th></tr>
       <tr th:each="g : ${guests}">
-        <td th:text="${g.name}">Name</td>
-        <td th:text="${g.affiliation}">Affiliation</td>
+        <td th:text="${g.name}">Nombre</td>
+        <td th:text="${g.affiliation}">Dependencia</td>
       </tr>
     </table>
   </div>
 
-  <h3>2. Agenda</h3>
+  <h3>Orden del día</h3>
   <ol>
-    <li th:each="o : ${agenda}" th:text="${o.urgent} ? ${o.title} + ' (Urgent item)' : ${o.title}">Item</li>
+    <li th:each="o : ${agenda}" th:text="${o.urgent} ? ${o.title} + ' (Asunto urgente)' : ${o.title}">Punto</li>
   </ol>
 
-  <h3>3. Proceedings and agreements</h3>
-  <div class="agreement" th:each="ag : ${agreements}">
+  <h3>Desarrollo y decisiones</h3>
+  <div th:each="ag : ${agreements}">
     <p>
-      <strong th:text="${ag.number} + '. ' + ${ag.title}">1. Title</strong>
-      <span th:if="${ag.miscellaneous}"> (Miscellaneous item)</span>
-      <span th:if="${ag.urgent}"> (Urgent item)</span>
+      <strong th:text="${ag.number} + '. ' + ${ag.title}">1. Título</strong>
+      <span th:if="${ag.miscellaneous}"> (Punto de varios)</span>
+      <span th:if="${ag.urgent}"> (Asunto urgente)</span>
     </p>
-    <p th:if="${ag.description}" th:text="${ag.description}">Description</p>
-    <p class="decision" th:text="'Decision: ' + ${ag.decision}">Decision: Approved</p>
-    <p th:text="'Votes for: ' + ${ag.votesFor} + ' | Against: ' + ${ag.votesAgainst} + ' | Abstentions: ' + ${ag.abstentions}">Votes</p>
-    <div class="notes" th:utext="${ag.notes}"></div>
+    <p th:if="${ag.description}" th:text="${ag.description}">Descripción</p>
+    <p class="decision" th:text="'Decisión: ' + ${ag.decision}">Decisión: Aprobado</p>
+    <p th:text="'Votos a favor: ' + ${ag.votesFor} + ' | En contra: ' + ${ag.votesAgainst} + ' | Abstenciones: ' + ${ag.abstentions}">Votos</p>
+    <div th:utext="${ag.notes}"></div>
   </div>
 
-  <p>The session was adjourned at <span th:text="${endTime}">10:00</span>. These minutes are issued as a record thereof.</p>
+  <p>Se levanta la sesión a las <span th:text="${endTime}">10:00</span>. Para constancia se expide la presente acta.</p>
 </body>
 </html>

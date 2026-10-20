@@ -131,6 +131,18 @@ public class TemplateService {
         templates.save(p);
     }
 
+    /** Replaces the bundled minutes layout when a council still has the previous sheet. */
+    @Transactional
+    public void replaceBundledMinutesLayout() {
+        String fresh = readResource(DEFAULT_TEMPLATE);
+        for (MinutesTemplate template : templates.findAllByOrderByIdDesc()) {
+            String content = template.getContent();
+            if (content != null && !content.contains("letterhead:usco")) {
+                template.setContent(fresh);
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- private
 
     private void deactivateCurrent(Long councilTypeId, Long facultyId) {

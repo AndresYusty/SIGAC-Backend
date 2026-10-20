@@ -1,7 +1,7 @@
 package com.university.sigac.modules.requests.enums;
 
 public enum DecisionOutcome {
-    APPROVED("Approved"), DENIED("Denied"), POSTPONED("Postponed"), CANCELLED("Cancelled");
+    APPROVED("Aprobado"), DENIED("Negado"), POSTPONED("Aplazado"), CANCELLED("Cancelado");
 
     private final String label;
 
