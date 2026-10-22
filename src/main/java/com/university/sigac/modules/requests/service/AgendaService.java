@@ -28,8 +28,10 @@ import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.service.CouncilTypeService;
 import com.university.sigac.modules.users.service.HierarchyService;
 import com.university.sigac.modules.users.service.UserLookupService;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -41,6 +43,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -93,6 +96,7 @@ public class AgendaService {
     @Transactional(readOnly = true)
     public Page<SessionSummaryDto> list(SessionStatus status, Pageable pageable) {
         AuthenticatedUser u = SecurityUtils.current();
+        LocalDateTime now = LocalDateTime.now();
         Specification<Session> filter = (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
             if (!u.isGlobal()) {
@@ -101,9 +105,20 @@ public class AgendaService {
             if (status != null) {
                 ps.add(cb.equal(root.get("status"), status));
             }
-            return cb.and(ps.toArray(new Predicate[0]));
+            if (query != null && query.getResultType() != Long.class && query.getResultType() != long.class) {
+                Expression<LocalDateTime> at = root.get("scheduledAt");
+                Expression<Integer> upcomingFirst = cb.<Integer>selectCase()
+                        .when(cb.greaterThanOrEqualTo(at, now), 0)
+                        .otherwise(1);
+                Expression<LocalDateTime> soonestFirst = cb.<LocalDateTime>selectCase()
+                        .when(cb.greaterThanOrEqualTo(at, now), at)
+                        .otherwise(LocalDateTime.of(9999, 12, 31, 23, 59));
+                query.orderBy(cb.asc(upcomingFirst), cb.asc(soonestFirst), cb.desc(at));
+            }
+            return ps.isEmpty() ? cb.conjunction() : cb.and(ps.toArray(new Predicate[0]));
         };
-        return sessions.findAll(filter, pageable).map(SessionMapper::toSummary);
+        Pageable page = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return sessions.findAll(filter, page).map(SessionMapper::toSummary);
     }
 
     @Transactional(readOnly = true)
