@@ -111,7 +111,7 @@ Hierarchy (`/hierarchy`): `GET|POST /universities`, `PUT /universities/{id}`,
 
 Configuration: `GET /council-types`, `PUT /council-types/{id}` (rename only), `GET /parameters`, `PUT /parameters/{key}`.
 
-Templates (`/templates`, DEV only): `GET ?councilTypeId`, `GET /variables`, `GET /{id}`, `POST /validate`,
+Templates (`/templates`, ADMIN only): `GET ?councilTypeId`, `GET /variables`, `GET /{id}`,
 `POST`, `PUT /{id}/activate`, `POST /preview`.
 
 Requests (`/requests`): `POST` (multipart: form fields + files part `attachments`), `PUT /{id}` (multipart),
@@ -134,7 +134,7 @@ Letterhead (`/letterhead`): `GET` (`{customSheet, logo}`), `GET /sheet`, `GET /l
 (multipart `file`, PNG/JPG up to 5 MB, ADMIN), `DELETE /sheet`, `DELETE /logo` (ADMIN).
 
 Repository & audit: `GET /repository/minutes?serialNumber&councilTypeId&from&to&campusId&facultyId&text&page&size`,
-`GET /repository/minutes/{id}/verify`, `GET /repository/minutes/{id}/viewer` (PDF),
+`GET /repository/minutes/{id}/viewer` (PDF),
 `GET /repository/minutes/{id}/download`, `GET /audit?event&user&from&to&page&size`, `GET /dashboard`.
 
 ## DTOs (JSON field names)
@@ -177,7 +177,6 @@ Sessions: `SessionRequest{councilTypeId,scheduledAt,location}`, `AddItemRequest{
 Minutes: `MinutesDto{id,serialNumber,status,sessionId,councilType,faculty,sessionDate,rejectionNote,signedBy,signedAt,htmlContent}`,
 `MinutesContentRequest{htmlContent}`, `RejectionRequest{note}`,
 `RepositoryMinutesDto{id,serialNumber,councilType,university,campus,faculty,sessionDate,signedBy,signedAt,sha256Hash}`,
-`VerificationDto{serialNumber,storedHash,computedHash,intact}`,
 `AuditLogDto{id,event,userEmail,ip,entity,entityId,detail,occurredAt}`, `DashboardDto{user,indicators}`.
 
 Dashboard `indicators` keys: `myRequestsByStatus` (map RequestStatus→count), `requestsPendingReview`,

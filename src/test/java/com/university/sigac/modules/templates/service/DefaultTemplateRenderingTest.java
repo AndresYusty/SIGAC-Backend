@@ -38,17 +38,4 @@ class DefaultTemplateRenderingTest {
         String html = pdf.render(defaultTemplate(), data);
         assertFalse(html.contains("Invitados"));
     }
-
-    @Test
-    void rendersTheAgreementDraftLikeAcuerdo028() throws Exception {
-        String draft;
-        try (var in = getClass().getResourceAsStream("/sigac/templates/agreement-draft.html")) {
-            draft = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
-        String html = pdf.render(draft, MockDataFactory.create());
-        assertTrue(html.contains("ACUERDO No. 028 DE 2026"));
-        assertTrue(html.contains("OSCAR JULIAN PEREZ MOREA"));
-        assertTrue(html.contains("MARLIO BEDOYA CARDOSO"));
-        assertTrue(html.contains("COMUNÍQUESE Y CÚMPLASE"));
-    }
 }

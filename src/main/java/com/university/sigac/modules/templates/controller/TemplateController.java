@@ -39,12 +39,6 @@ public class TemplateController {
         return service.list(councilTypeId);
     }
 
-    /** Faculty Council agreement layout, for preview against the reference documents. */
-    @GetMapping(value = "/samples/agreement", produces = MediaType.TEXT_PLAIN_VALUE)
-    public String agreementDraft() {
-        return service.agreementDraft();
-    }
-
     /** Official catalog of variables that can be used in templates (RF-11). */
     @GetMapping("/variables")
     public List<VariableDto> variables() {
@@ -54,12 +48,6 @@ public class TemplateController {
     @GetMapping("/{id}")
     public TemplateDto get(@PathVariable Long id) {
         return service.get(id);
-    }
-
-    /** Returns the list of errors (empty if the template is valid). */
-    @PostMapping("/validate")
-    public List<String> validate(@Valid @RequestBody TemplateContentRequest req) {
-        return service.validate(req.content());
     }
 
     @PostMapping

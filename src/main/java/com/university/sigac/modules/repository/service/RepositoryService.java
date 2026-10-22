@@ -12,7 +12,6 @@ import com.university.sigac.modules.minutes.service.MinutesQueryService;
 import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.repository.dto.RepositoryDtos.MinutesFile;
 import com.university.sigac.modules.repository.dto.RepositoryDtos.RepositoryMinutesDto;
-import com.university.sigac.modules.repository.dto.RepositoryDtos.VerificationDto;
 import com.university.sigac.modules.session.service.AttendanceQueryService;
 import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.service.UserLookupService;
@@ -102,17 +101,6 @@ public class RepositoryService {
         }
         audit.record(event, "MINUTES", a.getId(), a.getSerialNumber() + " sha256=" + computed);
         return new MinutesFile(a.getSerialNumber() + ".pdf", data, computed);
-    }
-
-    @Transactional(readOnly = true)
-    public VerificationDto verify(Long minutesId) {
-        Minutes a = loadPublished(minutesId);
-        String computed = storage.exists(a.getFilePath()) ? HashUtil.sha256Hex(storage.read(a.getFilePath())) : null;
-        boolean intact = HashUtil.matches(computed, a.getFileHash());
-        if (!intact) {
-            reportCompromise(a, "Manual verification: computed hash " + computed);
-        }
-        return new VerificationDto(a.getSerialNumber(), a.getFileHash(), computed, intact);
     }
 
     private void reportCompromise(Minutes a, String detail) {

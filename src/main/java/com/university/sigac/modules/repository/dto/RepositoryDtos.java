@@ -15,9 +15,6 @@ public final class RepositoryDtos {
                                        String sha256Hash) {
     }
 
-    public record VerificationDto(String serialNumber, String storedHash, String computedHash, boolean intact) {
-    }
-
     public record MinutesFile(String name, byte[] data, String hash) {
     }
 

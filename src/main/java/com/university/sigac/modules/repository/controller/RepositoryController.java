@@ -2,7 +2,6 @@ package com.university.sigac.modules.repository.controller;
 
 import com.university.sigac.modules.repository.dto.RepositoryDtos.MinutesFile;
 import com.university.sigac.modules.repository.dto.RepositoryDtos.RepositoryMinutesDto;
-import com.university.sigac.modules.repository.dto.RepositoryDtos.VerificationDto;
 import com.university.sigac.modules.repository.service.RepositoryService;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -41,11 +40,6 @@ public class RepositoryController {
                                              @RequestParam(required = false) String text,
                                              @PageableDefault(size = 20, sort = "sessionDate", direction = Sort.Direction.DESC) Pageable pageable) {
         return repository.search(serialNumber, councilTypeId, from, to, campusId, facultyId, text, pageable);
-    }
-
-    @GetMapping("/{id}/verify")
-    public VerificationDto verify(@PathVariable Long id) {
-        return repository.verify(id);
     }
 
     /** RF-39: built-in viewer (inline). The SHA-256 is also validated before delivering the file. */

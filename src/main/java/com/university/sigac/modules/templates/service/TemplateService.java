@@ -30,7 +30,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemplateService {
 
     private static final String DEFAULT_TEMPLATE = "/sigac/templates/minutes-default.html";
-    private static final String AGREEMENT_DRAFT = "/sigac/templates/agreement-draft.html";
 
     private final MinutesTemplateRepository templates;
     private final CouncilTypeService councilTypes;
@@ -50,10 +49,6 @@ public class TemplateService {
     @Transactional(readOnly = true)
     public TemplateDto get(Long id) {
         return toDto(find(id), true);
-    }
-
-    public List<String> validate(String content) {
-        return validator.validate(content);
     }
 
     /** Saves a NEW version and makes it active for its scope (without editing the database by hand, RN-07). */
@@ -90,11 +85,6 @@ public class TemplateService {
         p.setActive(true);
         audit.record("EVENT_TEMPLATE_ACTIVATED", "TEMPLATE", p.getId(), "Version " + p.getVersion());
         return toDto(p, true);
-    }
-
-    /** Faculty Council agreement draft, filled on preview with Acuerdo 028 de 2026. */
-    public String agreementDraft() {
-        return readResource(AGREEMENT_DRAFT);
     }
 
     /** RF-12: renders with sample data and returns the PDF/A, without saving anything. */
@@ -137,7 +127,7 @@ public class TemplateService {
         String fresh = readResource(DEFAULT_TEMPLATE);
         for (MinutesTemplate template : templates.findAllByOrderByIdDesc()) {
             String content = template.getContent();
-            if (content != null && !content.contains("letterhead:usco")) {
+            if (content == null || !content.contains("letterhead:usco") || content.contains("${agreementNumber}")) {
                 template.setContent(fresh);
             }
         }
