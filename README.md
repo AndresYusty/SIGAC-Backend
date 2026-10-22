@@ -100,7 +100,7 @@ Created only when `SIGAC_SEED_DEMO=true` and the database has no universities (p
 
 | Email                 | Role                   |
 |-----------------------|------------------------|
-| `sec1@demo.edu`       | ROLE_COUNCIL_SECRETARY |
+| `andrescardoso1002@gmail.com` | ROLE_COUNCIL_SECRETARY |
 | `sec2@demo.edu`       | ROLE_FACULTY_SECRETARY |
 | `presidente@demo.edu` | ROLE_PRESIDENT         |
 | `consejero1@demo.edu` | ROLE_COUNCIL_MEMBER    |

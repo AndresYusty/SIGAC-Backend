@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   application:
     name: sigac-backend
   datasource:
@@ -33,6 +35,8 @@ spring:
     properties:
       mail.smtp.auth: ${SMTP_AUTH:false}
       mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+      mail.smtp.starttls.required: ${SMTP_STARTTLS:false}
+      mail.smtp.ssl.checkserveridentity: ${SMTP_CHECK_IDENTITY:true}
       mail.smtp.connectiontimeout: 10000
       mail.smtp.timeout: 15000
   autoconfigure:

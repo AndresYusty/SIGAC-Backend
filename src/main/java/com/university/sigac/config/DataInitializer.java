@@ -105,7 +105,7 @@ public class DataInitializer implements ApplicationRunner {
         programs.save(prog);
 
         String password = "Demo12345*";
-        createUser("Demo Council Secretary", "sec1@demo.edu", password, RoleName.ROLE_COUNCIL_SECRETARY, fac, null);
+        createUser("Demo Council Secretary", "andrescardoso1002@gmail.com", password, RoleName.ROLE_COUNCIL_SECRETARY, fac, null);
         createUser("Demo Faculty Secretary", "sec2@demo.edu", password, RoleName.ROLE_FACULTY_SECRETARY, fac, prog);
         createUser("Demo President (Dean)", "presidente@demo.edu", password, RoleName.ROLE_PRESIDENT, fac, null);
         createUser("Council Member One", "consejero1@demo.edu", password, RoleName.ROLE_COUNCIL_MEMBER, fac, null);

@@ -32,51 +32,51 @@ public class EmailService {
     @Async
     public void sendNotice(List<String> recipients, String councilType, String faculty, String date,
                            String time, String location, List<String> attachments) {
-        String body = layout("Session notice",
-                "The agenda has been closed and you are summoned to the session of the <strong>" + esc(councilType)
-                        + "</strong> of the " + esc(faculty) + ".",
-                "<strong>Date:</strong> " + esc(date) + "<br/><strong>Time:</strong> " + esc(time)
-                        + "<br/><strong>Location:</strong> " + esc(location),
-                "The official notice and the supporting documents for each item are attached.");
-        send(recipients, "Session notice - " + councilType, body, attachments);
+        String body = layout("Citación a sesión",
+                "Se cerró el orden del día y queda convocado a la sesión del <strong>" + esc(councilType)
+                        + "</strong> de la " + esc(faculty) + ".",
+                "<strong>Fecha:</strong> " + esc(date) + "<br/><strong>Hora:</strong> " + esc(time)
+                        + "<br/><strong>Lugar:</strong> " + esc(location),
+                "Se adjuntan la citación y los soportes de cada punto.");
+        send(recipients, "Citación a sesión - " + councilType, body, attachments);
     }
 
     @Async
     public void sendRequestReturned(String recipient, String code, String title, String reason, boolean rejected) {
-        String action = rejected ? "rejected" : "returned for adjustments";
-        String body = layout("Request " + action,
-                "Your request <strong>" + esc(code) + "</strong> (\"" + esc(title) + "\") was " + action + ".",
-                "<strong>Reason:</strong> " + esc(reason),
-                rejected ? "" : "You can correct it and resubmit it from SIGAC.");
-        send(List.of(recipient), "Request " + code + " " + action, body, List.of());
+        String action = rejected ? "rechazada" : "devuelta para ajustes";
+        String body = layout("Solicitud " + action,
+                "Su solicitud <strong>" + esc(code) + "</strong> (\"" + esc(title) + "\") fue " + action + ".",
+                "<strong>Motivo:</strong> " + esc(reason),
+                rejected ? "" : "Puede corregirla y volver a radicarla en SIGAC.");
+        send(List.of(recipient), "Solicitud " + code + " " + action, body, List.of());
     }
 
     @Async
     public void sendMinutesPublished(List<String> recipients, String serialNumber, String faculty, String pdfPath) {
-        String body = layout("Minutes published: " + serialNumber,
-                "The official minutes <strong>" + esc(serialNumber) + "</strong> of the " + esc(faculty)
-                        + " have been signed and published.",
-                "The PDF/A document is attached. You can also view it in the SIGAC Digital Repository "
-                        + "(<a href=\"" + esc(props.getFrontendUrl()) + "/repository\">open</a>).", "");
-        send(recipients, "Minutes published " + serialNumber, body, List.of(pdfPath));
+        String body = layout("Acta publicada: " + serialNumber,
+                "El acta <strong>" + esc(serialNumber) + "</strong> de la " + esc(faculty)
+                        + " fue firmada y publicada.",
+                "Se adjunta el PDF. También puede verla en el repositorio de SIGAC "
+                        + "(<a href=\"" + esc(props.getFrontendUrl()) + "/repository\">abrir</a>).", "");
+        send(recipients, "Acta publicada " + serialNumber, body, List.of(pdfPath));
     }
 
     @Async
     public void sendPasswordReset(String recipient, String name, String token) {
         String link = props.getFrontendUrl() + "/reset-password?token=" + token;
-        String body = layout("Reset password",
-                "Hello " + esc(name) + ", we received a request to reset your SIGAC password.",
-                "Use this single-use link: <a href=\"" + esc(link) + "\">reset password</a>.",
-                "If you did not request it, please ignore this message.");
-        send(List.of(recipient), "SIGAC - Reset password", body, List.of());
+        String body = layout("Restablecer contraseña",
+                "Hola " + esc(name) + ", recibimos una solicitud para restablecer su contraseña de SIGAC.",
+                "Use este enlace de un solo uso: <a href=\"" + esc(link) + "\">restablecer contraseña</a>.",
+                "Si usted no lo solicitó, ignore este mensaje.");
+        send(List.of(recipient), "SIGAC - Restablecer contraseña", body, List.of());
     }
 
     @Async
     public void sendIntegrityAlert(List<String> recipients, String serialNumber) {
-        String body = layout("ALERT: compromised document",
-                "The minutes <strong>" + esc(serialNumber) + "</strong> failed the SHA-256 integrity check.",
-                "The system blocked its download. Check the storage volume and the audit log.", "");
-        send(recipients, "SIGAC ALERT - Integrity compromised " + serialNumber, body, List.of());
+        String body = layout("Alerta: documento alterado",
+                "El acta <strong>" + esc(serialNumber) + "</strong> no superó la verificación de integridad.",
+                "El sistema bloqueó su descarga. Revise el almacenamiento y la auditoría.", "");
+        send(recipients, "SIGAC - Acta alterada " + serialNumber, body, List.of());
     }
 
     // ------------------------------------------------------------------
@@ -124,7 +124,7 @@ public class EmailService {
                 sb.append("<p>").append(p).append("</p>");
             }
         }
-        return sb.append("<hr/><p style=\"font-size:12px;color:#777\">Automatic message from SIGAC.</p></div>").toString();
+        return sb.append("<hr/><p style=\"font-size:12px;color:#777\">Mensaje automático de SIGAC. No responda a este correo.</p></div>").toString();
     }
 
     private String esc(String s) {
