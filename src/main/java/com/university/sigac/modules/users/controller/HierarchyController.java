@@ -11,6 +11,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,13 @@ public class HierarchyController {
         return service.updateUniversity(id, r);
     }
 
+    @DeleteMapping("/universities/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteUniversity(@PathVariable Long id) {
+        service.deleteUniversity(id);
+    }
+
     @GetMapping("/campuses")
     public List<NodeDto> campuses(@RequestParam Long universityId) {
         return service.listCampuses(universityId);
@@ -63,6 +71,13 @@ public class HierarchyController {
     @PreAuthorize("hasRole('ADMIN')")
     public NodeDto updateCampus(@PathVariable Long id, @Valid @RequestBody CampusRequest r) {
         return service.updateCampus(id, r);
+    }
+
+    @DeleteMapping("/campuses/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteCampus(@PathVariable Long id) {
+        service.deleteCampus(id);
     }
 
     @GetMapping("/faculties")
@@ -83,6 +98,13 @@ public class HierarchyController {
         return service.updateFaculty(id, r);
     }
 
+    @DeleteMapping("/faculties/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteFaculty(@PathVariable Long id) {
+        service.deleteFaculty(id);
+    }
+
     @GetMapping("/programs")
     public List<NodeDto> programs(@RequestParam Long facultyId) {
         return service.listPrograms(facultyId);
@@ -99,5 +121,12 @@ public class HierarchyController {
     @PreAuthorize("hasRole('ADMIN')")
     public NodeDto updateProgram(@PathVariable Long id, @Valid @RequestBody ProgramRequest r) {
         return service.updateProgram(id, r);
+    }
+
+    @DeleteMapping("/programs/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteProgram(@PathVariable Long id) {
+        service.deleteProgram(id);
     }
 }

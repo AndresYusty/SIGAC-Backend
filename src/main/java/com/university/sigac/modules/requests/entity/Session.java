@@ -63,6 +63,10 @@ public class Session {
     @OrderBy("id ASC")
     private List<SessionGuest> guests = new ArrayList<>();
 
+    /** Counselors and participants chosen when the session is scheduled. They receive the notice. */
+    @OneToMany(mappedBy = "session", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SessionSummon> summons = new ArrayList<>();
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 

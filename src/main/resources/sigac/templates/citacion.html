@@ -31,6 +31,13 @@
   <p><strong>Hora:</strong> <span th:text="${sessionTime}">17:04</span></p>
   <p><strong>Lugar:</strong> <span th:text="${location}">Sala del consejo</span></p>
 
+  <div th:if="${hasSummoned}">
+    <h3>Convocados</h3>
+    <ul>
+      <li th:each="p : ${summoned}" th:text="${p.name} + ' — ' + ${p.roleLabel}">Nombre — cargo</li>
+    </ul>
+  </div>
+
   <h3>Orden del día</h3>
   <ol>
     <li th:each="o : ${agenda}">

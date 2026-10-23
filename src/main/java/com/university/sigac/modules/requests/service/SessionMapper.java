@@ -4,10 +4,15 @@ import com.university.sigac.modules.requests.dto.SessionDtos.AgendaItemDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.GuestDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
+import com.university.sigac.modules.requests.dto.SessionDtos.SummonedDto;
 import com.university.sigac.modules.requests.entity.AgendaItem;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionGuest;
+import com.university.sigac.modules.requests.entity.SessionSummon;
+import com.university.sigac.modules.users.entity.User;
+import com.university.sigac.modules.users.enums.RoleName;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +28,46 @@ public final class SessionMapper {
                 s.getFaculty().getId(), s.getFaculty().getName(), s.getScheduledAt(), s.getLocation(), s.getStatus(),
                 s.isAgendaClosed(), s.getActualStart(), s.getActualEnd(),
                 s.getItems().stream().map(SessionMapper::toItem).toList(),
-                s.getGuests().stream().map(SessionMapper::toGuest).toList());
+                s.getGuests().stream().map(SessionMapper::toGuest).toList(),
+                toSummoned(s));
+    }
+
+    public static List<SummonedDto> toSummoned(Session s) {
+        return s.getSummons().stream()
+                .sorted(Comparator.comparingInt((SessionSummon sm) -> summonOrder(sm.getUser()))
+                        .thenComparing(sm -> sm.getUser().getName()))
+                .map(sm -> new SummonedDto(sm.getUser().getId(), sm.getUser().getName(), seat(sm.getUser())))
+                .toList();
+    }
+
+    /** President, then counselors, then the council secretary. */
+    public static int summonOrder(User user) {
+        if (user.hasRole(RoleName.ROLE_PRESIDENT)) {
+            return 0;
+        }
+        if (user.hasRole(RoleName.ROLE_COUNCIL_MEMBER)) {
+            return 1;
+        }
+        return 2;
+    }
+
+    public static RoleName seat(User user) {
+        if (user.hasRole(RoleName.ROLE_PRESIDENT)) {
+            return RoleName.ROLE_PRESIDENT;
+        }
+        if (user.hasRole(RoleName.ROLE_COUNCIL_MEMBER)) {
+            return RoleName.ROLE_COUNCIL_MEMBER;
+        }
+        return RoleName.ROLE_COUNCIL_SECRETARY;
+    }
+
+    public static String seatLabel(RoleName role) {
+        return switch (role) {
+            case ROLE_PRESIDENT -> "Presidente";
+            case ROLE_COUNCIL_MEMBER -> "Consejero";
+            case ROLE_COUNCIL_SECRETARY -> "Secretaría del Consejo";
+            default -> role.name();
+        };
     }
 
     public static SessionSummaryDto toSummary(Session s) {

@@ -14,16 +14,19 @@ import com.university.sigac.modules.requests.dto.SessionDtos.GuestRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
+import com.university.sigac.modules.requests.dto.SessionDtos.SummonedDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.UrgentItemRequest;
 import com.university.sigac.modules.requests.entity.AgendaItem;
 import com.university.sigac.modules.requests.entity.CouncilRequest;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionGuest;
+import com.university.sigac.modules.requests.entity.SessionSummon;
 import com.university.sigac.modules.requests.enums.RequestStatus;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.SessionRepository;
 import com.university.sigac.modules.users.entity.CouncilType;
+import com.university.sigac.modules.users.entity.User;
 import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.service.CouncilTypeService;
 import com.university.sigac.modules.users.service.HierarchyService;
@@ -36,6 +39,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +49,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,8 +59,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AgendaService {
 
-    private static final String NOTICE_TEMPLATE_PATH = "/sigac/templates/notice.html";
+    private static final String NOTICE_TEMPLATE_PATH = "/sigac/templates/citacion.html";
     private static final String NOTICE_TEMPLATE = readNoticeTemplate();
+    /** People who can be summoned: they sit, vote, or conduct. The faculty secretary files requests and is not cited. */
+    private static final List<RoleName> SUMMONABLE = List.of(
+            RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_COUNCIL_SECRETARY);
 
     private final SessionRepository sessions;
     private final CouncilRequestRepository requests;
@@ -83,14 +91,34 @@ public class AgendaService {
         if (location == null && type.getKind().requiresLocation()) {
             throw ApiException.badRequest("The location is required for a session of type " + type.getName());
         }
+        List<User> chosen = summoned(u.facultyId(), req.memberIds());
         Session s = new Session();
         s.setCouncilType(type);
         s.setFaculty(hierarchy.facultyReference(u.facultyId()));
         s.setScheduledAt(req.scheduledAt());
         s.setLocation(location);
+        for (User person : chosen) {
+            SessionSummon summon = new SessionSummon();
+            summon.setSession(s);
+            summon.setUser(person);
+            s.getSummons().add(summon);
+        }
         sessions.save(s);
-        audit.record("EVENT_SESSION_CREATED", "SESSION", s.getId(), type.getName());
+        audit.record("EVENT_SESSION_CREATED", "SESSION", s.getId(), type.getName() + ", " + chosen.size() + " summoned");
         return SessionMapper.toDto(s);
+    }
+
+    /** President, counselors and the council secretary of the current faculty, for the schedule form. */
+    @Transactional(readOnly = true)
+    public List<SummonedDto> summonable() {
+        AuthenticatedUser u = SecurityUtils.current();
+        if (u.facultyId() == null) {
+            throw ApiException.forbidden("Your user is not linked to a Faculty");
+        }
+        return users.findActiveByFacultyAndRoles(u.facultyId(), SUMMONABLE).stream()
+                .sorted(Comparator.comparingInt(SessionMapper::summonOrder).thenComparing(User::getName))
+                .map(person -> new SummonedDto(person.getId(), person.getName(), SessionMapper.seat(person)))
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -106,14 +134,20 @@ public class AgendaService {
                 ps.add(cb.equal(root.get("status"), status));
             }
             if (query != null && query.getResultType() != Long.class && query.getResultType() != long.class) {
-                Expression<LocalDateTime> at = root.get("scheduledAt");
-                Expression<Integer> upcomingFirst = cb.<Integer>selectCase()
-                        .when(cb.greaterThanOrEqualTo(at, now), 0)
-                        .otherwise(1);
-                Expression<LocalDateTime> soonestFirst = cb.<LocalDateTime>selectCase()
-                        .when(cb.greaterThanOrEqualTo(at, now), at)
-                        .otherwise(LocalDateTime.of(9999, 12, 31, 23, 59));
-                query.orderBy(cb.asc(upcomingFirst), cb.asc(soonestFirst), cb.desc(at));
+                Expression<?> chosen = sortExpression(root, cb, pageable.getSort());
+                if (chosen != null) {
+                    boolean asc = pageable.getSort().iterator().next().isAscending();
+                    query.orderBy(asc ? cb.asc(chosen) : cb.desc(chosen), cb.asc(root.get("id")));
+                } else {
+                    Expression<LocalDateTime> at = root.get("scheduledAt");
+                    Expression<Integer> upcomingFirst = cb.<Integer>selectCase()
+                            .when(cb.greaterThanOrEqualTo(at, now), 0)
+                            .otherwise(1);
+                    Expression<LocalDateTime> soonestFirst = cb.<LocalDateTime>selectCase()
+                            .when(cb.greaterThanOrEqualTo(at, now), at)
+                            .otherwise(LocalDateTime.of(9999, 12, 31, 23, 59));
+                    query.orderBy(cb.asc(upcomingFirst), cb.asc(soonestFirst), cb.desc(at));
+                }
             }
             return ps.isEmpty() ? cb.conjunction() : cb.and(ps.toArray(new Predicate[0]));
         };
@@ -247,8 +281,7 @@ public class AgendaService {
         attachments.add(noticePath);
         s.getItems().stream().filter(p -> p.getRequest() != null)
                 .forEach(p -> p.getRequest().getAttachments().forEach(a -> attachments.add(a.getPath())));
-        List<String> recipients = new ArrayList<>(users.activeEmailsByFacultyAndRoles(s.getFaculty().getId(),
-                List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_COUNCIL_SECRETARY)));
+        List<String> recipients = noticeRecipients(s);
         s.getGuests().stream().map(SessionGuest::getEmail).filter(e -> e != null && !recipients.contains(e))
                 .forEach(recipients::add);
 
@@ -311,8 +344,26 @@ public class AgendaService {
         }
     }
 
+    /** Column keys the sessions table may sort by. Anything else keeps the default order. */
+    private Expression<?> sortExpression(jakarta.persistence.criteria.Root<Session> root,
+                                         jakarta.persistence.criteria.CriteriaBuilder cb, Sort sort) {
+        if (sort == null || sort.isUnsorted()) {
+            return null;
+        }
+        String key = sort.iterator().next().getProperty();
+        return switch (key) {
+            case "type" -> root.get("councilType").get("name");
+            case "faculty" -> root.get("faculty").get("name");
+            case "date" -> root.get("scheduledAt");
+            case "location" -> root.get("location");
+            case "status" -> root.get("status");
+            case "items" -> cb.size(root.get("items"));
+            default -> null;
+        };
+    }
+
     private String noticePath(Long sessionId) {
-        return "notices/" + sessionId + "/notice.pdf";
+        return "citaciones/" + sessionId + "/citacion.pdf";
     }
 
     private Map<String, Object> noticeModel(Session s) {
@@ -336,7 +387,44 @@ public class AgendaService {
         m.put("agenda", agenda);
         m.put("guests", SessionMapper.toGuestsModel(s));
         m.put("hasGuests", !s.getGuests().isEmpty());
+        List<Map<String, Object>> summoned = new ArrayList<>();
+        for (SummonedDto person : SessionMapper.toSummoned(s)) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("name", person.name());
+            row.put("roleLabel", SessionMapper.seatLabel(person.role()));
+            summoned.add(row);
+        }
+        m.put("summoned", summoned);
+        m.put("hasSummoned", !summoned.isEmpty());
         return m;
+    }
+
+    /** Sessions scheduled before this choice keep the previous recipients: the whole faculty council. */
+    private List<String> noticeRecipients(Session s) {
+        if (s.getSummons().isEmpty()) {
+            return new ArrayList<>(users.activeEmailsByFacultyAndRoles(s.getFaculty().getId(), SUMMONABLE));
+        }
+        return s.getSummons().stream().map(summon -> summon.getUser().getEmail())
+                .filter(email -> email != null && !email.isBlank()).distinct().collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    private List<User> summoned(Long facultyId, List<Long> memberIds) {
+        Map<Long, User> eligible = users.findActiveByFacultyAndRoles(facultyId, SUMMONABLE).stream()
+                .collect(Collectors.toMap(User::getId, person -> person));
+        List<User> chosen = new ArrayList<>();
+        for (Long id : memberIds.stream().distinct().toList()) {
+            User person = eligible.get(id);
+            if (person == null) {
+                throw ApiException.badRequest("User " + id + " cannot be summoned to this council");
+            }
+            chosen.add(person);
+        }
+        boolean voting = chosen.stream().anyMatch(person -> person.getRoles().stream().anyMatch(RoleName.VOTING::contains));
+        if (!voting) {
+            throw ApiException.badRequest("Summon at least one voting member: the president or a counselor");
+        }
+        chosen.sort(Comparator.comparingInt(SessionMapper::summonOrder).thenComparing(User::getName));
+        return chosen;
     }
 
     private static String readNoticeTemplate() {

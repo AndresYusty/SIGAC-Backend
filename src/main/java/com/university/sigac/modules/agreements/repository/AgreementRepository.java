@@ -11,6 +11,8 @@ public interface AgreementRepository extends JpaRepository<Agreement, Long>, Jpa
     @Query("select coalesce(max(a.number), 0) from Agreement a where a.faculty.id = :facultyId and a.year = :year")
     int lastNumber(Long facultyId, int year);
 
+    boolean existsByFacultyId(Long facultyId);
+
     boolean existsByFacultyIdAndYearAndNumberAndIdNot(Long facultyId, int year, int number, Long id);
 
     Optional<Agreement> findTopByFacultyIdOrderByIdDesc(Long facultyId);

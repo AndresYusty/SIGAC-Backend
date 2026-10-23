@@ -11,6 +11,7 @@ import com.university.sigac.modules.requests.dto.SessionDtos.AgendaItemDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.entity.AgendaItem;
 import com.university.sigac.modules.requests.entity.Session;
+import com.university.sigac.modules.requests.entity.SessionSummon;
 import com.university.sigac.modules.requests.enums.RequestStatus;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.service.AgendaService;
@@ -32,6 +33,7 @@ import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.service.UserLookupService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -228,16 +230,23 @@ public class LiveSessionService {
     public List<AttendeeDto> attendees(Session s) {
         Map<Long, Boolean> present = attendances.findBySessionId(s.getId()).stream()
                 .collect(Collectors.toMap(a -> a.getUser().getId(), Attendance::isPresent));
-        return members(s).stream().map(u -> new AttendeeDto(u.getId(), u.getName(),
-                u.hasRole(RoleName.ROLE_PRESIDENT) ? RoleName.ROLE_PRESIDENT : RoleName.ROLE_COUNCIL_MEMBER,
+        return members(s).stream().map(u -> new AttendeeDto(u.getId(), u.getName(), SessionMapper.seat(u),
                 present.getOrDefault(u.getId(), false))).toList();
     }
 
     // ---------------------------------------------------------------- private
 
-    /** Active members of the Faculty with voting rights. */
+    /**
+     * Voting members summoned for this session. Sessions created before that choice still use the whole faculty council.
+     */
     private List<User> members(Session s) {
-        return users.findActiveByFacultyAndRoles(s.getFaculty().getId(), RoleName.VOTING);
+        if (s.getSummons().isEmpty()) {
+            return users.findActiveByFacultyAndRoles(s.getFaculty().getId(), RoleName.VOTING);
+        }
+        return s.getSummons().stream().map(SessionSummon::getUser)
+                .filter(user -> user.isActive() && user.getRoles().stream().anyMatch(RoleName.VOTING::contains))
+                .sorted(Comparator.comparingInt(SessionMapper::summonOrder).thenComparing(User::getName))
+                .toList();
     }
 
     private AttendanceDto buildAttendance(Session s) {

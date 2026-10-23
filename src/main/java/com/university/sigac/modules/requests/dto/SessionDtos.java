@@ -3,6 +3,7 @@ package com.university.sigac.modules.requests.dto;
 import com.university.sigac.modules.requests.enums.DecisionOutcome;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.users.enums.CouncilKind;
+import com.university.sigac.modules.users.enums.RoleName;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
@@ -20,9 +21,9 @@ public final class SessionDtos {
 
     // ---------- Requests ----------
 
-    /** The location is required except for virtual sessions. */
+    /** The location is required except for virtual sessions. memberIds are the people summoned to this session. */
     public record SessionRequest(@NotNull Long councilTypeId, @NotNull @Future LocalDateTime scheduledAt,
-                                 @Size(max = 200) String location) {
+                                 @Size(max = 200) String location, @NotEmpty List<Long> memberIds) {
     }
 
     public record AddItemRequest(@NotNull Long requestId) {
@@ -53,10 +54,14 @@ public final class SessionDtos {
     public record GuestDto(Long id, String name, String email, String affiliation) {
     }
 
+    /** A counselor or participant chosen to be summoned. */
+    public record SummonedDto(Long userId, String name, RoleName role) {
+    }
+
     /** Detail: session + agenda with the decisions and notes already recorded. */
     public record SessionDto(Long id, Long councilTypeId, String councilType, CouncilKind councilKind, Long facultyId,
                              String faculty, LocalDateTime scheduledAt, String location, SessionStatus status,
                              boolean agendaClosed, LocalDateTime actualStart, LocalDateTime actualEnd,
-                             List<AgendaItemDto> items, List<GuestDto> guests) {
+                             List<AgendaItemDto> items, List<GuestDto> guests, List<SummonedDto> summoned) {
     }
 }

@@ -6,10 +6,13 @@ import com.university.sigac.modules.requests.dto.SessionDtos.ReorderRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
+import com.university.sigac.modules.requests.dto.SessionDtos.SummonedDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.UrgentItemRequest;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.service.AgendaService;
 import jakarta.validation.Valid;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +50,13 @@ public class SessionController {
     @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto create(@Valid @RequestBody SessionRequest req) {
         return service.create(req);
+    }
+
+    /** People the secretary can summon: president, counselors and the council secretary of their faculty. */
+    @GetMapping("/summonable")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public List<SummonedDto> summonable() {
+        return service.summonable();
     }
 
     @GetMapping
@@ -110,12 +120,12 @@ public class SessionController {
         return service.closeAgenda(id);
     }
 
-    @GetMapping("/{id}/notice")
+    @GetMapping("/{id}/citacion")
     @PreAuthorize(READ)
-    public ResponseEntity<byte[]> notice(@PathVariable Long id) {
+    public ResponseEntity<byte[]> citacion(@PathVariable Long id) {
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        ContentDisposition.inline().filename("session-notice-" + id + ".pdf").build().toString())
+                        ContentDisposition.inline().filename("Citación.pdf", StandardCharsets.UTF_8).build().toString())
                 .body(service.downloadNotice(id));
     }
 }

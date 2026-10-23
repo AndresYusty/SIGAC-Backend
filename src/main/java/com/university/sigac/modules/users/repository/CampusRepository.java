@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface CampusRepository extends JpaRepository<Campus, Long> {
 
     List<Campus> findByUniversityIdOrderByName(Long universityId);
+
+    boolean existsByUniversityId(Long universityId);
 }

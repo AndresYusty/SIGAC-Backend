@@ -9,5 +9,9 @@ public interface CouncilRequestRepository extends JpaRepository<CouncilRequest, 
 
     long countByFacultyIdAndStatus(Long facultyId, RequestStatus status);
 
+    boolean existsByFacultyId(Long facultyId);
+
+    boolean existsByProgramId(Long programId);
+
     long countByFiledByIdAndStatus(Long filedById, RequestStatus status);
 }

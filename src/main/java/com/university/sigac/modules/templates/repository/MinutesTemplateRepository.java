@@ -9,6 +9,8 @@ public interface MinutesTemplateRepository extends JpaRepository<MinutesTemplate
 
     List<MinutesTemplate> findAllByOrderByIdDesc();
 
+    boolean existsByFacultyId(Long facultyId);
+
     List<MinutesTemplate> findByCouncilTypeIdOrderByVersionDesc(Long councilTypeId);
 
     // General template (no Faculty) or Faculty-specific template

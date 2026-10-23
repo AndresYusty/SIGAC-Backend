@@ -10,10 +10,16 @@ import com.university.sigac.modules.users.entity.Campus;
 import com.university.sigac.modules.users.entity.Faculty;
 import com.university.sigac.modules.users.entity.Program;
 import com.university.sigac.modules.users.entity.University;
+import com.university.sigac.modules.agreements.repository.AgreementRepository;
+import com.university.sigac.modules.minutes.repository.MinutesRepository;
+import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
+import com.university.sigac.modules.requests.repository.SessionRepository;
+import com.university.sigac.modules.templates.repository.MinutesTemplateRepository;
 import com.university.sigac.modules.users.repository.CampusRepository;
 import com.university.sigac.modules.users.repository.FacultyRepository;
 import com.university.sigac.modules.users.repository.ProgramRepository;
 import com.university.sigac.modules.users.repository.UniversityRepository;
+import com.university.sigac.modules.users.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +35,12 @@ public class HierarchyService {
     private final CampusRepository campuses;
     private final FacultyRepository faculties;
     private final ProgramRepository programs;
+    private final UserRepository users;
+    private final SessionRepository sessions;
+    private final CouncilRequestRepository requests;
+    private final MinutesRepository minutes;
+    private final AgreementRepository agreements;
+    private final MinutesTemplateRepository templates;
 
     // ---------------- Universities
     @Transactional(readOnly = true)
@@ -48,8 +60,22 @@ public class HierarchyService {
 
     public NodeDto updateUniversity(Long id, UniversityRequest r) {
         University u = universities.findById(id).orElseThrow(() -> ApiException.notFound("University not found"));
-        u.setName(r.name().trim());
+        String name = r.name().trim();
+        if (universities.existsByNameIgnoreCaseAndIdNot(name, id)) {
+            throw ApiException.conflict("A university with that name already exists");
+        }
+        u.setName(name);
         return new NodeDto(u.getId(), u.getName(), null, null);
+    }
+
+    public void deleteUniversity(Long id) {
+        if (!universities.existsById(id)) {
+            throw ApiException.notFound("University not found");
+        }
+        if (campuses.existsByUniversityId(id)) {
+            throw ApiException.conflict("No se puede eliminar: esta universidad tiene sedes. Elimine primero lo que depende de ella.");
+        }
+        universities.deleteById(id);
     }
 
     // ---------------- Campuses
@@ -73,6 +99,16 @@ public class HierarchyService {
         return toDto(s);
     }
 
+    public void deleteCampus(Long id) {
+        if (!campuses.existsById(id)) {
+            throw ApiException.notFound("Campus not found");
+        }
+        if (faculties.existsByCampusId(id)) {
+            throw ApiException.conflict("No se puede eliminar: esta sede tiene facultades. Elimine primero lo que depende de ella.");
+        }
+        campuses.deleteById(id);
+    }
+
     // ---------------- Faculties
     @Transactional(readOnly = true)
     public List<NodeDto> listFaculties(Long campusId) {
@@ -92,6 +128,18 @@ public class HierarchyService {
         return toDto(f);
     }
 
+    public void deleteFaculty(Long id) {
+        if (!faculties.existsById(id)) {
+            throw ApiException.notFound("Faculty not found");
+        }
+        if (programs.existsByFacultyId(id) || users.existsByFacultyId(id) || sessions.existsByFacultyId(id)
+                || requests.existsByFacultyId(id) || minutes.existsByFacultyId(id) || agreements.existsByFacultyId(id)
+                || templates.existsByFacultyId(id)) {
+            throw ApiException.conflict("No se puede eliminar: esta facultad tiene programas, usuarios o trámites del consejo.");
+        }
+        faculties.deleteById(id);
+    }
+
     // ---------------- Programs
     @Transactional(readOnly = true)
     public List<NodeDto> listPrograms(Long facultyId) {
@@ -109,6 +157,16 @@ public class HierarchyService {
         Program p = programs.findById(id).orElseThrow(() -> ApiException.notFound("Program not found"));
         p.setName(r.name().trim());
         return toDto(p);
+    }
+
+    public void deleteProgram(Long id) {
+        if (!programs.existsById(id)) {
+            throw ApiException.notFound("Program not found");
+        }
+        if (users.existsByProgramId(id) || requests.existsByProgramId(id)) {
+            throw ApiException.conflict("No se puede eliminar: hay personas o solicitudes en este programa.");
+        }
+        programs.deleteById(id);
     }
 
     // ---------------- Lookups used by other modules

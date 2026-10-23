@@ -13,6 +13,8 @@ public interface MinutesRepository extends JpaRepository<Minutes, Long>, JpaSpec
 
     boolean existsBySessionId(Long sessionId);
 
+    boolean existsByFacultyId(Long facultyId);
+
     List<Minutes> findByStatusIn(Collection<MinutesStatus> statuses);
 
     long countByStatus(MinutesStatus status);

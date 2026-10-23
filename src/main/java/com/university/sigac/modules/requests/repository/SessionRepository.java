@@ -8,5 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
 public interface SessionRepository extends JpaRepository<Session, Long>, JpaSpecificationExecutor<Session> {
 
+    boolean existsByFacultyId(Long facultyId);
+
     long countByFacultyIdAndStatusIn(Long facultyId, Collection<SessionStatus> statuses);
 }
