@@ -122,13 +122,13 @@ public class CouncilRequestService {
         ZoneId zone = ZoneId.of(props.getZone());
         Specification<CouncilRequest> filter = (root, query, cb) -> {
             List<Predicate> ps = new ArrayList<>();
-            if (!u.isGlobal()) {
-                // Faculty Secretary only sees what they filed; the other roles see their Faculty (RN-02)
-                if (u.hasRole("ROLE_FACULTY_SECRETARY")) {
-                    ps.add(cb.equal(root.get("filedBy").get("id"), u.id()));
-                } else {
-                    ps.add(cb.equal(root.get("faculty").get("id"), u.facultyId()));
+            if (u.hasRole("ROLE_FACULTY_SECRETARY")) {
+                ps.add(cb.equal(root.get("filedBy").get("id"), u.id()));
+                if (u.programId() != null) {
+                    ps.add(cb.equal(root.get("program").get("id"), u.programId()));
                 }
+            } else if (!u.isGlobal()) {
+                ps.add(cb.equal(root.get("faculty").get("id"), u.facultyId()));
             }
             if (status != null) {
                 ps.add(cb.equal(root.get("status"), status));
@@ -300,9 +300,12 @@ public class CouncilRequestService {
     }
 
     private Program resolveProgram(Long programId, AuthenticatedUser u) {
-        Long id = programId != null ? programId : u.programId();
+        Long id = u.programId() != null ? u.programId() : programId;
         if (id == null) {
             return null;
+        }
+        if (u.programId() != null && programId != null && !u.programId().equals(programId)) {
+            throw ApiException.badRequest("You can only file requests for your program");
         }
         Program p = hierarchy.findProgram(id);
         if (!p.getFaculty().getId().equals(u.facultyId())) {
@@ -319,8 +322,13 @@ public class CouncilRequestService {
         AuthenticatedUser u = SecurityUtils.current();
         CouncilRequest s = load(id);
         SecurityUtils.checkFaculty(u, s.getFaculty().getId());
-        if (u.hasRole("ROLE_FACULTY_SECRETARY") && !u.isGlobal() && !s.getFiledBy().getId().equals(u.id())) {
-            throw ApiException.forbidden("You can only view the requests you filed");
+        if (u.hasRole("ROLE_FACULTY_SECRETARY")) {
+            if (!s.getFiledBy().getId().equals(u.id())) {
+                throw ApiException.forbidden("You can only view the requests you filed");
+            }
+            if (u.programId() != null && (s.getProgram() == null || !u.programId().equals(s.getProgram().getId()))) {
+                throw ApiException.forbidden("You can only view the requests of your program");
+            }
         }
         return s;
     }

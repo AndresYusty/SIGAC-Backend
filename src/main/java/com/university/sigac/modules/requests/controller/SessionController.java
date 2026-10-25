@@ -41,7 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class SessionController {
 
     /** Council members only see the minutes of the sessions they attended (repository module). */
-    private static final String READ = "hasAnyRole('COUNCIL_SECRETARY','FACULTY_SECRETARY','PRESIDENT','ADMIN')";
+    private static final String READ = "hasAnyRole('COUNCIL_SECRETARY','PRESIDENT','ADMIN')";
 
     private final AgendaService service;
 
