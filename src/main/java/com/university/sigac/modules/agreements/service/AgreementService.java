@@ -136,6 +136,14 @@ public class AgreementService {
         return new AgreementFile(label(a) + " - " + type + ".pdf", data);
     }
 
+    /** Consultation from the digital repository: same PDF, with a trace of who opened it. */
+    @Transactional
+    public AgreementFile open(Long id, String event) {
+        AgreementFile file = pdf(id);
+        audit.record(event, "AGREEMENT", id, file.name());
+        return file;
+    }
+
     public record AgreementFile(String name, byte[] data) {
     }
 
