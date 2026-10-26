@@ -60,12 +60,11 @@ public class EmailService {
 
     @Async
     public void sendMinutesPublished(List<String> recipients, String serialNumber, String faculty, String pdfPath) {
-        String body = layout("Acta publicada: " + serialNumber, null,
-                "El acta <strong>" + esc(serialNumber) + "</strong> de la " + esc(faculty)
-                        + " fue firmada y publicada.",
+        String body = layout("Acta " + serialNumber, null,
+                "El acta <strong>" + esc(serialNumber) + "</strong> de la " + esc(faculty) + " ya está lista.",
                 "Se adjunta el PDF. También puede verla en el repositorio de SIGAC "
                         + "(<a href=\"" + esc(props.getFrontendUrl()) + "/repository\">abrir</a>).", "");
-        send(recipients, "Acta publicada " + serialNumber, body, List.of(pdfPath));
+        send(recipients, "Acta " + serialNumber, body, List.of(pdfPath));
     }
 
     @Async

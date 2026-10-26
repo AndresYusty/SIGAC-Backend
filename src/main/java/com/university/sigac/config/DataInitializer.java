@@ -59,6 +59,7 @@ public class DataInitializer implements ApplicationRunner {
         councilTypes.findAll().forEach(templates::createDefaultIfMissing);
         templates.replaceBundledMinutesLayout();
         minutes.refreshOpenLayout();
+        minutes.publishOpen();
 
         if (props.getSeed().isDemoData() && universities.count() == 0) {
             loadDemo();

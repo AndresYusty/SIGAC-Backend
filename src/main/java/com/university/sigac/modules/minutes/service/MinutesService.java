@@ -20,6 +20,8 @@ import com.university.sigac.modules.minutes.enums.MinutesStatus;
 import com.university.sigac.modules.minutes.repository.MinutesRepository;
 import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.requests.entity.Session;
+import com.university.sigac.modules.requests.entity.SessionGuest;
+import com.university.sigac.modules.requests.entity.SessionSummon;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.service.AgendaService;
 import com.university.sigac.modules.session.service.AttendanceQueryService;
@@ -31,6 +33,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -89,7 +92,6 @@ public class MinutesService {
 
         String html = pdf.render(letterhead.embed(template.getContent()), modelBuilder.build(s, serialNumber));
         html = HtmlSanitizer.sanitizeDocument(html);
-        pdf.generatePdfA(html); // checks right away that the document can be compiled to PDF/A
 
         Minutes a = new Minutes();
         a.setSession(s);
@@ -100,8 +102,21 @@ public class MinutesService {
         a.setTemplateVersion(template.getVersion());
         a.setHtmlContent(html);
         minutes.save(a);
+        release(a);
         audit.record("EVENT_MINUTES_COMPILED", "MINUTES", a.getId(), serialNumber);
         return toDto(a, true);
+    }
+
+    /** Actas left as drafts before generation itself closed and sent them. */
+    @Transactional
+    public void publishOpen() {
+        for (Minutes a : minutes.findByStatusIn(List.of(
+                MinutesStatus.DRAFT, MinutesStatus.EDITING, MinutesStatus.PENDING_SIGNATURE))) {
+            if (a.getHtmlContent() == null || a.getHtmlContent().isBlank()) {
+                continue;
+            }
+            release(a);
+        }
     }
 
     /** Rewrites unpublished minutes that were compiled on the previous sheet. */
@@ -234,11 +249,7 @@ public class MinutesService {
         }
         audit.record("EVENT_MINUTES_SIGNED", "MINUTES", a.getId(), a.getSerialNumber() + " sha256=" + a.getFileHash());
 
-        List<String> recipients = new ArrayList<>(users.activeEmailsByFacultyAndRoles(a.getFaculty().getId(),
-                List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_SECRETARY)));
-        attendance.presentEmails(a.getSession().getId()).stream().filter(e -> !recipients.contains(e))
-                .forEach(recipients::add);
-        email.sendMinutesPublished(recipients, a.getSerialNumber(), a.getFaculty().getName(), path);
+        email.sendMinutesPublished(involvedEmails(a), a.getSerialNumber(), a.getFaculty().getName(), path);
         return toDto(a, false);
     }
 
@@ -263,6 +274,51 @@ public class MinutesService {
     }
 
     // ---------------------------------------------------------------- private
+
+    /** Stores the PDF, closes the acta and emails it to the people of the session. */
+    private void release(Minutes a) {
+        byte[] file = pdf.generatePdfA(a.getHtmlContent());
+        String path = a.getFilePath() != null ? a.getFilePath() : repositoryPath(a);
+        storage.save(path, file);
+        a.setFilePath(path);
+        a.setFileHash(HashUtil.sha256Hex(file));
+        a.setContentHash(HashUtil.sha256Hex(a.getHtmlContent()));
+        a.setStatus(MinutesStatus.PUBLISHED);
+        minutes.save(a);
+        email.sendMinutesPublished(involvedEmails(a), a.getSerialNumber(), a.getFaculty().getName(), path);
+    }
+
+    /**
+     * People of this session: those summoned, anyone marked present, and guests with an email.
+     * Sessions created before the summons list fall back to the faculty council.
+     */
+    private List<String> involvedEmails(Minutes a) {
+        Session s = a.getSession();
+        LinkedHashSet<String> emails = new LinkedHashSet<>();
+        if (s.getSummons().isEmpty()) {
+            addEmails(emails, users.activeEmailsByFacultyAndRoles(a.getFaculty().getId(),
+                    List.of(RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_COUNCIL_SECRETARY)));
+        } else {
+            for (SessionSummon summon : s.getSummons()) {
+                addEmail(emails, summon.getUser().getEmail());
+            }
+        }
+        addEmails(emails, attendance.presentEmails(s.getId()));
+        for (SessionGuest guest : s.getGuests()) {
+            addEmail(emails, guest.getEmail());
+        }
+        return new ArrayList<>(emails);
+    }
+
+    private void addEmails(Set<String> emails, List<String> more) {
+        more.forEach(address -> addEmail(emails, address));
+    }
+
+    private void addEmail(Set<String> emails, String address) {
+        if (address != null && !address.isBlank()) {
+            emails.add(address.trim().toLowerCase());
+        }
+    }
 
     /** minutes/University/Campus/Faculty/Year/SERIAL_NUMBER.pdf (institutional hierarchy). */
     private String repositoryPath(Minutes a) {

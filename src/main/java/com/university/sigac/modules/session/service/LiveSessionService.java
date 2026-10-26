@@ -12,6 +12,7 @@ import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.entity.AgendaItem;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionSummon;
+import com.university.sigac.modules.requests.enums.DecisionOutcome;
 import com.university.sigac.modules.requests.enums.RequestStatus;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.service.AgendaService;
@@ -155,13 +156,17 @@ public class LiveSessionService {
                     + " members must be present and there are " + quorum.present());
         }
         AgendaItem p = findItem(s, itemId);
-        int totalVotes = req.votesFor() + req.votesAgainst() + req.abstentions();
-        if (totalVotes > quorum.present()) {
-            throw ApiException.badRequest("The total number of votes (" + totalVotes + ") exceeds the attendance (" + quorum.present() + ")");
-        }
+        checkVotes(req, quorum.present());
         if (p.hasDecision()) {
+            boolean same = p.getOutcome() == req.outcome()
+                    && p.getVotesFor() == req.votesFor()
+                    && p.getVotesAgainst() == req.votesAgainst()
+                    && p.getAbstentions() == req.abstentions();
+            if (same) {
+                return SessionMapper.toItem(p);
+            }
             if (req.changeReason() == null || req.changeReason().isBlank()) {
-                throw ApiException.badRequest("RN-12: changing a recorded decision requires a reason");
+                throw ApiException.badRequest("Para modificar la decisión indique el motivo del cambio");
             }
             audit.record("EVENT_DECISION_MODIFIED", "AGENDA_ITEM", p.getId(), "Before: " + p.getOutcome() + " ("
                     + p.getVotesFor() + "/" + p.getVotesAgainst() + "/" + p.getAbstentions() + "). After: "
@@ -267,6 +272,22 @@ public class LiveSessionService {
     private void requireTransition(Session s, SessionStatus target) {
         if (!s.getStatus().canTransitionTo(target)) {
             throw ApiException.conflict("Transition not allowed: " + s.getStatus() + " → " + target);
+        }
+    }
+
+    /** Only the voting members who are present can cast a vote, and the result has to match the count. */
+    private void checkVotes(DecisionRequest req, int present) {
+        int inFavor = req.votesFor();
+        int against = req.votesAgainst();
+        int abstentions = req.abstentions();
+        if (inFavor > present || against > present || abstentions > present || inFavor + against + abstentions > present) {
+            throw ApiException.badRequest("Los votos no pueden superar a los " + present + " presentes con voto");
+        }
+        if (req.outcome() == DecisionOutcome.APPROVED && inFavor <= against) {
+            throw ApiException.badRequest("Para aprobar, los votos a favor tienen que ser más que los en contra");
+        }
+        if (req.outcome() == DecisionOutcome.DENIED && against <= inFavor) {
+            throw ApiException.badRequest("Para negar, los votos en contra tienen que ser más que los a favor");
         }
     }
 
