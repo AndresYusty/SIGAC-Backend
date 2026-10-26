@@ -111,6 +111,14 @@ public class AgreementService {
         return toDto(a);
     }
 
+    @Transactional
+    public void delete(Long id) {
+        Agreement a = find(id);
+        String label = label(a);
+        agreements.delete(a);
+        audit.record("EVENT_AGREEMENT_DELETED", "AGREEMENT", id, label);
+    }
+
     /** PDF of a draft that has not been saved yet (the number is the one it would get). */
     @Transactional(readOnly = true)
     public byte[] preview(AgreementRequest req) {

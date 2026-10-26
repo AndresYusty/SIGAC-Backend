@@ -17,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -66,9 +67,16 @@ public class MinutesController {
     }
 
     @PutMapping("/{id}/content")
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize("hasAnyRole('COUNCIL_SECRETARY','ADMIN')")
     public MinutesDto edit(@PathVariable Long id, @Valid @RequestBody MinutesContentRequest req) {
         return service.edit(id, req.htmlContent());
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 
     @PostMapping("/{id}/send-to-signature")

@@ -9,8 +9,11 @@ import com.university.sigac.core.security.SecurityUtils;
 import com.university.sigac.core.storage.StorageService;
 import com.university.sigac.core.util.DateUtil;
 import com.university.sigac.core.util.HtmlSanitizer;
+import com.university.sigac.modules.minutes.entity.Minutes;
+import com.university.sigac.modules.minutes.repository.MinutesRepository;
 import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.requests.dto.SessionDtos.GuestRequest;
+import com.university.sigac.modules.requests.dto.SessionDtos.SessionCorrection;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
@@ -25,6 +28,7 @@ import com.university.sigac.modules.requests.enums.RequestStatus;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.SessionRepository;
+import com.university.sigac.modules.session.repository.AttendanceRepository;
 import com.university.sigac.modules.users.entity.CouncilType;
 import com.university.sigac.modules.users.entity.User;
 import com.university.sigac.modules.users.enums.RoleName;
@@ -76,6 +80,8 @@ public class AgendaService {
     private final StorageService storage;
     private final EmailService email;
     private final AuditService audit;
+    private final MinutesRepository minutes;
+    private final AttendanceRepository attendance;
 
     @Transactional
     public SessionDto create(SessionRequest req) {
@@ -106,6 +112,53 @@ public class AgendaService {
         sessions.save(s);
         audit.record("EVENT_SESSION_CREATED", "SESSION", s.getId(), type.getName() + ", " + chosen.size() + " summoned");
         return SessionMapper.toDto(s);
+    }
+
+    /** Admin correction of the council type, date and place. The agenda and the summons stay as they are. */
+    @Transactional
+    public SessionDto correct(Long id, SessionCorrection req) {
+        Session s = loadWithAccess(id);
+        CouncilType type = councilTypes.find(req.councilTypeId());
+        if (type.getKind() == null) {
+            throw ApiException.badRequest("This council type is no longer in use");
+        }
+        String location = req.location() == null || req.location().isBlank() ? null : req.location().trim();
+        if (location == null && type.getKind().requiresLocation()) {
+            throw ApiException.badRequest("The location is required for a session of type " + type.getName());
+        }
+        s.setCouncilType(type);
+        s.setScheduledAt(req.scheduledAt());
+        s.setLocation(location);
+        audit.record("EVENT_SESSION_UPDATED", "SESSION", s.getId(), type.getName());
+        return SessionMapper.toDto(s);
+    }
+
+    /**
+     * Admin removal of a session, its notice data, attendance and minutes.
+     * Requests that were on the agenda go back to approved so they can be scheduled again.
+     */
+    @Transactional
+    public void delete(Long id) {
+        Session s = loadWithAccess(id);
+        minutes.findBySessionId(id).ifPresent(this::deleteMinutes);
+        minutes.flush();
+        attendance.deleteBySessionId(id);
+        String name = SecurityUtils.current().name();
+        for (AgendaItem item : s.getItems()) {
+            CouncilRequest request = item.getRequest();
+            if (request != null && (request.getStatus() == RequestStatus.ON_AGENDA || request.getStatus() == RequestStatus.PROCESSED)) {
+                requestService.changeStatus(request, RequestStatus.APPROVED, "La sesión fue eliminada por el administrador", name);
+            }
+        }
+        sessions.delete(s);
+        audit.record("EVENT_SESSION_DELETED", "SESSION", id, s.getCouncilType().getName());
+    }
+
+    private void deleteMinutes(Minutes minutesRecord) {
+        if (minutesRecord.getFilePath() != null) {
+            storage.deleteQuietly(minutesRecord.getFilePath());
+        }
+        minutes.delete(minutesRecord);
     }
 
     /** President, counselors and the council secretary of the current faculty, for the schedule form. */
@@ -411,8 +464,13 @@ public class AgendaService {
     private List<User> summoned(Long facultyId, List<Long> memberIds) {
         Map<Long, User> eligible = users.findActiveByFacultyAndRoles(facultyId, SUMMONABLE).stream()
                 .collect(Collectors.toMap(User::getId, person -> person));
+        List<Long> ids = new ArrayList<>(memberIds);
+        Long self = SecurityUtils.current().id();
+        if (eligible.containsKey(self) && !ids.contains(self)) {
+            ids.add(self);
+        }
         List<User> chosen = new ArrayList<>();
-        for (Long id : memberIds.stream().distinct().toList()) {
+        for (Long id : ids.stream().distinct().toList()) {
             User person = eligible.get(id);
             if (person == null) {
                 throw ApiException.badRequest("User " + id + " cannot be summoned to this council");

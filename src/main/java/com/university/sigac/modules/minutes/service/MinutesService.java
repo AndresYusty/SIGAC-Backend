@@ -120,21 +120,43 @@ public class MinutesService {
         }
     }
 
-    /** RF-28: Council Secretary polishes the wording before sending it for signature. */
+    /** RF-28: Council Secretary polishes the wording before sending it for signature. The admin can also correct a published acta. */
     @Transactional
     public MinutesDto edit(Long id, String htmlContent) {
         Minutes a = load(id);
-        requireEditable(a);
+        boolean admin = SecurityUtils.current().hasRole("ROLE_ADMIN");
+        if (!admin) {
+            requireEditable(a);
+        }
         List<String> errors = XhtmlValidator.errors(htmlContent);
         if (!errors.isEmpty()) {
             throw ApiException.unprocessable("The minutes content is not valid XHTML", errors);
         }
         String clean = HtmlSanitizer.sanitizeDocument(htmlContent);
-        pdf.generatePdfA(clean);
-        a.setHtmlContent(clean);
-        a.setStatus(MinutesStatus.EDITING);
+        byte[] file = pdf.generatePdfA(clean);
+        if (a.getStatus() == MinutesStatus.PUBLISHED) {
+            String path = a.getFilePath() != null ? a.getFilePath() : repositoryPath(a);
+            storage.save(path, file);
+            a.setFilePath(path);
+            a.setFileHash(HashUtil.sha256Hex(file));
+            a.setContentHash(HashUtil.sha256Hex(clean));
+            a.setHtmlContent(clean);
+        } else {
+            a.setHtmlContent(clean);
+            a.setStatus(MinutesStatus.EDITING);
+        }
         audit.record("EVENT_MINUTES_EDITED", "MINUTES", a.getId(), a.getSerialNumber());
         return toDto(a, true);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Minutes a = load(id);
+        if (a.getFilePath() != null) {
+            storage.deleteQuietly(a.getFilePath());
+        }
+        minutes.delete(a);
+        audit.record("EVENT_MINUTES_DELETED", "MINUTES", id, a.getSerialNumber());
     }
 
     @Transactional(readOnly = true)

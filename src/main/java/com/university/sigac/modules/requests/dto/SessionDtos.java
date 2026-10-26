@@ -26,6 +26,11 @@ public final class SessionDtos {
                                  @Size(max = 200) String location, @NotEmpty List<Long> memberIds) {
     }
 
+    /** Admin correction of a session that may already have taken place. */
+    public record SessionCorrection(@NotNull Long councilTypeId, @NotNull LocalDateTime scheduledAt,
+                                    @Size(max = 200) String location) {
+    }
+
     public record AddItemRequest(@NotNull Long requestId) {
     }
 

@@ -3,6 +3,7 @@ package com.university.sigac.modules.requests.controller;
 import com.university.sigac.modules.requests.dto.SessionDtos.AddItemRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.GuestRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.ReorderRequest;
+import com.university.sigac.modules.requests.dto.SessionDtos.SessionCorrection;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
@@ -42,6 +43,7 @@ public class SessionController {
 
     /** Council members only see the minutes of the sessions they attended (repository module). */
     private static final String READ = "hasAnyRole('COUNCIL_SECRETARY','PRESIDENT','ADMIN')";
+    private static final String AGENDA = "hasAnyRole('COUNCIL_SECRETARY','ADMIN')";
 
     private final AgendaService service;
 
@@ -50,6 +52,19 @@ public class SessionController {
     @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto create(@Valid @RequestBody SessionRequest req) {
         return service.create(req);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public SessionDto correct(@PathVariable Long id, @Valid @RequestBody SessionCorrection req) {
+        return service.correct(id, req);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 
     /** People the secretary can summon: president, counselors and the council secretary of their faculty. */
@@ -74,7 +89,7 @@ public class SessionController {
     }
 
     @PostMapping("/{id}/items")
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize(AGENDA)
     public SessionDto addItem(@PathVariable Long id, @Valid @RequestBody AddItemRequest req) {
         return service.addItem(id, req.requestId());
     }
@@ -82,7 +97,7 @@ public class SessionController {
     /** Extraordinary Council only. */
     @PostMapping("/{id}/urgent-items")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize(AGENDA)
     public SessionDto addUrgentItem(@PathVariable Long id, @Valid @RequestBody UrgentItemRequest req) {
         return service.addUrgentItem(id, req);
     }
@@ -90,25 +105,25 @@ public class SessionController {
     /** Expanded Council only. */
     @PostMapping("/{id}/guests")
     @ResponseStatus(HttpStatus.CREATED)
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize(AGENDA)
     public SessionDto addGuest(@PathVariable Long id, @Valid @RequestBody GuestRequest req) {
         return service.addGuest(id, req);
     }
 
     @DeleteMapping("/{id}/guests/{guestId}")
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize(AGENDA)
     public SessionDto removeGuest(@PathVariable Long id, @PathVariable Long guestId) {
         return service.removeGuest(id, guestId);
     }
 
     @DeleteMapping("/{id}/items/{itemId}")
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize(AGENDA)
     public SessionDto removeItem(@PathVariable Long id, @PathVariable Long itemId) {
         return service.removeItem(id, itemId);
     }
 
     @PutMapping("/{id}/items/order")
-    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    @PreAuthorize(AGENDA)
     public SessionDto reorder(@PathVariable Long id, @Valid @RequestBody ReorderRequest req) {
         return service.reorder(id, req.itemIds());
     }

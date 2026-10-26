@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -54,20 +55,28 @@ public class CouncilRequestController {
 
     /** Corrects a FILED/RETURNED request; new attachments may be added. */
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasRole('FACULTY_SECRETARY')")
+    @PreAuthorize("hasAnyRole('FACULTY_SECRETARY','ADMIN')")
     public CouncilRequestDto update(@PathVariable Long id, @Valid @ModelAttribute CouncilRequestForm form,
                                     @RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
         return service.update(id, form, attachments);
     }
 
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
+
     @GetMapping
     @PreAuthorize(SECRETARIES)
     public Page<CouncilRequestDto> search(@RequestParam(required = false) RequestStatus status,
+                                          @RequestParam(required = false, defaultValue = "false") boolean pending,
                                           @RequestParam(required = false) String code,
                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
                                           @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
                                           @PageableDefault(size = 20, sort = "filedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return service.search(status, code, from, to, pageable);
+        return service.search(status, pending, code, from, to, pageable);
     }
 
     @GetMapping("/{id}")

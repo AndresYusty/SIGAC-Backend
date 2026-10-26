@@ -16,6 +16,7 @@ import com.university.sigac.core.storage.StorageService;
 import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestForm;
 import com.university.sigac.modules.requests.enums.RequestType;
+import com.university.sigac.modules.requests.repository.AgendaItemRepository;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.RequestHistoryRepository;
 import com.university.sigac.modules.users.service.HierarchyService;
@@ -40,7 +41,7 @@ class CouncilRequestServiceTest {
         parameters = mock(ParameterService.class);
         when(parameters.getInt(ParameterService.ATTACHMENTS_MAX_MB, 10)).thenReturn(1);
         service = new CouncilRequestService(mock(CouncilRequestRepository.class), mock(RequestHistoryRepository.class),
-                mock(UserLookupService.class), mock(HierarchyService.class), parameters,
+                mock(AgendaItemRepository.class), mock(UserLookupService.class), mock(HierarchyService.class), parameters,
                 mock(StorageService.class), mock(SequenceService.class), mock(AuditService.class),
                 mock(EmailService.class), new AppProperties());
         AuthenticatedUser u = new AuthenticatedUser(1L, "sec2@demo.edu", "Sec 2", List.of("ROLE_FACULTY_SECRETARY"), 10L, null);

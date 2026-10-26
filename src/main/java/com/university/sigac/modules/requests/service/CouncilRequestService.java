@@ -19,6 +19,7 @@ import com.university.sigac.modules.requests.entity.Attachment;
 import com.university.sigac.modules.requests.entity.CouncilRequest;
 import com.university.sigac.modules.requests.entity.RequestHistory;
 import com.university.sigac.modules.requests.enums.RequestStatus;
+import com.university.sigac.modules.requests.repository.AgendaItemRepository;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.RequestHistoryRepository;
 import com.university.sigac.modules.users.entity.Program;
@@ -52,6 +53,7 @@ public class CouncilRequestService {
 
     private final CouncilRequestRepository requests;
     private final RequestHistoryRepository history;
+    private final AgendaItemRepository agendaItems;
     private final UserLookupService users;
     private final HierarchyService hierarchy;
     private final ParameterService parameters;
@@ -89,10 +91,13 @@ public class CouncilRequestService {
         return toDto(s);
     }
 
-    /** Correction of a FILED or RETURNED request (RN-09: the others can no longer be modified). */
+    /** Correction of a FILED or RETURNED request (RN-09: the others can no longer be modified). The admin can correct any filing. */
     @Transactional
     public CouncilRequestDto update(Long id, CouncilRequestForm req, List<MultipartFile> newAttachments) {
         AuthenticatedUser u = SecurityUtils.current();
+        if (u.hasRole("ROLE_ADMIN")) {
+            return correctAsAdmin(id, req, newAttachments);
+        }
         CouncilRequest s = load(id);
         if (!s.getFiledBy().getId().equals(u.id())) {
             throw ApiException.forbidden("Only the user who filed the request can modify it");
@@ -114,10 +119,45 @@ public class CouncilRequestService {
         return toDto(s);
     }
 
+    /** Removes the filing, its history and its place on an agenda. */
+    @Transactional
+    public void delete(Long id) {
+        CouncilRequest s = load(id);
+        agendaItems.deleteByRequestId(id);
+        s.getAttachments().forEach(a -> storage.deleteQuietly(a.getPath()));
+        history.deleteByRequestId(id);
+        requests.delete(s);
+        audit.record("EVENT_REQUEST_DELETED", "REQUEST", id, s.getCode());
+    }
+
+    private CouncilRequestDto correctAsAdmin(Long id, CouncilRequestForm req, List<MultipartFile> newAttachments) {
+        CouncilRequest s = load(id);
+        validatePdfs(newAttachments);
+        s.setTitle(req.title().trim());
+        s.setDescription(req.description().trim());
+        s.setRequester(req.requester().trim());
+        s.setRequestType(req.requestType());
+        s.setProgram(resolveProgramForAdmin(req.programId(), s));
+        saveAttachments(s, newAttachments);
+        audit.record("EVENT_REQUEST_UPDATED", "REQUEST", s.getId(), s.getCode());
+        return toDto(s);
+    }
+
+    private Program resolveProgramForAdmin(Long programId, CouncilRequest s) {
+        if (programId == null) {
+            return null;
+        }
+        Program p = hierarchy.findProgram(programId);
+        if (!p.getFaculty().getId().equals(s.getFaculty().getId())) {
+            throw ApiException.badRequest("El programa no pertenece a la facultad de la radicación");
+        }
+        return p;
+    }
+
     // ================================================================ Queries
 
     @Transactional(readOnly = true)
-    public Page<CouncilRequestDto> search(RequestStatus status, String code, LocalDate from, LocalDate to, Pageable pageable) {
+    public Page<CouncilRequestDto> search(RequestStatus status, boolean pending, String code, LocalDate from, LocalDate to, Pageable pageable) {
         AuthenticatedUser u = SecurityUtils.current();
         ZoneId zone = ZoneId.of(props.getZone());
         Specification<CouncilRequest> filter = (root, query, cb) -> {
@@ -132,6 +172,8 @@ public class CouncilRequestService {
             }
             if (status != null) {
                 ps.add(cb.equal(root.get("status"), status));
+            } else if (pending) {
+                ps.add(root.get("status").in(RequestStatus.FILED, RequestStatus.APPROVED));
             }
             if (code != null && !code.isBlank()) {
                 ps.add(cb.like(cb.lower(root.get("code")), "%" + code.trim().toLowerCase() + "%"));

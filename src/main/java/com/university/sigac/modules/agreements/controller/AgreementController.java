@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AgreementController {
 
     private static final String WRITERS = "hasRole('COUNCIL_SECRETARY')";
+    private static final String EDITORS = "hasAnyRole('COUNCIL_SECRETARY','ADMIN')";
     private static final String READERS = "hasAnyRole('COUNCIL_SECRETARY','PRESIDENT','ADMIN')";
 
     private final AgreementService service;
@@ -77,9 +79,16 @@ public class AgreementController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize(WRITERS)
+    @PreAuthorize(EDITORS)
     public AgreementDto update(@PathVariable Long id, @Valid @RequestBody AgreementRequest req) {
         return service.update(id, req);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('ADMIN')")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
     }
 
     @PostMapping("/preview")
