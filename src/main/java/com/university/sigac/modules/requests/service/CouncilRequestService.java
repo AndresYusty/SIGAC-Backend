@@ -10,15 +10,26 @@ import com.university.sigac.core.sequence.SequenceService;
 import com.university.sigac.core.storage.StorageService;
 import com.university.sigac.core.util.HashUtil;
 import com.university.sigac.modules.notifications.service.EmailService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.AttachmentDto;
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.BranchDto;
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CatalogDto;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestDto;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestForm;
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CourseLine;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.FileContent;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.HistoryDto;
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.TopicDto;
 import com.university.sigac.modules.requests.entity.Attachment;
 import com.university.sigac.modules.requests.entity.CouncilRequest;
+import com.university.sigac.modules.requests.entity.RequestCourse;
 import com.university.sigac.modules.requests.entity.RequestHistory;
+import com.university.sigac.modules.requests.enums.CancellationKind;
+import com.university.sigac.modules.requests.enums.RequestBranch;
 import com.university.sigac.modules.requests.enums.RequestStatus;
+import com.university.sigac.modules.requests.enums.RequestType;
+import com.university.sigac.modules.users.entity.Faculty;
 import com.university.sigac.modules.requests.repository.AgendaItemRepository;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.RequestHistoryRepository;
@@ -33,6 +44,8 @@ import java.time.LocalDate;
 import java.time.Year;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -62,30 +75,56 @@ public class CouncilRequestService {
     private final AuditService audit;
     private final EmailService email;
     private final AppProperties props;
+    private final ObjectMapper json;
 
     // ================================================================ Faculty Secretary
 
+    @Transactional(readOnly = true)
+    public CatalogDto catalog() {
+        AuthenticatedUser u = SecurityUtils.current();
+        String faculty = null;
+        String campus = null;
+        String program = null;
+        Long programId = u.programId();
+        if (u.facultyId() != null) {
+            Faculty f = hierarchy.findFaculty(u.facultyId());
+            faculty = f.getName();
+            campus = f.getCampus().getName();
+        }
+        if (programId != null) {
+            program = hierarchy.findProgram(programId).getName();
+        }
+        List<BranchDto> branches = Arrays.stream(RequestBranch.values())
+                .map(branch -> new BranchDto(branch.name(), Arrays.stream(RequestType.values())
+                        .filter(topic -> topic.branch() == branch)
+                        .map(topic -> new TopicDto(topic.name(), topic.documents(), topic.courses(), topic.grades(),
+                                topic.otherDetail(), topic.cancellationChoice()))
+                        .toList()))
+                .toList();
+        return new CatalogDto(faculty, campus, program, programId, branches);
+    }
+
     @Transactional
-    public CouncilRequestDto file(CouncilRequestForm req, List<MultipartFile> files) {
+    public CouncilRequestDto file(CouncilRequestForm req, List<MultipartFile> files, List<String> documentCodes) {
         AuthenticatedUser u = SecurityUtils.current();
         if (u.facultyId() == null) {
             throw ApiException.forbidden("Your user is not linked to a Faculty");
         }
-        validatePdfs(files);
+        List<MultipartFile> documents = files == null ? List.of() : files;
+        List<String> codes = documentCodes == null ? List.of() : documentCodes;
+        validatePdfs(documents);
+        checkDocumentCodes(req.requestType(), codes);
 
         CouncilRequest s = new CouncilRequest();
-        s.setTitle(req.title().trim());
-        s.setDescription(req.description().trim());
-        s.setRequester(req.requester().trim());
-        s.setRequestType(req.requestType());
         s.setFaculty(hierarchy.facultyReference(u.facultyId()));
-        s.setProgram(resolveProgram(req.programId(), u));
         s.setFiledBy(users.reference(u.id()));
+        applyForm(s, req, u);
         int year = Year.now(ZoneId.of(props.getZone())).getValue();
         s.setCode("REQ-" + year + "-" + String.format("%06d", sequences.next("REQ-" + year)));
         requests.save(s);
-
-        saveAttachments(s, files);
+        replaceCourses(s, req);
+        saveAttachments(s, documents, codes);
+        requireDocuments(s);
         recordHistory(s, null, RequestStatus.FILED, "Request filed", u.name());
         audit.record("EVENT_REQUEST_CREATED", "REQUEST", s.getId(), s.getCode());
         return toDto(s);
@@ -93,10 +132,11 @@ public class CouncilRequestService {
 
     /** Correction of a FILED or RETURNED request (RN-09: the others can no longer be modified). The admin can correct any filing. */
     @Transactional
-    public CouncilRequestDto update(Long id, CouncilRequestForm req, List<MultipartFile> newAttachments) {
+    public CouncilRequestDto update(Long id, CouncilRequestForm req, List<MultipartFile> newAttachments,
+                                    List<String> documentCodes) {
         AuthenticatedUser u = SecurityUtils.current();
         if (u.hasRole("ROLE_ADMIN")) {
-            return correctAsAdmin(id, req, newAttachments);
+            return correctAsAdmin(id, req, newAttachments, documentCodes);
         }
         CouncilRequest s = load(id);
         if (!s.getFiledBy().getId().equals(u.id())) {
@@ -105,13 +145,14 @@ public class CouncilRequestService {
         if (!EDITABLE.contains(s.getStatus())) {
             throw ApiException.conflict("The request cannot be modified in status " + s.getStatus());
         }
-        validatePdfs(newAttachments);
-        s.setTitle(req.title().trim());
-        s.setDescription(req.description().trim());
-        s.setRequester(req.requester().trim());
-        s.setRequestType(req.requestType());
-        s.setProgram(resolveProgram(req.programId(), u));
-        saveAttachments(s, newAttachments);
+        List<MultipartFile> documents = newAttachments == null ? List.of() : newAttachments;
+        List<String> codes = documentCodes == null ? List.of() : documentCodes;
+        validatePdfs(documents);
+        checkDocumentCodes(req.requestType(), codes);
+        applyForm(s, req, u);
+        replaceCourses(s, req);
+        saveAttachments(s, documents, codes);
+        requireDocuments(s);
         if (s.getStatus() == RequestStatus.RETURNED) {
             changeStatus(s, RequestStatus.FILED, "Resubmitted after corrections", u.name());
         }
@@ -130,15 +171,18 @@ public class CouncilRequestService {
         audit.record("EVENT_REQUEST_DELETED", "REQUEST", id, s.getCode());
     }
 
-    private CouncilRequestDto correctAsAdmin(Long id, CouncilRequestForm req, List<MultipartFile> newAttachments) {
+    private CouncilRequestDto correctAsAdmin(Long id, CouncilRequestForm req, List<MultipartFile> newAttachments,
+                                             List<String> documentCodes) {
         CouncilRequest s = load(id);
-        validatePdfs(newAttachments);
-        s.setTitle(req.title().trim());
-        s.setDescription(req.description().trim());
-        s.setRequester(req.requester().trim());
-        s.setRequestType(req.requestType());
+        List<MultipartFile> documents = newAttachments == null ? List.of() : newAttachments;
+        List<String> codes = documentCodes == null ? List.of() : documentCodes;
+        validatePdfs(documents);
+        checkDocumentCodes(req.requestType(), codes);
+        applyForm(s, req, null);
         s.setProgram(resolveProgramForAdmin(req.programId(), s));
-        saveAttachments(s, newAttachments);
+        replaceCourses(s, req);
+        saveAttachments(s, documents, codes);
+        requireDocuments(s);
         audit.record("EVENT_REQUEST_UPDATED", "REQUEST", s.getId(), s.getCode());
         return toDto(s);
     }
@@ -279,6 +323,155 @@ public class CouncilRequestService {
         history.save(h);
     }
 
+    private void applyForm(CouncilRequest s, CouncilRequestForm req, AuthenticatedUser u) {
+        RequestType topic = req.requestType();
+        String requester = req.requester().trim();
+        if (!req.academicPeriod().equals("A") && !req.academicPeriod().equals("B")) {
+            throw ApiException.badRequest("The academic period must be 1(A) or 2(B)");
+        }
+        if (topic.branch() == RequestBranch.STUDENT) {
+            if (req.studentCode() == null || req.studentCode().isBlank()
+                    || req.identityDocument() == null || req.identityDocument().isBlank()
+                    || req.identityIssuedIn() == null || req.identityIssuedIn().isBlank()) {
+                throw ApiException.badRequest("Complete the student identity data");
+            }
+            if (req.counselorName() == null || req.counselorName().isBlank()) {
+                throw ApiException.badRequest("Enter the name of the counselor teacher");
+            }
+        }
+        if (topic.otherDetail() && (req.otherDetail() == null || req.otherDetail().isBlank())) {
+            throw ApiException.badRequest("Specify what the request is about");
+        }
+        if (topic.cancellationChoice() && req.cancellationKind() == null) {
+            throw ApiException.badRequest("Select whether the cancellation is of a course or of the academic period");
+        }
+        String subject = subjectOf(topic, req.cancellationKind());
+        String title = requester + " — " + subject;
+        s.setTitle(title.length() > 200 ? title.substring(0, 200) : title);
+        s.setDescription(req.justification().trim());
+        s.setRequester(requester);
+        s.setRequestType(topic);
+        s.setFiledOn(req.filedOn());
+        s.setAcademicPeriod(req.academicPeriod());
+        s.setStudentCode(blankToNull(req.studentCode()));
+        s.setIdentityDocument(blankToNull(req.identityDocument()));
+        s.setIdentityIssuedIn(blankToNull(req.identityIssuedIn()));
+        s.setEmail(req.email().trim());
+        s.setPhone(req.phone().trim());
+        s.setElectronicNotice(req.electronicNotice());
+        s.setCounselorName(blankToNull(req.counselorName()));
+        s.setOtherDetail(topic.otherDetail() ? req.otherDetail().trim() : null);
+        s.setCancellationKind(topic.cancellationChoice() ? req.cancellationKind() : null);
+        if (u != null) {
+            s.setProgram(resolveProgram(req.programId(), u));
+        }
+    }
+
+    private void replaceCourses(CouncilRequest s, CouncilRequestForm req) {
+        List<CourseLine> lines = readCourses(req.coursesJson());
+        boolean needed = s.getRequestType().requiresCourses(s.getCancellationKind());
+        List<CourseLine> filled = lines.stream().filter(this::courseFilled).toList();
+        if (needed && filled.isEmpty()) {
+            throw ApiException.badRequest("Add at least one course");
+        }
+        if (filled.size() > 6) {
+            throw ApiException.badRequest("The form allows at most six courses");
+        }
+        s.getCourses().clear();
+        if (!needed) {
+            return;
+        }
+        int line = 1;
+        for (CourseLine row : filled) {
+            if (row.courseName() == null || row.courseName().isBlank()) {
+                throw ApiException.badRequest("A course name is required");
+            }
+            RequestCourse course = new RequestCourse();
+            course.setRequest(s);
+            course.setLineNumber(line++);
+            course.setCourseName(row.courseName().trim());
+            course.setGroupCode(blankToNull(row.groupCode()));
+            course.setSubgroup(blankToNull(row.subgroup()));
+            course.setCourseNumber(blankToNull(row.courseNumber()));
+            if (s.getRequestType().grades()) {
+                course.setGradeNumber(blankToNull(row.gradeNumber()));
+                course.setGradeWords(blankToNull(row.gradeWords()));
+                course.setAttendedRegularly(row.attendedRegularly());
+                course.setFailingCourse(row.failingCourse());
+            }
+            s.getCourses().add(course);
+        }
+    }
+
+    private List<CourseLine> readCourses(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return List.of();
+        }
+        try {
+            return json.readValue(raw, new TypeReference<List<CourseLine>>() {
+            });
+        } catch (IOException e) {
+            throw ApiException.badRequest("The course list is not valid");
+        }
+    }
+
+    private boolean courseFilled(CourseLine row) {
+        return row != null && ((row.courseName() != null && !row.courseName().isBlank())
+                || (row.groupCode() != null && !row.groupCode().isBlank())
+                || (row.courseNumber() != null && !row.courseNumber().isBlank()));
+    }
+
+    private void checkDocumentCodes(RequestType topic, List<String> codes) {
+        for (String code : codes) {
+            if (!topic.documents().contains(code)) {
+                throw ApiException.badRequest("The document is not required for this request");
+            }
+        }
+    }
+
+    private void requireDocuments(CouncilRequest s) {
+        Set<String> present = new HashSet<>();
+        s.getAttachments().forEach(a -> {
+            if (a.getDocumentCode() != null) {
+                present.add(a.getDocumentCode());
+            }
+        });
+        for (String required : s.getRequestType().documents()) {
+            if (!present.contains(required)) {
+                throw ApiException.badRequest("Missing required document: " + required);
+            }
+        }
+    }
+
+    private static String subjectOf(RequestType topic, CancellationKind kind) {
+        if (topic == RequestType.CANCELLATION && kind == CancellationKind.PERIOD) {
+            return "Cancelación de periodo académico";
+        }
+        return switch (topic) {
+            case PETITION -> "Petición";
+            case COMPLAINT -> "Queja";
+            case CLAIM -> "Reclamo";
+            case REENTRY -> "Reingreso";
+            case CANCELLATION -> "Cancelación de curso";
+            case GRADE_RECTIFICATION -> "Rectificación de notas";
+            case SPECIAL_CASE -> "Caso especial";
+            case EVALUATION -> "Evaluación";
+            case PERMISSION -> "Permiso";
+            case COMMISSION -> "Comisión";
+            case CONTEST -> "Concurso";
+            case STUDY_PLAN -> "Plan de estudios";
+            case SUBJECT -> "Asignatura";
+            case PROJECT_ENDORSEMENT -> "Aval de proyecto";
+            case CALL -> "Convocatoria";
+            case RESOURCES -> "Asignación de recursos";
+            case SEEDBED -> "Semillero";
+        };
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     /** RN-08: PDF only (extension + %PDF- signature) and a configurable maximum size (10 MB by default). */
     private void validatePdfs(List<MultipartFile> files) {
         if (files == null) {
@@ -307,14 +500,15 @@ public class CouncilRequestService {
     }
 
     /** Saves each PDF to disk and records its path and SHA-256 hash. If something fails, deletes what was written. */
-    private void saveAttachments(CouncilRequest s, List<MultipartFile> files) {
-        if (files == null) {
-            return;
+    private void saveAttachments(CouncilRequest s, List<MultipartFile> files, List<String> codes) {
+        if (files.size() != codes.size()) {
+            throw ApiException.badRequest("Each attachment must identify the document it supports");
         }
         List<String> written = new ArrayList<>();
         try {
             int year = Year.now(ZoneId.of(props.getZone())).getValue();
-            for (MultipartFile f : files) {
+            for (int i = 0; i < files.size(); i++) {
+                MultipartFile f = files.get(i);
                 if (f == null || f.isEmpty()) {
                     continue;
                 }
@@ -329,6 +523,7 @@ public class CouncilRequestService {
                 a.setPath(path);
                 a.setSha256Hash(HashUtil.sha256Hex(data));
                 a.setSizeBytes(data.length);
+                a.setDocumentCode(codes.get(i));
                 s.getAttachments().add(a);
             }
             requests.saveAndFlush(s);
@@ -385,11 +580,19 @@ public class CouncilRequestService {
     }
 
     private CouncilRequestDto toDto(CouncilRequest s) {
+        String campus = s.getFaculty().getCampus().getName();
         return new CouncilRequestDto(s.getId(), s.getCode(), s.getTitle(), s.getDescription(), s.getRequester(),
-                s.getRequestType(), s.getStatus(), s.getFaculty().getId(), s.getFaculty().getName(),
+                s.getRequestType().branch(), s.getRequestType(), s.getCancellationKind(), s.getStatus(),
+                s.getFaculty().getId(), s.getFaculty().getName(), campus,
                 s.getProgram() == null ? null : s.getProgram().getId(),
                 s.getProgram() == null ? null : s.getProgram().getName(),
-                s.getFiledBy().getName(), s.getFiledAt(),
-                s.getAttachments().stream().map(a -> new AttachmentDto(a.getId(), a.getOriginalName(), a.getSizeBytes(), a.getSha256Hash())).toList());
+                s.getFiledBy().getName(), s.getFiledAt(), s.getFiledOn(), s.getAcademicPeriod(),
+                s.getStudentCode(), s.getIdentityDocument(), s.getIdentityIssuedIn(), s.getEmail(), s.getPhone(),
+                s.isElectronicNotice(), s.getCounselorName(), s.getOtherDetail(),
+                s.getCourses().stream().map(c -> new CourseLine(c.getLineNumber(), c.getCourseName(), c.getGroupCode(),
+                        c.getSubgroup(), c.getCourseNumber(), c.getGradeNumber(), c.getGradeWords(),
+                        c.getAttendedRegularly(), c.getFailingCourse())).toList(),
+                s.getAttachments().stream().map(a -> new AttachmentDto(a.getId(), a.getOriginalName(), a.getSizeBytes(),
+                        a.getSha256Hash(), a.getDocumentCode())).toList());
     }
 }

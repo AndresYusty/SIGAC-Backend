@@ -30,4 +30,8 @@ public class Attachment {
 
     @Column(name = "size_bytes", nullable = false)
     private long sizeBytes;
+
+    /** Code of the required supporting document this file satisfies. */
+    @Column(name = "document_code", length = 40)
+    private String documentCode;
 }

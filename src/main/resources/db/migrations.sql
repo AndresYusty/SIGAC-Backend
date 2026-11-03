@@ -16,4 +16,10 @@ DELETE ur_dev FROM user_roles ur_dev
     INNER JOIN user_roles ur_admin ON ur_admin.user_id = ur_dev.user_id AND ur_admin.role = 'ROLE_ADMIN'
     WHERE ur_dev.role = 'ROLE_DEV';
 UPDATE user_roles SET role = 'ROLE_ADMIN' WHERE role = 'ROLE_DEV';
+
+-- Former request types become topics of the council catalog.
+-- The column was a MySQL enum of the four old values; widen it before rewriting rows.
+ALTER TABLE council_requests MODIFY request_type VARCHAR(40) NOT NULL;
+UPDATE council_requests SET request_type = 'PETITION' WHERE request_type IN ('ACADEMIC', 'ADMINISTRATIVE', 'STUDENT');
+UPDATE council_requests SET request_type = 'EVALUATION' WHERE request_type = 'TEACHING';
 ALTER TABLE user_roles MODIFY role ENUM('ROLE_ADMIN','ROLE_COUNCIL_SECRETARY','ROLE_FACULTY_SECRETARY','ROLE_PRESIDENT','ROLE_COUNCIL_MEMBER') NOT NULL;

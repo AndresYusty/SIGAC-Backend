@@ -1,5 +1,6 @@
 package com.university.sigac.modules.requests.controller;
 
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CatalogDto;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestDto;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestForm;
 import com.university.sigac.modules.requests.dto.CouncilRequestDtos.FileContent;
@@ -44,21 +45,29 @@ public class CouncilRequestController {
 
     private final CouncilRequestService service;
 
-    /** UC-03: multipart/form-data with the request fields and the PDFs in the "attachments" part. */
+    @GetMapping("/catalog")
+    @PreAuthorize(SECRETARIES)
+    public CatalogDto catalog() {
+        return service.catalog();
+    }
+
+    /** UC-03: multipart/form-data with the MI-FOR-028 fields and one PDF per required document. */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasRole('FACULTY_SECRETARY')")
     public CouncilRequestDto file(@Valid @ModelAttribute CouncilRequestForm form,
-                                  @RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
-        return service.file(form, attachments);
+                                  @RequestParam(value = "documents", required = false) List<MultipartFile> documents,
+                                  @RequestParam(value = "documentCodes", required = false) List<String> documentCodes) {
+        return service.file(form, documents, documentCodes);
     }
 
     /** Corrects a FILED/RETURNED request; new attachments may be added. */
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasAnyRole('FACULTY_SECRETARY','ADMIN')")
     public CouncilRequestDto update(@PathVariable Long id, @Valid @ModelAttribute CouncilRequestForm form,
-                                    @RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
-        return service.update(id, form, attachments);
+                                    @RequestParam(value = "documents", required = false) List<MultipartFile> documents,
+                                    @RequestParam(value = "documentCodes", required = false) List<String> documentCodes) {
+        return service.update(id, form, documents, documentCodes);
     }
 
     @DeleteMapping("/{id}")
