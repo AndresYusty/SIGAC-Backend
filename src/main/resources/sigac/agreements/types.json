@@ -1835,24 +1835,17 @@
         "text": "Establecer que los cursos que el estudiante deberá matricular para cumplir con el plan de estudios para el programa de {{targetProgram}} son:"
       },
       {
-        "type": "paragraph",
-        "text": "**Primer semestre**"
-      },
-      {
-        "type": "paragraph",
-        "text": "Introducción a la Ingeniería Civil"
-      },
-      {
-        "type": "paragraph",
-        "text": "Comunicación Lingüística"
-      },
-      {
-        "type": "paragraph",
-        "text": "**Segundo semestre**"
-      },
-      {
-        "type": "paragraph",
-        "text": "Dibujo de Ingeniería Civil"
+        "type": "table",
+        "columns": [
+          "SEMESTRE",
+          "CURSO"
+        ],
+        "rows": [
+          [
+            "Primer semestre",
+            "Nombre del curso"
+          ]
+        ]
       },
       {
         "type": "article",
@@ -1920,7 +1913,7 @@
       },
       {
         "type": "paragraph",
-        "text": "Que el Acuerdo No. 071 del 26 de mayo de 2023 de la Facultad de Ingeniería reglamentó las modalidades de grado para los estudiantes de la Facultad de Ingeniería."
+        "text": "Que el Acuerdo No. 071 del 26 de mayo de 2023 de la Facultad de {{facultyName}} reglamentó las modalidades de grado para los estudiantes de la Facultad de {{facultyName}}."
       },
       {
         "type": "paragraph",
@@ -2581,11 +2574,11 @@
       },
       {
         "type": "paragraph",
-        "text": "Que, el Consejo Académico mediante Acuerdo CA 008 del 4 de octubre de 2022, aprobó las modalidades de grado para la Facultad de Ingeniería"
+        "text": "Que, el Consejo Académico mediante Acuerdo CA 008 del 4 de octubre de 2022, aprobó las modalidades de grado para la Facultad de {{facultyName}}"
       },
       {
         "type": "paragraph",
-        "text": "Que, mediante Acuerdo No. 071 del 26 de mayo de 2023, el Consejo de Facultad de Ingeniería reglamentó las modalidades de grado de la Facultad."
+        "text": "Que, mediante Acuerdo No. 071 del 26 de mayo de 2023, el Consejo de Facultad de {{facultyName}} reglamentó las modalidades de grado de la Facultad."
       },
       {
         "type": "paragraph",
