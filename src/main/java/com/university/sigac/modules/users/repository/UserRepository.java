@@ -32,6 +32,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
             + "and r in :roles order by u.name")
     List<User> findActiveByFacultyAndRoles(@Param("facultyId") Long facultyId, @Param("roles") Collection<RoleName> roles);
 
+    /** Secretaries of a faculty, active or not, so the dean can activate them again. */
+    @Query("select distinct u from User u join u.roles r where u.faculty.id = :facultyId and r in :roles order by u.name")
+    List<User> findByFacultyAndRoles(@Param("facultyId") Long facultyId, @Param("roles") Collection<RoleName> roles);
+
+    /** Secretaries of a program, active or not, so the program head can activate them again. */
+    @Query("select distinct u from User u join u.roles r where u.program.id = :programId and r in :roles order by u.name")
+    List<User> findByProgramAndRoles(@Param("programId") Long programId, @Param("roles") Collection<RoleName> roles);
+
     @Query("select distinct u from User u join u.roles r where u.active = true and r in :roles")
     List<User> findActiveByRoles(@Param("roles") Collection<RoleName> roles);
 }

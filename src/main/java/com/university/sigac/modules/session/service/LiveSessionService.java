@@ -34,7 +34,9 @@ import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.service.UserLookupService;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,9 +71,9 @@ public class LiveSessionService {
         if (!Set.of(SessionStatus.CONVENED, SessionStatus.STARTED, SessionStatus.SUSPENDED).contains(s.getStatus())) {
             throw ApiException.conflict("Attendance cannot be recorded with the session in status " + s.getStatus());
         }
-        Set<Long> members = members(s).stream().map(User::getId).collect(Collectors.toSet());
+        Set<Long> recordable = recordableIds(s);
         for (AttendanceItem item : req.items()) {
-            if (!members.contains(item.userId())) {
+            if (!recordable.contains(item.userId())) {
                 throw ApiException.badRequest("User " + item.userId() + " is not a voting member of this Council");
             }
             Attendance a = attendances.findBySessionIdAndUserId(s.getId(), item.userId()).orElseGet(() -> {
@@ -231,19 +233,38 @@ public class LiveSessionService {
                 percentage, QuorumCalculator.reached(members.size(), present, percentage), true);
     }
 
-    /** Voting members of the Council (the president also acts as a member) and whether they are marked present. */
+    /**
+     * Voting members, plus a program head summoned to sit as a counselor.
+     * The program head can be marked present; they do not count toward the quorum.
+     */
     public List<AttendeeDto> attendees(Session s) {
         Map<Long, Boolean> present = attendances.findBySessionId(s.getId()).stream()
                 .collect(Collectors.toMap(a -> a.getUser().getId(), Attendance::isPresent));
-        return members(s).stream().map(u -> new AttendeeDto(u.getId(), u.getName(), SessionMapper.seat(u),
+        List<User> people = new ArrayList<>(members(s));
+        people.addAll(summonedProgramHeads(s));
+        return people.stream().map(u -> new AttendeeDto(u.getId(), u.getName(), SessionMapper.seat(u),
                 present.getOrDefault(u.getId(), false))).toList();
     }
 
     // ---------------------------------------------------------------- private
 
-    /**
-     * Voting members summoned for this session. Sessions created before that choice still use the whole faculty council.
-     */
+    /** Voting members plus program heads cited to this session. Quorum still uses {@link #members}. */
+    private Set<Long> recordableIds(Session s) {
+        Set<Long> ids = members(s).stream().map(User::getId).collect(Collectors.toCollection(HashSet::new));
+        summonedProgramHeads(s).forEach(user -> ids.add(user.getId()));
+        return ids;
+    }
+
+    /** Program heads summoned to sit as counselors, excluding anyone who already votes. */
+    private List<User> summonedProgramHeads(Session s) {
+        Set<Long> voting = members(s).stream().map(User::getId).collect(Collectors.toSet());
+        return s.getSummons().stream().map(SessionSummon::getUser)
+                .filter(user -> user.isActive() && user.hasRole(RoleName.ROLE_PROGRAM_HEAD) && !voting.contains(user.getId()))
+                .sorted(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER))
+                .toList();
+    }
+
+    /** Voting members summoned for this session. Sessions created before that choice still use the whole faculty council. */
     private List<User> members(Session s) {
         if (s.getSummons().isEmpty()) {
             return users.findActiveByFacultyAndRoles(s.getFaculty().getId(), RoleName.VOTING);

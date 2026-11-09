@@ -15,8 +15,11 @@ import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.repository.FacultyRepository;
 import com.university.sigac.modules.users.repository.ProgramRepository;
 import com.university.sigac.modules.users.repository.UserRepository;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -53,6 +56,26 @@ public class UserService {
         return toDto(find(SecurityUtils.current().id()));
     }
 
+    /** Secretaries the dean or the program head may activate or deactivate. */
+    @Transactional(readOnly = true)
+    public List<UserDto> supportStaff() {
+        User actor = find(SecurityUtils.current().id());
+        Map<Long, User> found = new LinkedHashMap<>();
+        if (actor.hasRole(RoleName.ROLE_PRESIDENT) && actor.getFaculty() != null) {
+            users.findByFacultyAndRoles(actor.getFaculty().getId(), RoleName.FACULTY_SUPPORT)
+                    .forEach(user -> found.put(user.getId(), user));
+        }
+        if (actor.hasRole(RoleName.ROLE_PROGRAM_HEAD) && actor.getProgram() != null) {
+            users.findByProgramAndRoles(actor.getProgram().getId(), RoleName.PROGRAM_SUPPORT)
+                    .forEach(user -> found.putIfAbsent(user.getId(), user));
+        }
+        return found.values().stream()
+                .filter(user -> SupportAccess.canManage(actor, user))
+                .sorted(Comparator.comparing(User::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(UserService::toDto)
+                .toList();
+    }
+
     @Transactional
     public UserDto create(UserCreateRequest req) {
         String email = req.email().trim().toLowerCase();
@@ -82,9 +105,13 @@ public class UserService {
     /** Logical deactivation: a user is never physically deleted. */
     @Transactional
     public UserDto changeStatus(Long id, boolean active) {
+        User actor = find(SecurityUtils.current().id());
         User u = find(id);
-        if (!active && u.getId().equals(SecurityUtils.current().id())) {
+        if (!active && u.getId().equals(actor.getId())) {
             throw ApiException.badRequest("You cannot deactivate your own account");
+        }
+        if (!SupportAccess.canManage(actor, u)) {
+            throw ApiException.forbidden("You can only activate or deactivate the secretaries under your authority");
         }
         u.setActive(active);
         audit.record(active ? "EVENT_USER_ACTIVATED" : "EVENT_USER_DEACTIVATED", "USER", u.getId(), null);
@@ -149,6 +176,9 @@ public class UserService {
             if (faculty == null || !program.getFaculty().getId().equals(faculty.getId())) {
                 throw ApiException.badRequest("The Program does not belong to the given Faculty");
             }
+        }
+        if (roles.contains(RoleName.ROLE_PROGRAM_HEAD) && program == null) {
+            throw ApiException.badRequest("A program head must be assigned to a program");
         }
         u.setRoles(new HashSet<>(roles));
         u.setFaculty(faculty);

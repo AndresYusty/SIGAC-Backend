@@ -40,12 +40,12 @@ public final class SessionMapper {
                 .toList();
     }
 
-    /** President, then counselors, then the council secretary. */
+    /** President, then counselors and program heads, then the council secretary. */
     public static int summonOrder(User user) {
         if (user.hasRole(RoleName.ROLE_PRESIDENT)) {
             return 0;
         }
-        if (user.hasRole(RoleName.ROLE_COUNCIL_MEMBER)) {
+        if (user.hasRole(RoleName.ROLE_COUNCIL_MEMBER) || user.hasRole(RoleName.ROLE_PROGRAM_HEAD)) {
             return 1;
         }
         return 2;
@@ -58,6 +58,9 @@ public final class SessionMapper {
         if (user.hasRole(RoleName.ROLE_COUNCIL_MEMBER)) {
             return RoleName.ROLE_COUNCIL_MEMBER;
         }
+        if (user.hasRole(RoleName.ROLE_PROGRAM_HEAD)) {
+            return RoleName.ROLE_PROGRAM_HEAD;
+        }
         return RoleName.ROLE_COUNCIL_SECRETARY;
     }
 
@@ -65,6 +68,7 @@ public final class SessionMapper {
         return switch (role) {
             case ROLE_PRESIDENT -> "Presidente";
             case ROLE_COUNCIL_MEMBER -> "Consejero";
+            case ROLE_PROGRAM_HEAD -> "Jefe de programa";
             case ROLE_COUNCIL_SECRETARY -> "Secretaría del Consejo";
             default -> role.name();
         };

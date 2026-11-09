@@ -7,6 +7,7 @@ import com.university.sigac.modules.users.dto.UserDtos.UserDto;
 import com.university.sigac.modules.users.dto.UserDtos.UserUpdateRequest;
 import com.university.sigac.modules.users.service.UserService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +50,12 @@ public class UserController {
         return service.list(q, pageable);
     }
 
+    @GetMapping("/support")
+    @PreAuthorize("hasAnyRole('PRESIDENT','PROGRAM_HEAD')")
+    public List<UserDto> supportStaff() {
+        return service.supportStaff();
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public UserDto get(@PathVariable Long id) {
@@ -69,7 +76,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','PRESIDENT','PROGRAM_HEAD')")
     public UserDto changeStatus(@PathVariable Long id, @RequestParam boolean active) {
         return service.changeStatus(id, active);
     }

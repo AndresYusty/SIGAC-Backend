@@ -65,9 +65,13 @@ public class AgendaService {
 
     private static final String NOTICE_TEMPLATE_PATH = "/sigac/templates/citacion.html";
     private static final String NOTICE_TEMPLATE = readNoticeTemplate();
-    /** People who can be summoned: they sit, vote, or conduct. The faculty secretary files requests and is not cited. */
+    /**
+     * People who can be summoned. The program head is cited when they sit as a counselor.
+     * The faculty secretary files requests and is not cited.
+     */
     private static final List<RoleName> SUMMONABLE = List.of(
-            RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_COUNCIL_SECRETARY);
+            RoleName.ROLE_PRESIDENT, RoleName.ROLE_COUNCIL_MEMBER, RoleName.ROLE_PROGRAM_HEAD,
+            RoleName.ROLE_COUNCIL_SECRETARY);
 
     private final SessionRepository sessions;
     private final CouncilRequestRepository requests;

@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/repository/minutes")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('COUNCIL_SECRETARY','FACULTY_SECRETARY','PRESIDENT','COUNCIL_MEMBER','ADMIN')")
+@PreAuthorize("hasAnyRole('COUNCIL_SECRETARY','FACULTY_SECRETARY','PRESIDENT','COUNCIL_MEMBER','PROGRAM_HEAD','ADMIN')")
 public class RepositoryController {
 
     private final RepositoryService repository;

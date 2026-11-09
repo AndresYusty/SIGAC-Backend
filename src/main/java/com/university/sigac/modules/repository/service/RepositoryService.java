@@ -42,7 +42,7 @@ public class RepositoryService {
 
     /**
      * RF-37: only PUBLISHED minutes, from the user's Faculty unless the profile is global (RN-02).
-     * A council member only sees the minutes of the sessions they attended.
+     * A counselor or a program head only sees the minutes of the sessions they attended.
      */
     @Transactional(readOnly = true)
     public Page<RepositoryMinutesDto> search(String serialNumber, Long councilTypeId, LocalDate from, LocalDate to,
@@ -110,13 +110,13 @@ public class RepositoryService {
     }
 
     /**
-     * Sessions attended by the user when they are only a council member (no other council role);
-     * empty when the user is not restricted.
+     * Counselors and program heads only see the minutes of the sessions they attended.
+     * A broader role (dean, secretary, administrator) keeps the faculty repository.
      */
     public Optional<Set<Long>> attendedSessionsIfRestricted(AuthenticatedUser u) {
-        boolean onlyMember = u.hasRole("ROLE_COUNCIL_MEMBER") && !u.hasAnyRole("ROLE_PRESIDENT",
-                "ROLE_COUNCIL_SECRETARY", "ROLE_FACULTY_SECRETARY", "ROLE_ADMIN");
-        return onlyMember ? Optional.of(attendance.attendedSessionIds(u.id())) : Optional.empty();
+        boolean broader = u.hasAnyRole("ROLE_PRESIDENT", "ROLE_COUNCIL_SECRETARY", "ROLE_FACULTY_SECRETARY", "ROLE_ADMIN");
+        boolean participant = u.hasAnyRole("ROLE_COUNCIL_MEMBER", "ROLE_PROGRAM_HEAD");
+        return !broader && participant ? Optional.of(attendance.attendedSessionIds(u.id())) : Optional.empty();
     }
 
     private Minutes loadPublished(Long id) {

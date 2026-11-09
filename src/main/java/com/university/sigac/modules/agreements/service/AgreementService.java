@@ -15,14 +15,20 @@ import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementTypeDt
 import com.university.sigac.modules.agreements.entity.Agreement;
 import com.university.sigac.modules.agreements.repository.AgreementRepository;
 import com.university.sigac.modules.agreements.util.AgreementTypeCatalog;
+import com.university.sigac.modules.repository.service.RepositoryService;
+import com.university.sigac.modules.session.service.AttendanceQueryService;
 import com.university.sigac.modules.users.entity.Faculty;
 import com.university.sigac.modules.users.service.HierarchyService;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -44,6 +50,8 @@ public class AgreementService {
     private final HierarchyService hierarchy;
     private final AuditService audit;
     private final ObjectMapper mapper;
+    private final RepositoryService repository;
+    private final AttendanceQueryService attendance;
 
     public List<AgreementTypeDto> types() {
         return types.all();
@@ -69,6 +77,7 @@ public class AgreementService {
             if (!user.isGlobal()) {
                 p.add(cb.equal(root.get("faculty").get("id"), user.facultyId()));
             }
+            restrictToSessionsAttended(user, root, cb, p);
             if (year != null) {
                 p.add(cb.equal(root.get("year"), year));
             }
@@ -139,6 +148,10 @@ public class AgreementService {
     /** Consultation from the digital repository: same PDF, with a trace of who opened it. */
     @Transactional
     public AgreementFile open(Long id, String event) {
+        Agreement a = find(id);
+        if (!attended(a)) {
+            throw ApiException.forbidden("You can only access the agreements of the sessions you attended");
+        }
         AgreementFile file = pdf(id);
         audit.record(event, "AGREEMENT", id, file.name());
         return file;
@@ -180,6 +193,25 @@ public class AgreementService {
         }
         SecurityUtils.checkFaculty(user, id);
         return hierarchy.findFaculty(id);
+    }
+
+    /** A counselor or program head only sees agreements from a session they attended. */
+    private void restrictToSessionsAttended(AuthenticatedUser user, Root<Agreement> root,
+                                            CriteriaBuilder cb, List<Predicate> p) {
+        Optional<Set<Long>> sessions = repository.attendedSessionsIfRestricted(user);
+        if (sessions.isEmpty()) {
+            return;
+        }
+        Set<LocalDate> dates = attendance.attendedSessionDates(sessions.get());
+        p.add(dates.isEmpty() ? cb.disjunction() : root.get("issueDate").in(dates));
+    }
+
+    private boolean attended(Agreement agreement) {
+        Optional<Set<Long>> sessions = repository.attendedSessionsIfRestricted(SecurityUtils.current());
+        if (sessions.isEmpty()) {
+            return true;
+        }
+        return attendance.attendedSessionDates(sessions.get()).contains(agreement.getIssueDate());
     }
 
     private Agreement find(Long id) {

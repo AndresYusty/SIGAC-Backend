@@ -23,3 +23,6 @@ ALTER TABLE council_requests MODIFY request_type VARCHAR(40) NOT NULL;
 UPDATE council_requests SET request_type = 'PETITION' WHERE request_type IN ('ACADEMIC', 'ADMINISTRATIVE', 'STUDENT');
 UPDATE council_requests SET request_type = 'EVALUATION' WHERE request_type = 'TEACHING';
 ALTER TABLE user_roles MODIFY role ENUM('ROLE_ADMIN','ROLE_COUNCIL_SECRETARY','ROLE_FACULTY_SECRETARY','ROLE_PRESIDENT','ROLE_COUNCIL_MEMBER') NOT NULL;
+
+-- Program head: activates and deactivates the secretary of their own program.
+ALTER TABLE user_roles MODIFY role ENUM('ROLE_ADMIN','ROLE_COUNCIL_SECRETARY','ROLE_FACULTY_SECRETARY','ROLE_PRESIDENT','ROLE_COUNCIL_MEMBER','ROLE_PROGRAM_HEAD') NOT NULL;
