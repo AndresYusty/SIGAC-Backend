@@ -12,6 +12,7 @@ import com.university.sigac.core.util.HtmlSanitizer;
 import com.university.sigac.modules.minutes.entity.Minutes;
 import com.university.sigac.modules.minutes.repository.MinutesRepository;
 import com.university.sigac.modules.notifications.service.EmailService;
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestForm;
 import com.university.sigac.modules.requests.dto.SessionDtos.GuestRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionCorrection;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
@@ -24,8 +25,10 @@ import com.university.sigac.modules.requests.entity.CouncilRequest;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionGuest;
 import com.university.sigac.modules.requests.entity.SessionSummon;
+import com.university.sigac.modules.requests.enums.DecisionOutcome;
 import com.university.sigac.modules.requests.enums.RequestStatus;
 import com.university.sigac.modules.requests.enums.SessionStatus;
+import com.university.sigac.modules.requests.repository.AgendaItemRepository;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.SessionRepository;
 import com.university.sigac.modules.session.repository.AttendanceRepository;
@@ -57,6 +60,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /** Module 3 (Council Secretary): sessions, agenda builder and agenda closing with notice (RF-18, RF-19). */
 @Service
@@ -75,6 +79,7 @@ public class AgendaService {
 
     private final SessionRepository sessions;
     private final CouncilRequestRepository requests;
+    private final AgendaItemRepository agendaItems;
     private final CouncilTypeService councilTypes;
     private final HierarchyService hierarchy;
     private final UserLookupService users;
@@ -178,6 +183,28 @@ public class AgendaService {
                 .toList();
     }
 
+    /** Replaces who will receive the notice. After the agenda is closed the citation is already sent. */
+    @Transactional
+    public SessionDto updateSummons(Long id, List<Long> memberIds) {
+        Session s = loadWithOpenAgenda(id);
+        List<User> chosen = summoned(s.getFaculty().getId(), memberIds);
+        Set<Long> wanted = chosen.stream().map(User::getId).collect(Collectors.toSet());
+        s.getSummons().removeIf(summon -> !wanted.contains(summon.getUser().getId()));
+        Set<Long> present = s.getSummons().stream().map(summon -> summon.getUser().getId()).collect(Collectors.toSet());
+        for (User person : chosen) {
+            if (present.contains(person.getId())) {
+                continue;
+            }
+            SessionSummon summon = new SessionSummon();
+            summon.setSession(s);
+            summon.setUser(person);
+            s.getSummons().add(summon);
+        }
+        sessions.saveAndFlush(s);
+        audit.record("EVENT_SESSION_SUMMONS_UPDATED", "SESSION", s.getId(), chosen.size() + " summoned");
+        return SessionMapper.toDto(s);
+    }
+
     @Transactional(readOnly = true)
     public Page<SessionSummaryDto> list(SessionStatus status, Pageable pageable) {
         AuthenticatedUser u = SecurityUtils.current();
@@ -222,8 +249,9 @@ public class AgendaService {
     @Transactional
     public SessionDto addItem(Long sessionId, Long requestId) {
         AuthenticatedUser u = SecurityUtils.current();
-        Session s = loadWithOpenAgenda(sessionId);
+        Session s = loadForItemChange(sessionId);
         CouncilRequest req = requests.findById(requestId).orElseThrow(() -> ApiException.notFound("Request not found"));
+        releaseDeferred(req);
         if (!req.getFaculty().getId().equals(s.getFaculty().getId())) {
             throw ApiException.badRequest("The request belongs to another Faculty");
         }
@@ -246,7 +274,7 @@ public class AgendaService {
     /** Extraordinary Council: an urgent matter goes on the agenda without a filed and approved request. */
     @Transactional
     public SessionDto addUrgentItem(Long sessionId, UrgentItemRequest req) {
-        Session s = loadWithOpenAgenda(sessionId);
+        Session s = loadForItemChange(sessionId);
         if (!s.kind().allowsUrgentItems()) {
             throw ApiException.conflict("Urgent items can only be added to an Extraordinary Council session");
         }
@@ -265,8 +293,11 @@ public class AgendaService {
     @Transactional
     public SessionDto removeItem(Long sessionId, Long itemId) {
         AuthenticatedUser u = SecurityUtils.current();
-        Session s = loadWithOpenAgenda(sessionId);
+        Session s = loadForItemChange(sessionId);
         AgendaItem p = findItem(s, itemId);
+        if (p.hasDecision()) {
+            throw ApiException.conflict("A point that already has a decision cannot be removed from the agenda");
+        }
         s.getItems().remove(p);
         if (p.getRequest() != null) {
             requestService.changeStatus(p.getRequest(), RequestStatus.APPROVED, "Removed from the agenda", u.name());
@@ -279,7 +310,7 @@ public class AgendaService {
     /** RF-18 (drag & drop): receives the item ids in the new order. */
     @Transactional
     public SessionDto reorder(Long sessionId, List<Long> orderedIds) {
-        Session s = loadWithOpenAgenda(sessionId);
+        Session s = loadForItemChange(sessionId);
         Set<Long> current = s.getItems().stream().map(AgendaItem::getId).collect(Collectors.toSet());
         if (orderedIds.size() != current.size() || !current.equals(Set.copyOf(orderedIds))) {
             throw ApiException.badRequest("You must send exactly the agenda items, without repetitions");
@@ -323,7 +354,39 @@ public class AgendaService {
 
     // ---------------------------------------------------------------- Notice
 
-    /** Freezes the agenda (RN-09), generates the notice PDF and emails it to the members and guests. */
+    /**
+     * Files a request with the same form used at the counter and puts it on the live agenda as a miscellaneous point.
+     */
+    @Transactional
+    public SessionDto addMiscellaneousRequest(Long sessionId, CouncilRequestForm form, List<MultipartFile> files,
+                                              List<String> documentCodes) {
+        AuthenticatedUser u = SecurityUtils.current();
+        Session s = loadForItemChange(sessionId);
+        if (!inProgress(s)) {
+            throw ApiException.conflict("A miscellaneous request can only be added while the session is in progress (current status: "
+                    + s.getStatus() + ")");
+        }
+        var filed = requestService.file(form, files, documentCodes);
+        CouncilRequest req = requests.findById(filed.id()).orElseThrow(() -> ApiException.notFound("Request not found"));
+        if (!req.getFaculty().getId().equals(s.getFaculty().getId())) {
+            throw ApiException.badRequest("The request belongs to another Faculty");
+        }
+        AgendaItem p = new AgendaItem();
+        p.setSession(s);
+        p.setPosition(s.getItems().size() + 1);
+        p.setTitle(req.getTitle());
+        p.setDescription(req.getDescription());
+        p.setRequest(req);
+        p.setMiscellaneous(true);
+        s.getItems().add(p);
+        requestService.changeStatus(req, RequestStatus.ON_AGENDA,
+                "Added as a miscellaneous item during session " + s.getId(), u.name());
+        sessions.saveAndFlush(s);
+        audit.record("EVENT_MISC_REQUEST_ADDED", "SESSION", s.getId(), req.getCode());
+        return SessionMapper.toDto(s);
+    }
+
+    /** Freezes the agenda, generates the notice PDF and emails it to the members and guests. */
     @Transactional
     public SessionDto closeAgenda(Long sessionId) {
         Session s = loadWithOpenAgenda(sessionId);
@@ -387,6 +450,31 @@ public class AgendaService {
             throw ApiException.conflict("The agenda has already been closed and published; it cannot be modified (RN-09)");
         }
         return s;
+    }
+
+    /** Open while the notice is being prepared, and again once the session has started. */
+    private Session loadForItemChange(Long id) {
+        Session s = loadWithAccess(id);
+        if (!s.isAgendaClosed() || inProgress(s)) {
+            return s;
+        }
+        throw ApiException.conflict("The agenda has already been closed and published; it cannot be modified (RN-09)");
+    }
+
+    private static boolean inProgress(Session s) {
+        return s.hasStatus(SessionStatus.STARTED) || s.hasStatus(SessionStatus.SUSPENDED);
+    }
+
+    /** A point deferred at the close of a finished session can be placed on a later agenda. */
+    private void releaseDeferred(CouncilRequest req) {
+        agendaItems.findByRequest_Id(req.getId()).ifPresent(previous -> {
+            if (previous.getSession().hasStatus(SessionStatus.FINISHED) && previous.getOutcome() == DecisionOutcome.POSTPONED) {
+                previous.setRequest(null);
+                agendaItems.saveAndFlush(previous);
+                return;
+            }
+            throw ApiException.conflict("The request is already on an agenda");
+        });
     }
 
     private AgendaItem findItem(Session s, Long itemId) {

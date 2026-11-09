@@ -1,5 +1,6 @@
 package com.university.sigac.modules.session.controller;
 
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestForm;
 import com.university.sigac.modules.requests.dto.SessionDtos.AgendaItemDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.session.dto.LiveSessionDtos.AttendanceDto;
@@ -9,6 +10,7 @@ import com.university.sigac.modules.session.dto.LiveSessionDtos.MiscItemRequest;
 import com.university.sigac.modules.session.dto.LiveSessionDtos.NoteRequest;
 import com.university.sigac.modules.session.service.LiveSessionService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,10 +18,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 /** Live session conduct: write operations belong to Council Secretary. */
 @RestController
@@ -85,5 +91,15 @@ public class LiveSessionController {
     @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public SessionDto miscItem(@PathVariable Long sessionId, @Valid @RequestBody MiscItemRequest req) {
         return service.addMiscItem(sessionId, req);
+    }
+
+    /** A new filing, created during the session and added at once as a miscellaneous point. */
+    @PostMapping(value = "/misc-requests", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public SessionDto miscRequest(@PathVariable Long sessionId, @Valid @ModelAttribute CouncilRequestForm form,
+                                  @RequestParam(value = "documents", required = false) List<MultipartFile> documents,
+                                  @RequestParam(value = "documentCodes", required = false) List<String> documentCodes) {
+        return service.addMiscellaneousRequest(sessionId, form, documents, documentCodes);
     }
 }

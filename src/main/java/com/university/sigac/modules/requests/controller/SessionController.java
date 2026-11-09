@@ -7,6 +7,7 @@ import com.university.sigac.modules.requests.dto.SessionDtos.SessionCorrection;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
+import com.university.sigac.modules.requests.dto.SessionDtos.SummonsRequest;
 import com.university.sigac.modules.requests.dto.SessionDtos.SummonedDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.UrgentItemRequest;
 import com.university.sigac.modules.requests.enums.SessionStatus;
@@ -126,6 +127,13 @@ public class SessionController {
     @PreAuthorize(AGENDA)
     public SessionDto reorder(@PathVariable Long id, @Valid @RequestBody ReorderRequest req) {
         return service.reorder(id, req.itemIds());
+    }
+
+    /** Who receives the notice. Allowed only before it is sent. */
+    @PutMapping("/{id}/summons")
+    @PreAuthorize(AGENDA)
+    public SessionDto updateSummons(@PathVariable Long id, @Valid @RequestBody SummonsRequest req) {
+        return service.updateSummons(id, req.memberIds());
     }
 
     /** Closes the agenda, generates the notice and sends it by email. */

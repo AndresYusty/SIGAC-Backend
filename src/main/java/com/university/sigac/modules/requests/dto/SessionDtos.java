@@ -21,7 +21,7 @@ public final class SessionDtos {
 
     // ---------- Requests ----------
 
-    /** The location is required except for virtual sessions. memberIds are the people summoned to this session. */
+    /** The location is the room, or the platform link when the council is virtual. memberIds are the people summoned. */
     public record SessionRequest(@NotNull Long councilTypeId, @NotNull @Future LocalDateTime scheduledAt,
                                  @Size(max = 200) String location, @NotEmpty List<Long> memberIds) {
     }
@@ -42,6 +42,10 @@ public final class SessionDtos {
 
     public record GuestRequest(@NotBlank @Size(max = 150) String name, @Email @Size(max = 150) String email,
                                @Size(max = 150) String affiliation) {
+    }
+
+    /** People who will receive the notice. Only while the agenda is still open. */
+    public record SummonsRequest(@NotEmpty List<Long> memberIds) {
     }
 
     // ---------- Responses ----------

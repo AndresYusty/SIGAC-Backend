@@ -36,7 +36,7 @@ public final class LiveSessionDtos {
     }
 
     // ---------- Responses ----------
-    /** applicable = false for virtual sessions: no deliberative quorum is required (reached is then always true). */
+    /** applicable = false only when a council kind does not deliberate. Virtual councils do deliberate. */
     public record QuorumDto(int members, int present, int required, int percentage, boolean reached,
                             boolean applicable) {
     }

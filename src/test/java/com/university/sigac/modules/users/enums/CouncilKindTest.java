@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Test;
 class CouncilKindTest {
 
     @Test
-    void onlyTheVirtualCouncilSkipsQuorumAndLocation() {
+    void everyCouncilNeedsQuorumAndAPlaceOrPlatform() {
         for (CouncilKind k : CouncilKind.values()) {
-            assertEquals(k != CouncilKind.VIRTUAL, k.requiresQuorum(), k.name());
-            assertEquals(k != CouncilKind.VIRTUAL, k.requiresLocation(), k.name());
+            assertTrue(k.requiresQuorum(), k.name());
+            assertTrue(k.requiresLocation(), k.name());
         }
     }
 

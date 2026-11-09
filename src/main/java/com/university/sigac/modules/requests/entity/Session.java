@@ -19,7 +19,8 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 public class Session {
 
-    public static final String VIRTUAL_LOCATION = "Virtual (by email)";
+    /** Shown only when an older virtual session was stored without a platform. */
+    public static final String VIRTUAL_LOCATION = "Sesión virtual";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,7 +37,7 @@ public class Session {
     @Column(name = "scheduled_at", nullable = false)
     private LocalDateTime scheduledAt;
 
-    /** null only for virtual sessions. */
+    /** Room, or the link of the platform when the council is virtual. */
     @Column(length = 200)
     private String location;
 
@@ -44,7 +45,7 @@ public class Session {
     @Column(nullable = false, length = 20)
     private SessionStatus status = SessionStatus.SCHEDULED;
 
-    /** true once the agenda is closed and the notice has been sent (RN-09: no further changes). */
+    /** true once the notice has been sent. The agenda stays frozen until the session starts. */
     @Column(name = "agenda_closed", nullable = false)
     private boolean agendaClosed = false;
 

@@ -7,6 +7,7 @@ import com.university.sigac.core.parameter.ParameterService;
 import com.university.sigac.core.security.AuthenticatedUser;
 import com.university.sigac.core.security.SecurityUtils;
 import com.university.sigac.core.util.HtmlSanitizer;
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.CouncilRequestForm;
 import com.university.sigac.modules.requests.dto.SessionDtos.AgendaItemDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.entity.AgendaItem;
@@ -44,6 +45,7 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /** Module 4: attendance and quorum, session control, decisions, debate notes and miscellaneous items. */
 @Service
@@ -123,16 +125,29 @@ public class LiveSessionService {
         return SessionMapper.toDto(s);
     }
 
-    /** Formal closing: every item must have a decision (precondition for generating the minutes). */
+    /**
+     * Formal closing. Points still without a decision are deferred: the request returns to approved
+     * so it can be placed on a later agenda, and the minutes can be generated.
+     */
     @Transactional
     public SessionDto finish(Long sessionId) {
         AuthenticatedUser u = SecurityUtils.current();
         Session s = agenda.loadWithAccess(sessionId);
         requireTransition(s, SessionStatus.FINISHED);
-        List<String> pending = s.getItems().stream().filter(p -> !p.hasDecision())
-                .map(p -> p.getPosition() + ". " + p.getTitle()).toList();
-        if (!pending.isEmpty()) {
-            throw ApiException.unprocessable("There are items without a recorded decision; the session cannot be finished", pending);
+        for (AgendaItem p : s.getItems()) {
+            if (p.hasDecision()) {
+                continue;
+            }
+            p.setOutcome(DecisionOutcome.POSTPONED);
+            p.setVotesFor(0);
+            p.setVotesAgainst(0);
+            p.setAbstentions(0);
+            p.setDecidedBy(u.name());
+            if (p.getRequest() != null && p.getRequest().getStatus() == RequestStatus.ON_AGENDA) {
+                requestService.changeStatus(p.getRequest(), RequestStatus.APPROVED,
+                        "Deferred at the close of session " + s.getId() + "; it can be scheduled again", u.name());
+            }
+            audit.record("EVENT_ITEM_DEFERRED", "AGENDA_ITEM", p.getId(), p.getTitle());
         }
         s.setStatus(SessionStatus.FINISHED);
         s.setActualEnd(LocalDateTime.now(ZoneId.of(props.getZone())));
@@ -201,6 +216,13 @@ public class LiveSessionService {
         return SessionMapper.toItem(p);
     }
 
+    /** Files the official form and adds it to the agenda of the session in progress. */
+    @Transactional
+    public SessionDto addMiscellaneousRequest(Long sessionId, CouncilRequestForm form, List<MultipartFile> files,
+                                              List<String> documentCodes) {
+        return agenda.addMiscellaneousRequest(sessionId, form, files, documentCodes);
+    }
+
     /** RF-26: item not included in the original agenda. */
     @Transactional
     public SessionDto addMiscItem(Long sessionId, MiscItemRequest req) {
@@ -219,7 +241,7 @@ public class LiveSessionService {
 
     // ---------------------------------------------------------------- Quorum and attendees (also used by the minutes generator)
 
-    /** Virtual sessions require no quorum: they are decided by the members who answer the consultation. */
+    /** Deliberative quorum of the people summoned. A virtual council uses the same rule. */
     public QuorumDto computeQuorum(Session s) {
         List<User> members = members(s);
         Set<Long> ids = members.stream().map(User::getId).collect(Collectors.toSet());

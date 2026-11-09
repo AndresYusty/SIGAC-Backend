@@ -6,7 +6,7 @@ public enum CouncilKind {
     ORDINARY("CO", "Ordinary Council"),
     /** Something that cannot wait for the next ordinary session: urgent items may be added to the agenda. */
     EXTRAORDINARY("CE", "Extraordinary Council"),
-    /** Urgent consultations held by email: no location and no deliberative quorum. */
+    /** Remote session on a digital platform. It needs the meeting link and the same quorum as the others. */
     VIRTUAL("CV", "Virtual Council"),
     /** Needs the opinion of professors: guests with voice but no vote, who do not count for the quorum. */
     EXPANDED("CAM", "Expanded Council");
@@ -27,12 +27,14 @@ public enum CouncilKind {
         return defaultName;
     }
 
+    /** Every council deliberates with the configured quorum, including a remote one. */
     public boolean requiresQuorum() {
-        return this != VIRTUAL;
+        return true;
     }
 
+    /** A room for an in-person council, or the platform link for a virtual one. */
     public boolean requiresLocation() {
-        return this != VIRTUAL;
+        return true;
     }
 
     public boolean allowsGuests() {
