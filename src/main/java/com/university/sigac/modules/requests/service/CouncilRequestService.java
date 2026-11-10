@@ -331,12 +331,8 @@ public class CouncilRequestService {
         }
         if (topic.branch() == RequestBranch.STUDENT) {
             if (req.studentCode() == null || req.studentCode().isBlank()
-                    || req.identityDocument() == null || req.identityDocument().isBlank()
-                    || req.identityIssuedIn() == null || req.identityIssuedIn().isBlank()) {
+                    || req.identityDocument() == null || req.identityDocument().isBlank()) {
                 throw ApiException.badRequest("Complete the student identity data");
-            }
-            if (req.counselorName() == null || req.counselorName().isBlank()) {
-                throw ApiException.badRequest("Enter the name of the counselor teacher");
             }
         }
         if (topic.otherDetail() && (req.otherDetail() == null || req.otherDetail().isBlank())) {
@@ -465,6 +461,10 @@ public class CouncilRequestService {
             case CALL -> "Convocatoria";
             case RESOURCES -> "Asignación de recursos";
             case SEEDBED -> "Semillero";
+            case SOCIAL_PROJECT -> "Aval de proyecto de proyección social";
+            case SOCIAL_PRACTICE -> "Práctica social";
+            case EXTENSION_AGREEMENT -> "Convenio de extensión";
+            case SOCIAL_ACTIVITY -> "Actividad de proyección social";
         };
     }
 

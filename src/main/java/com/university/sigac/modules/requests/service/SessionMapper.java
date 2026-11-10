@@ -1,11 +1,14 @@
 package com.university.sigac.modules.requests.service;
 
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.AttachmentDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.AgendaItemDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.GuestDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SummonedDto;
 import com.university.sigac.modules.requests.entity.AgendaItem;
+import com.university.sigac.modules.requests.entity.Attachment;
+import com.university.sigac.modules.requests.entity.CouncilRequest;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionGuest;
 import com.university.sigac.modules.requests.entity.SessionSummon;
@@ -80,10 +83,19 @@ public final class SessionMapper {
     }
 
     public static AgendaItemDto toItem(AgendaItem p) {
+        CouncilRequest request = p.getRequest();
+        List<AttachmentDto> files = request == null ? List.of() : request.getAttachments().stream()
+                .map(SessionMapper::toAttachment)
+                .toList();
         return new AgendaItemDto(p.getId(), p.getPosition(), p.getTitle(), p.getDescription(),
-                p.getRequest() == null ? null : p.getRequest().getCode(), p.isMiscellaneous(), p.isUrgent(),
+                request == null ? null : request.getCode(), p.isMiscellaneous(), p.isUrgent(),
                 p.getOutcome(), p.getVotesFor(), p.getVotesAgainst(), p.getAbstentions(), p.getDecidedBy(),
-                p.getDebateNotes());
+                p.getDebateNotes(), request == null ? null : request.getId(), files, p.getDecisionDescription());
+    }
+
+    private static AttachmentDto toAttachment(Attachment file) {
+        return new AttachmentDto(file.getId(), file.getOriginalName(), file.getSizeBytes(), file.getSha256Hash(),
+                file.getDocumentCode());
     }
 
     /** Guests as template variables ({name, affiliation}) for the notice and the minutes. */

@@ -26,7 +26,8 @@ public final class LiveSessionDtos {
 
     public record DecisionRequest(@NotNull DecisionOutcome outcome, @Min(0) int votesFor,
                                   @Min(0) int votesAgainst, @Min(0) int abstentions,
-                                  @Size(max = 500) String changeReason) {
+                                  @Size(max = 500) String changeReason,
+                                  @Size(max = 4000) String pointDescription) {
     }
 
     public record NoteRequest(@NotBlank @Size(max = 20000) String content) {

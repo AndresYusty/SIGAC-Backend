@@ -40,6 +40,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -174,11 +175,14 @@ public class LiveSessionService {
         }
         AgendaItem p = findItem(s, itemId);
         checkVotes(req, quorum.present());
+        String described = req.pointDescription() == null ? "" : req.pointDescription().trim();
+        String pointDescription = described.isBlank() ? null : described;
         if (p.hasDecision()) {
             boolean same = p.getOutcome() == req.outcome()
                     && p.getVotesFor() == req.votesFor()
                     && p.getVotesAgainst() == req.votesAgainst()
-                    && p.getAbstentions() == req.abstentions();
+                    && p.getAbstentions() == req.abstentions()
+                    && Objects.equals(p.getDecisionDescription(), pointDescription);
             if (same) {
                 return SessionMapper.toItem(p);
             }
@@ -197,6 +201,7 @@ public class LiveSessionService {
         p.setVotesAgainst(req.votesAgainst());
         p.setAbstentions(req.abstentions());
         p.setDecidedBy(u.name());
+        p.setDecisionDescription(pointDescription);
         return SessionMapper.toItem(p);
     }
 

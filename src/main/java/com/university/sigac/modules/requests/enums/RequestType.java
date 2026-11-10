@@ -23,7 +23,11 @@ public enum RequestType {
     PROJECT_ENDORSEMENT(RequestBranch.RESEARCH, List.of("PROJECT"), false, false, false, false),
     CALL(RequestBranch.RESEARCH, List.of("CALL_TERMS"), false, false, false, false),
     RESOURCES(RequestBranch.RESEARCH, List.of("BUDGET"), false, false, false, false),
-    SEEDBED(RequestBranch.RESEARCH, List.of("SEEDBED_PROPOSAL"), false, false, false, false);
+    SEEDBED(RequestBranch.RESEARCH, List.of("SEEDBED_PROPOSAL"), false, false, false, false),
+    SOCIAL_PROJECT(RequestBranch.SOCIAL, List.of("SOCIAL_PROJECT"), false, false, false, false),
+    SOCIAL_PRACTICE(RequestBranch.SOCIAL, List.of("SOCIAL_PRACTICE"), false, false, false, false),
+    EXTENSION_AGREEMENT(RequestBranch.SOCIAL, List.of("EXTENSION_AGREEMENT"), false, false, false, false),
+    SOCIAL_ACTIVITY(RequestBranch.SOCIAL, List.of("SOCIAL_ACTIVITY"), false, false, false, false);
 
     private final RequestBranch branch;
     private final List<String> documents;

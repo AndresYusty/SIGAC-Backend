@@ -1,5 +1,6 @@
 package com.university.sigac.modules.requests.dto;
 
+import com.university.sigac.modules.requests.dto.CouncilRequestDtos.AttachmentDto;
 import com.university.sigac.modules.requests.enums.DecisionOutcome;
 import com.university.sigac.modules.requests.enums.SessionStatus;
 import com.university.sigac.modules.users.enums.CouncilKind;
@@ -57,7 +58,8 @@ public final class SessionDtos {
 
     public record AgendaItemDto(Long id, int position, String title, String description, String requestCode,
                                 boolean miscellaneous, boolean urgent, DecisionOutcome outcome, int votesFor,
-                                int votesAgainst, int abstentions, String decidedBy, String debateNotes) {
+                                int votesAgainst, int abstentions, String decidedBy, String debateNotes,
+                                Long requestId, List<AttachmentDto> attachments, String decisionDescription) {
     }
 
     public record GuestDto(Long id, String name, String email, String affiliation) {

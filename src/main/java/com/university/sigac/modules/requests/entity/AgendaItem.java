@@ -29,6 +29,10 @@ public class AgendaItem {
     @Column(length = 4000)
     private String description;
 
+    /** Written when the decision is recorded. It is not the request justification. */
+    @Column(name = "decision_description", length = 4000)
+    private String decisionDescription;
+
     /** Source request; null for "miscellaneous items" created during the session (RF-26). */
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id", unique = true)
