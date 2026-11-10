@@ -12,48 +12,89 @@
       background-repeat: no-repeat;
     }
     * { font-family: 'Arial', 'DejaVu Sans', sans-serif; }
-    body { font-size: 12pt; color: #000000; line-height: 1.15; }
-    h1 { font-size: 14pt; text-align: center; margin: 0 0 6pt 0; }
-    h3 { font-size: 12pt; text-align: center; margin: 14pt 0 8pt 0; }
+    body { font-size: 12pt; color: #000000; line-height: 1.25; }
     p { text-align: justify; margin: 0 0 10pt 0; }
-    .center { text-align: center; margin: 0 0 4pt 0; }
-    ol { margin: 0 0 12pt 1.2em; }
-    li { margin-bottom: 6pt; }
+    .to { margin: 0 0 2pt 0; }
+    .to-strong { font-weight: 700; margin: 0 0 2pt 0; }
+    .subject { margin: 14pt 0 12pt 0; }
+    .greeting { margin: 0 0 10pt 0; }
+    h2 {
+      font-size: 12pt;
+      text-align: center;
+      margin: 16pt 0 10pt 0;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .agenda { margin: 0; padding: 0; list-style: none; }
+    .agenda > li { margin: 0 0 6pt 0; }
+    .agenda .group { margin: 8pt 0 4pt 0; font-weight: 700; }
+    .agenda .items { margin: 0 0 4pt 1.4em; padding: 0; list-style: none; }
+    .agenda .items li { margin: 0 0 4pt 0; }
+    .code { font-weight: 700; }
   </style>
 </head>
 <body>
-  <h1>CITACIÓN A SESIÓN</h1>
-  <p class="center" th:text="${councilType}">Consejo ordinario</p>
-  <p class="center" th:text="${university} + ' — ' + ${campus} + ' — ' + ${faculty}">Universidad — Sede — Facultad</p>
+  <p class="to">Señores</p>
+  <p class="to-strong">Honorable CONSEJEROS</p>
+  <p class="to">Consejo de Facultad</p>
+  <p class="to" th:text="${faculty}">Facultad de Ingeniería</p>
 
-  <p>Se convoca a los integrantes del Consejo a la sesión que se realizará en las siguientes condiciones:</p>
-  <p><strong>Fecha:</strong> <span th:text="${sessionDate}">21 de octubre de 2026</span></p>
-  <p><strong>Hora:</strong> <span th:text="${sessionTime}">17:04</span></p>
-  <p><strong>Lugar:</strong> <span th:text="${location}">Sala del consejo</span></p>
+  <p class="subject">
+    <strong>Asunto:</strong>
+    Citación a sesión <span th:text="${sessionKindLabel}">ordinaria</span>
+    del Consejo de Facultad No.&nbsp;<span th:text="${sessionNumber}">001</span>
+    de <span th:text="${sessionYear}">2026</span>.
+  </p>
 
-  <div th:if="${hasSummoned}">
-    <h3>Convocados</h3>
-    <ul>
-      <li th:each="p : ${summoned}" th:text="${p.name} + ' — ' + ${p.roleLabel}">Nombre — cargo</li>
-    </ul>
-  </div>
+  <p class="greeting">Cordial saludo.</p>
 
-  <h3>Orden del día</h3>
-  <ol>
-    <li th:each="o : ${agenda}">
-      <strong th:text="${o.title}">Asunto</strong>
-      <span th:if="${o.urgent}"> (Asunto urgente)</span>
-      <p th:if="${o.description}" th:text="${o.description}">Descripción</p>
+  <p>
+    De manera atenta me permito citarlos a sesión
+    <span th:text="${sessionKindLabel}">ordinaria</span>
+    del Consejo de Facultad, que se llevará a cabo el día
+    <span th:text="${sessionWeekdayDate}">lunes 9 de noviembre de 2026</span>
+    a las <span th:text="${sessionTime}">14:30</span>,
+    en <span th:text="${location}">Sala del consejo</span>.
+  </p>
+
+  <h2>Orden del día</h2>
+
+  <ol class="agenda">
+    <li><span class="code">1.</span> Verificación del quórum.</li>
+    <li><span class="code">2.</span> Aprobación del orden del día.</li>
+    <li><span class="code">3.</span> Informe del señor decano.</li>
+    <li th:if="${hasRequestGroups}">
+      <div class="group"><span class="code">4.</span> SOLICITUDES</div>
+      <div th:each="g : ${requestGroups}">
+        <div class="group"><span class="code" th:text="${g.code} + '.'">4.1.</span>
+          <span th:text="${g.title}">CANCELACIONES</span></div>
+        <ul class="items">
+          <li th:each="o : ${g.items}">
+            <span class="code" th:text="${o.code} + '.'">4.1.1.</span>
+            <span th:text="${o.text}">Texto del punto</span>
+          </li>
+        </ul>
+      </div>
     </li>
+    <li th:if="${hasMiscItems}">
+      <div class="group"><span class="code">5.</span> PROPOSICIONES Y VARIOS</div>
+      <ul class="items">
+        <li th:each="o : ${miscItems}">
+          <span class="code" th:text="${o.code} + '.'">5.1.</span>
+          <span th:text="${o.text}">Asunto</span>
+        </li>
+      </ul>
+    </li>
+    <li th:unless="${hasMiscItems}"><span class="code">5.</span> Proposiciones y varios.</li>
   </ol>
 
   <div th:if="${hasGuests}">
-    <h3>Invitados (voz y sin voto)</h3>
+    <p><strong>Invitados (voz y sin voto):</strong></p>
     <ul>
       <li th:each="g : ${guests}" th:text="${g.affiliation} ? ${g.name} + ', ' + ${g.affiliation} : ${g.name}">Invitado</li>
     </ul>
   </div>
 
-  <p>Los documentos de soporte se adjuntan a esta citación.</p>
+  <p>Los soportes de cada punto se adjuntan en el archivo ZIP de esta citación.</p>
 </body>
 </html>

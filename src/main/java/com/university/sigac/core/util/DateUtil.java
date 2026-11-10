@@ -11,6 +11,8 @@ public final class DateUtil {
 
     private static final Locale ES = Locale.forLanguageTag("es-CO");
     private static final DateTimeFormatter LONG_DATE = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", ES);
+    private static final DateTimeFormatter WEEKDAY_LONG_DATE =
+            DateTimeFormatter.ofPattern("EEEE d 'de' MMMM 'de' yyyy", ES);
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("HH:mm", ES);
     private static final DateTimeFormatter DATE_TIME = DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy, HH:mm:ss", ES);
 
@@ -19,6 +21,11 @@ public final class DateUtil {
 
     public static String longDate(LocalDate d) {
         return d == null ? "" : d.format(LONG_DATE);
+    }
+
+    /** e.g. "lunes 9 de noviembre de 2026" */
+    public static String weekdayLongDate(LocalDate d) {
+        return d == null ? "" : d.format(WEEKDAY_LONG_DATE);
     }
 
     public static String time(LocalDateTime d) {

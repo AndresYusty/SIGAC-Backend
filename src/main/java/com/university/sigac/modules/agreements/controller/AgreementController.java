@@ -44,8 +44,9 @@ public class AgreementController {
 
     private final AgreementService service;
 
+    /** Catalog of agreement models; also used when filing a petition (subtype). */
     @GetMapping("/types")
-    @PreAuthorize(READERS)
+    @PreAuthorize("hasAnyRole('COUNCIL_SECRETARY','PRESIDENT','ADMIN','FACULTY_SECRETARY','PROGRAM_HEAD')")
     public List<AgreementTypeDto> types() {
         return service.types();
     }

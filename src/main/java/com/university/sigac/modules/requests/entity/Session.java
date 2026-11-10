@@ -71,6 +71,13 @@ public class Session {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
+    /**
+     * Opaque token for downloading the agenda supports ZIP without signing in
+     * (link included in the citation email when the ZIP is too large to attach).
+     */
+    @Column(name = "supports_download_token", length = 64, unique = true)
+    private String supportsDownloadToken;
+
     public boolean hasStatus(SessionStatus s) {
         return status == s;
     }

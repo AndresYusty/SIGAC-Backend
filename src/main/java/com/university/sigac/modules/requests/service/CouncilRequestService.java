@@ -96,9 +96,9 @@ public class CouncilRequestService {
         }
         List<BranchDto> branches = Arrays.stream(RequestBranch.values())
                 .map(branch -> new BranchDto(branch.name(), Arrays.stream(RequestType.values())
-                        .filter(topic -> topic.branch() == branch)
+                        .filter(topic -> topic.branch() == branch && topic.inCatalog())
                         .map(topic -> new TopicDto(topic.name(), topic.documents(), topic.courses(), topic.grades(),
-                                topic.otherDetail(), topic.cancellationChoice()))
+                                topic.otherDetail(), false))
                         .toList()))
                 .toList();
         return new CatalogDto(faculty, campus, program, programId, branches);
@@ -338,10 +338,7 @@ public class CouncilRequestService {
         if (topic.otherDetail() && (req.otherDetail() == null || req.otherDetail().isBlank())) {
             throw ApiException.badRequest("Specify what the request is about");
         }
-        if (topic.cancellationChoice() && req.cancellationKind() == null) {
-            throw ApiException.badRequest("Select whether the cancellation is of a course or of the academic period");
-        }
-        String subject = subjectOf(topic, req.cancellationKind());
+        String subject = subjectOf(topic, topic.otherDetail() ? req.otherDetail() : null);
         String title = requester + " — " + subject;
         s.setTitle(title.length() > 200 ? title.substring(0, 200) : title);
         s.setDescription(req.justification().trim());
@@ -357,7 +354,7 @@ public class CouncilRequestService {
         s.setElectronicNotice(req.electronicNotice());
         s.setCounselorName(blankToNull(req.counselorName()));
         s.setOtherDetail(topic.otherDetail() ? req.otherDetail().trim() : null);
-        s.setCancellationKind(topic.cancellationChoice() ? req.cancellationKind() : null);
+        s.setCancellationKind(topic.cancellationKind());
         if (u != null) {
             s.setProgram(resolveProgram(req.programId(), u));
         }
@@ -439,16 +436,14 @@ public class CouncilRequestService {
         }
     }
 
-    private static String subjectOf(RequestType topic, CancellationKind kind) {
-        if (topic == RequestType.CANCELLATION && kind == CancellationKind.PERIOD) {
-            return "Cancelación de periodo académico";
-        }
-        return switch (topic) {
+    private static String subjectOf(RequestType topic, String otherDetail) {
+        String base = switch (topic) {
             case PETITION -> "Petición";
             case COMPLAINT -> "Queja";
             case CLAIM -> "Reclamo";
             case REENTRY -> "Reingreso";
-            case CANCELLATION -> "Cancelación de curso";
+            case COURSE_CANCELLATION, CANCELLATION -> "Cancelación de curso";
+            case PERIOD_CANCELLATION -> "Cancelación de periodo académico";
             case GRADE_RECTIFICATION -> "Rectificación de notas";
             case SPECIAL_CASE -> "Caso especial";
             case EVALUATION -> "Evaluación";
@@ -466,6 +461,11 @@ public class CouncilRequestService {
             case EXTENSION_AGREEMENT -> "Convenio de extensión";
             case SOCIAL_ACTIVITY -> "Actividad de proyección social";
         };
+        if (otherDetail == null || otherDetail.isBlank()) {
+            return base;
+        }
+        String detail = otherDetail.trim();
+        return detail.length() > 120 ? base + ": " + detail.substring(0, 120) : base + ": " + detail;
     }
 
     private static String blankToNull(String value) {

@@ -57,6 +57,7 @@ management:
 sigac:
   zone: America/Bogota
   frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  public-api-url: ${PUBLIC_API_URL:http://localhost:8080/api/v1}
   trust-proxy-headers: ${TRUST_PROXY_HEADERS:false}
   storage:
     base-path: ${SIGAC_STORAGE_PATH:./storage}

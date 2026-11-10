@@ -1,28 +1,31 @@
 package com.university.sigac.modules.notifications.service;
 
 import com.university.sigac.config.AppProperties;
+import com.university.sigac.core.exception.ApiException;
 import com.university.sigac.core.storage.StorageService;
 import com.university.sigac.core.util.HtmlSanitizer;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 /**
- * Email notifications. Every method is @Async: it runs on another thread and does not delay the response to the user.
- * The SMTP server is configured in application.yml (spring.mail.*). If one recipient fails, the others are still processed.
+ * Email notifications. Most methods are @Async so they do not delay the HTTP response.
+ * Notice emails are synchronous: the secretary must see SMTP failures when citing or resending.
  */
 @Slf4j
 @Service
@@ -36,16 +39,30 @@ public class EmailService {
     private final AppProperties props;
     private final StorageService storage;
 
-    @Async
+    /**
+     * Sends the citation synchronously. {@code includesSupportsZip} only changes the body text;
+     * the caller decides which files are attached (size limits belong there).
+     */
     public void sendNotice(List<String> recipients, String councilType, String faculty, String date,
-                           String time, String location, List<String> attachments) {
+                           String time, String location, List<String> attachments, boolean includesSupportsZip,
+                           String supportsDownloadToken) {
+        String closing;
+        if (includesSupportsZip) {
+            closing = "Se adjuntan la citación en PDF y un archivo ZIP con los soportes de cada punto del orden del día.";
+        } else if (supportsDownloadToken != null && !supportsDownloadToken.isBlank()) {
+            String link = props.getPublicApiUrl().replaceAll("/+$", "") + "/public/soportes/" + supportsDownloadToken;
+            closing = "Se adjunta la citación en PDF. Soportes del orden del día:"
+                    + " <a href=\"" + esc(link) + "\">Descargar</a>.";
+        } else {
+            closing = "Se adjunta la citación en PDF.";
+        }
         String body = layout("Citación a sesión", null,
                 "Se cerró el orden del día y queda convocado a la sesión del <strong>" + esc(councilType)
                         + "</strong> de la " + esc(faculty) + ".",
                 "<strong>Fecha:</strong> " + esc(date) + "<br/><strong>Hora:</strong> " + esc(time)
                         + "<br/><strong>Lugar:</strong> " + esc(location),
-                "Se adjuntan la citación y los soportes de cada punto.");
-        send(recipients, "Citación a sesión - " + councilType, body, attachments);
+                closing);
+        sendOrThrow(recipients, "Citación a sesión - " + councilType, body, attachments);
     }
 
     @Async
@@ -87,6 +104,34 @@ public class EmailService {
 
     // ------------------------------------------------------------------
 
+    private void sendOrThrow(List<String> recipients, String subject, String html, List<String> attachments) {
+        if (recipients == null || recipients.isEmpty()) {
+            throw ApiException.conflict("There are no recipients for the notice email");
+        }
+        if (!props.getMail().isEnabled()) {
+            log.info("[email disabled] '{}' not sent to {} recipient(s). Enable sigac.mail.enabled.", subject,
+                    recipients.size());
+            throw ApiException.conflict("Email sending is disabled on the server");
+        }
+        List<String> failed = new ArrayList<>();
+        int sent = 0;
+        for (String to : recipients) {
+            try {
+                deliver(to, subject, html, attachments, true);
+                sent++;
+            } catch (Exception e) {
+                failed.add(to);
+                log.error("Could not send '{}' to {}: {}", subject, to, rootMessage(e), e);
+            }
+        }
+        if (sent == 0) {
+            throw ApiException.conflict("Could not send the notice email to: " + String.join(", ", failed));
+        }
+        if (!failed.isEmpty()) {
+            log.warn("'{}' sent to {} recipient(s); failed for: {}", subject, sent, String.join(", ", failed));
+        }
+    }
+
     private void send(List<String> recipients, String subject, String html, List<String> attachments) {
         if (recipients == null || recipients.isEmpty()) {
             return;
@@ -98,26 +143,69 @@ public class EmailService {
         }
         for (String to : recipients) {
             try {
-                MimeMessage msg = mailSender.createMimeMessage();
-                MimeMessageHelper h = new MimeMessageHelper(msg, true, "UTF-8");
-                h.setFrom(props.getMail().getFrom());
-                h.setTo(to);
-                h.setSubject(subject);
-                h.setText(html, true);
-                if (LOGO.length > 0) {
-                    h.addInline("usco-logo", new ByteArrayResource(LOGO), "image/png");
-                }
-                for (String rel : attachments) {
-                    Path p = storage.resolve(rel);
-                    if (Files.exists(p)) {
-                        h.addAttachment(displayName(p), new FileSystemResource(p));
-                    }
-                }
-                mailSender.send(msg);
-            } catch (MessagingException | RuntimeException e) {
-                log.error("Could not send '{}' to {}: {}", subject, to, e.getMessage());
+                deliver(to, subject, html, attachments, true);
+            } catch (Exception e) {
+                log.error("Could not send '{}' to {}: {}", subject, to, rootMessage(e), e);
             }
         }
+    }
+
+    private void deliver(String to, String subject, String html, List<String> attachments, boolean retryOnReset)
+            throws MessagingException, IOException {
+        try {
+            MimeMessage msg = mailSender.createMimeMessage();
+            MimeMessageHelper h = new MimeMessageHelper(msg, true, "UTF-8");
+            h.setFrom(props.getMail().getFrom());
+            h.setTo(to);
+            h.setSubject(subject);
+            h.setText(html, true);
+            if (LOGO.length > 0) {
+                h.addInline("usco-logo", new ByteArrayResource(LOGO), "image/png");
+            }
+            long totalBytes = 0;
+            for (String rel : attachments) {
+                Path p = storage.resolve(rel);
+                if (!Files.exists(p)) {
+                    continue;
+                }
+                byte[] data = Files.readAllBytes(p);
+                totalBytes += data.length;
+                String name = displayName(p);
+                h.addAttachment(name, new ByteArrayResource(data) {
+                    @Override
+                    public String getFilename() {
+                        return name;
+                    }
+                });
+            }
+            log.info("Sending '{}' to {} ({} attachment byte(s))", subject, to, totalBytes);
+            mailSender.send(msg);
+        } catch (MessagingException | MailException e) {
+            if (retryOnReset && isConnectionReset(e)) {
+                log.warn("SMTP connection reset for '{}'; retrying once", to);
+                deliver(to, subject, html, attachments, false);
+                return;
+            }
+            throw e;
+        }
+    }
+
+    private static boolean isConnectionReset(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            if (t instanceof SocketException && String.valueOf(t.getMessage()).toLowerCase(Locale.ROOT)
+                    .contains("connection reset")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String rootMessage(Throwable e) {
+        Throwable t = e;
+        while (t.getCause() != null && t.getCause() != t) {
+            t = t.getCause();
+        }
+        return t.getMessage() == null ? e.getMessage() : t.getMessage();
     }
 
     /** Attachments are stored as "<uuid>-<name>.pdf": only the original name is shown. */
@@ -125,6 +213,9 @@ public class EmailService {
         String name = p.getFileName().toString().replaceFirst("^[0-9a-fA-F-]{36}-", "");
         if (name.equalsIgnoreCase("citacion.pdf")) {
             return "Citación.pdf";
+        }
+        if (name.equalsIgnoreCase("soportes-orden-del-dia.zip")) {
+            return "Soportes del orden del día.zip";
         }
         return name;
     }

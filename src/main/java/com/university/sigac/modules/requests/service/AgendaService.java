@@ -21,13 +21,17 @@ import com.university.sigac.modules.requests.dto.SessionDtos.SessionSummaryDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.SummonedDto;
 import com.university.sigac.modules.requests.dto.SessionDtos.UrgentItemRequest;
 import com.university.sigac.modules.requests.entity.AgendaItem;
+import com.university.sigac.modules.requests.entity.Attachment;
 import com.university.sigac.modules.requests.entity.CouncilRequest;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionGuest;
 import com.university.sigac.modules.requests.entity.SessionSummon;
 import com.university.sigac.modules.requests.enums.DecisionOutcome;
+import com.university.sigac.modules.requests.enums.RequestBranch;
 import com.university.sigac.modules.requests.enums.RequestStatus;
+import com.university.sigac.modules.requests.enums.RequestType;
 import com.university.sigac.modules.requests.enums.SessionStatus;
+import com.university.sigac.modules.users.enums.CouncilKind;
 import com.university.sigac.modules.requests.repository.AgendaItemRepository;
 import com.university.sigac.modules.requests.repository.CouncilRequestRepository;
 import com.university.sigac.modules.requests.repository.SessionRepository;
@@ -40,19 +44,25 @@ import com.university.sigac.modules.users.service.HierarchyService;
 import com.university.sigac.modules.users.service.UserLookupService;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +73,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 /** Module 3 (Council Secretary): sessions, agenda builder and agenda closing with notice (RF-18, RF-19). */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AgendaService {
@@ -91,6 +102,7 @@ public class AgendaService {
     private final AuditService audit;
     private final MinutesRepository minutes;
     private final AttendanceRepository attendance;
+    private final SessionSupportsLinkService supportsLinks;
 
     @Transactional
     public SessionDto create(SessionRequest req) {
@@ -386,31 +398,32 @@ public class AgendaService {
         return SessionMapper.toDto(s);
     }
 
-    /** Freezes the agenda, generates the notice PDF and emails it to the members and guests. */
+    /** Freezes the agenda, generates the notice PDF and emails it with a ZIP of agenda supports. */
     @Transactional
     public SessionDto closeAgenda(Long sessionId) {
         Session s = loadWithOpenAgenda(sessionId);
         if (s.getItems().isEmpty()) {
             throw ApiException.conflict("The agenda has no items: add at least one approved request or urgent item");
         }
-        byte[] notice = renderNotice(s);
-        String noticePath = noticePath(s.getId());
-        storage.save(noticePath, notice);
-
-        List<String> attachments = new ArrayList<>();
-        attachments.add(noticePath);
-        s.getItems().stream().filter(p -> p.getRequest() != null)
-                .forEach(p -> p.getRequest().getAttachments().forEach(a -> attachments.add(a.getPath())));
-        List<String> recipients = noticeRecipients(s);
-        s.getGuests().stream().map(SessionGuest::getEmail).filter(e -> e != null && !recipients.contains(e))
-                .forEach(recipients::add);
-
         s.setAgendaClosed(true);
         s.setStatus(SessionStatus.CONVENED);
         audit.record("EVENT_AGENDA_CLOSED", "SESSION", s.getId(), s.getItems().size() + " items");
-        email.sendNotice(recipients, s.getCouncilType().getName(), s.getFaculty().getName(),
-                DateUtil.longDate(s.getScheduledAt().toLocalDate()), DateUtil.time(s.getScheduledAt()),
-                s.documentLocation(), attachments);
+        issueAndSendNotice(s);
+        return SessionMapper.toDto(s);
+    }
+
+    /** Regenerates the notice and ZIP, then emails them again to the summoned members and guests. */
+    @Transactional
+    public SessionDto resendNotice(Long sessionId) {
+        Session s = loadWithAccess(sessionId);
+        if (!s.isAgendaClosed()) {
+            throw ApiException.conflict("The notice has not been issued yet: the agenda is not closed");
+        }
+        if (s.hasStatus(SessionStatus.FINISHED)) {
+            throw ApiException.conflict("The session is already finished; the notice cannot be resent");
+        }
+        issueAndSendNotice(s);
+        audit.record("EVENT_NOTICE_RESENT", "SESSION", s.getId(), "notice resent");
         return SessionMapper.toDto(s);
     }
 
@@ -421,6 +434,87 @@ public class AgendaService {
             throw ApiException.conflict("The notice has not been issued yet: the agenda is not closed");
         }
         return renderNotice(s);
+    }
+
+    /**
+     * Brevo and similar relays often reset the SMTP connection above ~2 MB (MIME expands ~33%).
+     * Keep the ZIP on disk always; only attach it when the email stays under the safe limit.
+     */
+    private static final long MAX_NOTICE_EMAIL_BYTES = 1_800_000L;
+
+    private void issueAndSendNotice(Session s) {
+        byte[] notice = renderNotice(s);
+        String noticePath = noticePath(s.getId());
+        storage.save(noticePath, notice);
+
+        List<String> attachments = new ArrayList<>();
+        attachments.add(noticePath);
+        boolean zipAttached = false;
+        String downloadToken = null;
+        String supportsZip = buildSupportsZip(s);
+        if (supportsZip != null) {
+            // Commit the token before SMTP so a failed recipient cannot invalidate the link.
+            downloadToken = supportsLinks.ensureToken(s.getId());
+            s.setSupportsDownloadToken(downloadToken);
+            long zipBytes = storageSize(supportsZip);
+            if (notice.length + zipBytes <= MAX_NOTICE_EMAIL_BYTES) {
+                attachments.add(supportsZip);
+                zipAttached = true;
+            } else {
+                log.warn("Supports ZIP for session {} is {} KB; email will carry the notice PDF only",
+                        s.getId(), zipBytes / 1024);
+            }
+        }
+        List<String> recipients = noticeRecipients(s);
+        s.getGuests().stream().map(SessionGuest::getEmail).filter(e -> e != null && !recipients.contains(e))
+                .forEach(recipients::add);
+        email.sendNotice(recipients, s.getCouncilType().getName(), s.getFaculty().getName(),
+                DateUtil.longDate(s.getScheduledAt().toLocalDate()), DateUtil.time(s.getScheduledAt()),
+                s.documentLocation(), attachments, zipAttached, downloadToken);
+    }
+
+    /** ZIP of agenda supports (built on close/resend). Rebuilds if the file is missing. */
+    @Transactional(readOnly = true)
+    public byte[] downloadSupportsZip(Long sessionId) {
+        Session s = loadWithAccess(sessionId);
+        if (!s.isAgendaClosed()) {
+            throw ApiException.conflict("The notice has not been issued yet: the agenda is not closed");
+        }
+        return readOrBuildSupportsZip(s);
+    }
+
+    /** Public download by opaque token from the citation email (no login). */
+    @Transactional(readOnly = true)
+    public byte[] downloadSupportsByToken(String token) {
+        if (token == null || token.isBlank()) {
+            throw ApiException.notFound("Download link not found or expired");
+        }
+        Session s = sessions.findBySupportsDownloadToken(token.trim())
+                .orElseThrow(() -> ApiException.notFound("Download link not found or expired"));
+        if (!s.isAgendaClosed()) {
+            throw ApiException.conflict("The notice has not been issued yet: the agenda is not closed");
+        }
+        return readOrBuildSupportsZip(s);
+    }
+
+    private byte[] readOrBuildSupportsZip(Session s) {
+        String path = supportsZipPath(s.getId());
+        if (!storage.exists(path)) {
+            String built = buildSupportsZip(s);
+            if (built == null) {
+                throw ApiException.conflict("This session has no support documents to download");
+            }
+            path = built;
+        }
+        return storage.read(path);
+    }
+
+    private long storageSize(String relativePath) {
+        try {
+            return java.nio.file.Files.size(storage.resolve(relativePath));
+        } catch (IOException e) {
+            return Long.MAX_VALUE;
+        }
     }
 
     private byte[] renderNotice(Session s) {
@@ -511,37 +605,236 @@ public class AgendaService {
         return "citaciones/" + sessionId + "/citacion.pdf";
     }
 
+    private String supportsZipPath(Long sessionId) {
+        return "citaciones/" + sessionId + "/soportes-orden-del-dia.zip";
+    }
+
+    /**
+     * One folder per agenda item with the request's PDFs. Returns null when there is nothing to pack.
+     */
+    private String buildSupportsZip(Session s) {
+        boolean any = s.getItems().stream()
+                .anyMatch(p -> p.getRequest() != null && !p.getRequest().getAttachments().isEmpty());
+        if (!any) {
+            return null;
+        }
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Set<String> usedEntries = new HashSet<>();
+        try (ZipOutputStream zip = new ZipOutputStream(out)) {
+            for (AgendaItem point : s.getItems()) {
+                CouncilRequest req = point.getRequest();
+                if (req == null || req.getAttachments().isEmpty()) {
+                    continue;
+                }
+                String folder = zipFolderName(point, req);
+                for (Attachment file : req.getAttachments()) {
+                    if (!storage.exists(file.getPath())) {
+                        continue;
+                    }
+                    String entry = uniqueZipEntry(usedEntries, folder + "/" + safeFileName(file.getOriginalName()));
+                    zip.putNextEntry(new ZipEntry(entry));
+                    zip.write(storage.read(file.getPath()));
+                    zip.closeEntry();
+                }
+            }
+        } catch (IOException e) {
+            throw new ApiException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Could not build the agenda supports ZIP");
+        }
+        if (usedEntries.isEmpty()) {
+            return null;
+        }
+        String path = supportsZipPath(s.getId());
+        storage.save(path, out.toByteArray());
+        return path;
+    }
+
+    private static String zipFolderName(AgendaItem point, CouncilRequest req) {
+        String code = req.getCode() == null || req.getCode().isBlank() ? "solicitud" : req.getCode();
+        return String.format(Locale.ROOT, "%02d-%s", point.getPosition(), StorageService.slug(code));
+    }
+
+    private static String safeFileName(String original) {
+        String name = original == null || original.isBlank() ? "documento.pdf" : original.trim();
+        name = name.replace('\\', '_').replace('/', '_');
+        return StorageService.slug(name.contains(".") ? name.substring(0, name.lastIndexOf('.')) : name)
+                + (name.contains(".") ? name.substring(name.lastIndexOf('.')) : ".pdf");
+    }
+
+    private static String uniqueZipEntry(Set<String> used, String preferred) {
+        if (used.add(preferred)) {
+            return preferred;
+        }
+        int dot = preferred.lastIndexOf('.');
+        String base = dot > 0 ? preferred.substring(0, dot) : preferred;
+        String ext = dot > 0 ? preferred.substring(dot) : "";
+        int n = 2;
+        String candidate;
+        do {
+            candidate = base + "-" + n++ + ext;
+        } while (!used.add(candidate));
+        return candidate;
+    }
+
     private Map<String, Object> noticeModel(Session s) {
+        int year = s.getScheduledAt().getYear();
+        long ordinal = sessions.countNoticeOrdinal(s.getFaculty().getId(), year, s.getId());
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("university", s.getFaculty().getCampus().getUniversity().getName());
         m.put("campus", s.getFaculty().getCampus().getName());
         m.put("faculty", s.getFaculty().getName());
         m.put("councilType", s.getCouncilType().getName());
+        m.put("sessionKindLabel", sessionKindLabel(s.kind()));
+        m.put("sessionNumber", String.format(Locale.ROOT, "%03d", ordinal));
+        m.put("sessionYear", String.valueOf(year));
         m.put("sessionDate", DateUtil.longDate(s.getScheduledAt().toLocalDate()));
+        m.put("sessionWeekdayDate", DateUtil.weekdayLongDate(s.getScheduledAt().toLocalDate()));
         m.put("sessionTime", DateUtil.time(s.getScheduledAt()));
         m.put("location", s.documentLocation());
-        List<Map<String, Object>> agenda = new ArrayList<>();
+        m.put("requestGroups", buildRequestGroups(s));
+        m.put("hasRequestGroups", s.getItems().stream().anyMatch(p -> p.getRequest() != null || p.isUrgent()));
+        List<Map<String, Object>> misc = new ArrayList<>();
+        int miscIndex = 1;
         for (AgendaItem p : s.getItems()) {
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("number", p.getPosition());
-            item.put("title", p.getTitle());
-            item.put("description", p.getDescription() == null || p.getDescription().isBlank() ? null : p.getDescription());
-            item.put("urgent", p.isUrgent());
-            agenda.add(item);
+            if (!p.isMiscellaneous() || p.getRequest() != null) {
+                continue;
+            }
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("code", "5." + miscIndex++);
+            row.put("text", noticeItemText(p));
+            misc.add(row);
         }
-        m.put("agenda", agenda);
+        m.put("miscItems", misc);
+        m.put("hasMiscItems", !misc.isEmpty());
         m.put("guests", SessionMapper.toGuestsModel(s));
         m.put("hasGuests", !s.getGuests().isEmpty());
-        List<Map<String, Object>> summoned = new ArrayList<>();
-        for (SummonedDto person : SessionMapper.toSummoned(s)) {
-            Map<String, Object> row = new LinkedHashMap<>();
-            row.put("name", person.name());
-            row.put("roleLabel", SessionMapper.seatLabel(person.role()));
-            summoned.add(row);
-        }
-        m.put("summoned", summoned);
-        m.put("hasSummoned", !summoned.isEmpty());
         return m;
+    }
+
+    private static String sessionKindLabel(CouncilKind kind) {
+        return switch (kind) {
+            case ORDINARY -> "ordinaria";
+            case EXTRAORDINARY -> "extraordinaria";
+            case VIRTUAL -> "virtual";
+            case EXPANDED -> "ampliada";
+        };
+    }
+
+    /**
+     * Groups filed agenda items under section 4 (SOLICITUDES), numbered 4.1 / 4.1.1 like a faculty citation.
+     */
+    private List<Map<String, Object>> buildRequestGroups(Session s) {
+        Map<String, List<AgendaItem>> byGroup = new LinkedHashMap<>();
+        for (AgendaItem p : s.getItems()) {
+            if (p.isMiscellaneous() && p.getRequest() == null) {
+                continue;
+            }
+            String group = agendaGroupTitle(p);
+            byGroup.computeIfAbsent(group, key -> new ArrayList<>()).add(p);
+        }
+        List<String> titles = new ArrayList<>(byGroup.keySet());
+        titles.sort(String.CASE_INSENSITIVE_ORDER);
+        List<Map<String, Object>> groups = new ArrayList<>();
+        int groupIndex = 1;
+        for (String title : titles) {
+            Map<String, Object> group = new LinkedHashMap<>();
+            String groupCode = "4." + groupIndex++;
+            group.put("code", groupCode);
+            group.put("title", title);
+            List<Map<String, Object>> items = new ArrayList<>();
+            int itemIndex = 1;
+            for (AgendaItem p : byGroup.get(title)) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("code", groupCode + "." + itemIndex++);
+                row.put("text", noticeItemText(p));
+                items.add(row);
+            }
+            group.put("items", items);
+            groups.add(group);
+        }
+        return groups;
+    }
+
+    private static String agendaGroupTitle(AgendaItem p) {
+        if (p.getRequest() == null) {
+            return p.isUrgent() ? "ASUNTOS URGENTES" : "OTROS ASUNTOS";
+        }
+        return switch (p.getRequest().getRequestType()) {
+            case COURSE_CANCELLATION, PERIOD_CANCELLATION, CANCELLATION -> "CANCELACIONES";
+            case PETITION -> "PETICIONES";
+            case COMPLAINT -> "QUEJAS";
+            case CLAIM -> "RECLAMOS";
+            case REENTRY -> "REINGRESOS";
+            case GRADE_RECTIFICATION -> "RECTIFICACIÓN DE NOTAS";
+            case SPECIAL_CASE -> "CASOS ESPECIALES";
+            case EVALUATION -> "EVALUACIONES";
+            case PERMISSION -> "PERMISOS";
+            case COMMISSION -> "COMISIONES";
+            case CONTEST -> "CONCURSOS";
+            case STUDY_PLAN -> "PLANES DE ESTUDIO";
+            case SUBJECT -> "ASIGNATURAS";
+            case PROJECT_ENDORSEMENT, CALL, RESOURCES, SEEDBED -> "INVESTIGACIÓN";
+            case SOCIAL_PROJECT, SOCIAL_PRACTICE, EXTENSION_AGREEMENT, SOCIAL_ACTIVITY -> "PROYECCIÓN SOCIAL";
+        };
+    }
+
+    private static String noticeItemText(AgendaItem p) {
+        CouncilRequest req = p.getRequest();
+        if (req == null) {
+            String text = p.getTitle() == null ? "Asunto" : p.getTitle().trim();
+            if (p.isUrgent()) {
+                text = text + " (urgente)";
+            }
+            return text;
+        }
+        String subject = noticeSubject(req);
+        StringBuilder text = new StringBuilder(subject);
+        if (req.getAcademicPeriod() != null && !req.getAcademicPeriod().isBlank()) {
+            text.append(' ').append(req.getAcademicPeriod().trim());
+        }
+        if (req.getRequester() != null && !req.getRequester().isBlank()) {
+            boolean student = req.getRequestType().branch() == RequestBranch.STUDENT;
+            text.append(student ? ", estudiante " : ", ").append(req.getRequester().trim());
+        }
+        if (req.getStudentCode() != null && !req.getStudentCode().isBlank()) {
+            text.append(", cód. ").append(req.getStudentCode().trim());
+        }
+        if (req.getProgram() != null && req.getProgram().getName() != null && !req.getProgram().getName().isBlank()) {
+            text.append(" (").append(req.getProgram().getName().trim()).append(')');
+        }
+        return text.toString();
+    }
+
+    private static String noticeSubject(CouncilRequest req) {
+        RequestType topic = req.getRequestType();
+        String base = switch (topic) {
+            case PETITION -> "Petición";
+            case COMPLAINT -> "Queja";
+            case CLAIM -> "Reclamo";
+            case REENTRY -> "Reingreso";
+            case COURSE_CANCELLATION, CANCELLATION -> "Cancelación de curso";
+            case PERIOD_CANCELLATION -> "Cancelación de periodo académico";
+            case GRADE_RECTIFICATION -> "Rectificación de notas";
+            case SPECIAL_CASE -> "Caso especial";
+            case EVALUATION -> "Evaluación";
+            case PERMISSION -> "Permiso";
+            case COMMISSION -> "Comisión";
+            case CONTEST -> "Concurso";
+            case STUDY_PLAN -> "Plan de estudios";
+            case SUBJECT -> "Asignatura";
+            case PROJECT_ENDORSEMENT -> "Aval de proyecto";
+            case CALL -> "Convocatoria";
+            case RESOURCES -> "Asignación de recursos";
+            case SEEDBED -> "Semillero";
+            case SOCIAL_PROJECT -> "Aval de proyecto de proyección social";
+            case SOCIAL_PRACTICE -> "Práctica social";
+            case EXTENSION_AGREEMENT -> "Convenio de extensión";
+            case SOCIAL_ACTIVITY -> "Actividad de proyección social";
+        };
+        if (req.getOtherDetail() == null || req.getOtherDetail().isBlank()) {
+            return base;
+        }
+        return base + ": " + req.getOtherDetail().trim();
     }
 
     /** Sessions scheduled before this choice keep the previous recipients: the whole faculty council. */

@@ -143,6 +143,13 @@ public class SessionController {
         return service.closeAgenda(id);
     }
 
+    /** Resends the notice email (PDF + supports ZIP) when it did not arrive. */
+    @PostMapping("/{id}/resend-notice")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public SessionDto resendNotice(@PathVariable Long id) {
+        return service.resendNotice(id);
+    }
+
     @GetMapping("/{id}/citacion")
     @PreAuthorize(READ)
     public ResponseEntity<byte[]> citacion(@PathVariable Long id) {
@@ -150,5 +157,19 @@ public class SessionController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         ContentDisposition.inline().filename("Citación.pdf", StandardCharsets.UTF_8).build().toString())
                 .body(service.downloadNotice(id));
+    }
+
+    /** ZIP with the support documents of each agenda item (when email size prevents attaching it). */
+    @GetMapping("/{id}/soportes")
+    @PreAuthorize(READ)
+    public ResponseEntity<byte[]> soportes(@PathVariable Long id) {
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        ContentDisposition.attachment()
+                                .filename("Soportes del orden del día.zip", StandardCharsets.UTF_8)
+                                .build()
+                                .toString())
+                .body(service.downloadSupportsZip(id));
     }
 }

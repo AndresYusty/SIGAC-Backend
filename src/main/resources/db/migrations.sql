@@ -26,3 +26,7 @@ ALTER TABLE user_roles MODIFY role ENUM('ROLE_ADMIN','ROLE_COUNCIL_SECRETARY','R
 
 -- Program head: activates and deactivates the secretary of their own program.
 ALTER TABLE user_roles MODIFY role ENUM('ROLE_ADMIN','ROLE_COUNCIL_SECRETARY','ROLE_FACULTY_SECRETARY','ROLE_PRESIDENT','ROLE_COUNCIL_MEMBER','ROLE_PROGRAM_HEAD') NOT NULL;
+
+-- Opaque token so citation emails can link to the supports ZIP without login.
+ALTER TABLE sessions ADD COLUMN supports_download_token VARCHAR(64) NULL;
+CREATE UNIQUE INDEX uk_sessions_supports_download_token ON sessions (supports_download_token);

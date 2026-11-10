@@ -13,6 +13,8 @@ public class AppProperties {
 
     private String zone = "America/Bogota";
     private String frontendUrl = "http://localhost:4200";
+    /** Public base of the API (used in email download links). Example: http://localhost:8080/api/v1 */
+    private String publicApiUrl = "http://localhost:8080/api/v1";
     /** Only true behind a trusted reverse proxy: trusts X-Forwarded-For for the signer's IP. */
     private boolean trustProxyHeaders = false;
     private Storage storage = new Storage();
