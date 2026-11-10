@@ -30,3 +30,7 @@ ALTER TABLE user_roles MODIFY role ENUM('ROLE_ADMIN','ROLE_COUNCIL_SECRETARY','R
 -- Opaque token so citation emails can link to the supports ZIP without login.
 ALTER TABLE sessions ADD COLUMN supports_download_token VARCHAR(64) NULL;
 CREATE UNIQUE INDEX uk_sessions_supports_download_token ON sessions (supports_download_token);
+
+-- Memorandums share the agreements table with their own numbering (uk_agreements_kind_number replaces it).
+UPDATE agreements SET document_kind = 'AGREEMENT' WHERE document_kind IS NULL OR document_kind = '';
+ALTER TABLE agreements DROP INDEX uk_agreements_number;

@@ -1,5 +1,6 @@
 package com.university.sigac.modules.minutes.controller;
 
+import com.university.sigac.modules.minutes.dto.MinutesDtos.AgreementDraftsResult;
 import com.university.sigac.modules.minutes.dto.MinutesDtos.MinutesContentRequest;
 import com.university.sigac.modules.minutes.dto.MinutesDtos.MinutesDto;
 import com.university.sigac.modules.minutes.dto.MinutesDtos.RejectionRequest;
@@ -43,6 +44,13 @@ public class MinutesController {
     @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
     public MinutesDto generate(@PathVariable Long sessionId) {
         return service.compile(sessionId);
+    }
+
+    /** Creates missing agreement drafts when the minutes already exist (idempotent). */
+    @PostMapping("/session/{sessionId}/agreement-drafts")
+    @PreAuthorize("hasRole('COUNCIL_SECRETARY')")
+    public AgreementDraftsResult ensureAgreementDrafts(@PathVariable Long sessionId) {
+        return new AgreementDraftsResult(service.ensureAgreementDrafts(sessionId));
     }
 
     @GetMapping

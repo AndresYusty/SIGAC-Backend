@@ -11,6 +11,7 @@ import com.university.sigac.config.AppProperties;
 import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementRequest;
 import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementTypeDto;
 import com.university.sigac.modules.agreements.dto.AgreementDtos.FieldDto;
+import com.university.sigac.modules.agreements.enums.DocumentKind;
 import com.university.sigac.modules.agreements.util.AgreementTypeCatalog;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -58,7 +59,9 @@ class AgreementRendererTest {
             AgreementRequest req = new AgreementRequest(1L, t.code(), 28, LocalDate.of(2026, 1, 27), t.subject(),
                     "EL CONSEJO DE FACULTAD DE INGENIERÍA", t.legalBasis(), t.closing(), "NOMBRE PRESIDENTE",
                     "NOMBRE SECRETARIA", values, t.recitals(), t.articles());
-            byte[] pdf = renderer.render(req, 28, "Neiva");
+            byte[] pdf = DocumentKind.of(t.kind()) == DocumentKind.MEMORANDUM
+                    ? renderer.renderMemorandum(req, 28, "Neiva", "Facultad de Ingeniería")
+                    : renderer.render(req, 28, "Neiva");
             assertTrue(new String(pdf, 0, 5, StandardCharsets.US_ASCII).startsWith("%PDF"), t.code());
         }
     }

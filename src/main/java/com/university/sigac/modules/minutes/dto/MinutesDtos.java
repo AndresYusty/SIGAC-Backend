@@ -22,4 +22,8 @@ public final class MinutesDtos {
 
     public record RejectionRequest(@NotBlank @Size(max = 2000) String note) {
     }
+
+    /** How many agreement drafts were created for a session that already has minutes. */
+    public record AgreementDraftsResult(int created) {
+    }
 }

@@ -27,8 +27,10 @@ public final class AgreementDtos {
     public record FieldDto(String key, String label, String labelEn, String example) {
     }
 
-    public record AgreementTypeDto(String code, String name, String nameEn, String subject, String legalBasis,
-                                   String closing, List<FieldDto> fields, List<Block> recitals, List<Block> articles) {
+    /** {@code kind}: AGREEMENT (default when absent) or MEMORANDUM. */
+    public record AgreementTypeDto(String code, String kind, String name, String nameEn, String subject,
+                                   String legalBasis, String closing, List<FieldDto> fields, List<Block> recitals,
+                                   List<Block> articles) {
     }
 
     /** What is stored in the content column. */
@@ -50,19 +52,21 @@ public final class AgreementDtos {
                                    @NotNull @Valid List<Block> articles) {
     }
 
-    public record AgreementDto(Long id, String label, int number, int year, String typeCode, String typeName,
-                               Long facultyId, String faculty, LocalDate issueDate, String subject,
+    public record AgreementDto(Long id, String label, String kind, int number, int year, String typeCode,
+                               String typeName, Long facultyId, String faculty, LocalDate issueDate, String subject,
                                String councilTitle, String legalBasis, String closing, String presidentName,
                                String secretaryName, Map<String, String> values, List<Block> recitals,
                                List<Block> articles, String createdBy, Instant createdAt, Instant updatedAt) {
     }
 
-    public record AgreementSummaryDto(Long id, String label, int number, int year, String typeCode, String typeName,
-                                      String faculty, LocalDate issueDate, String subject, String createdBy) {
+    public record AgreementSummaryDto(Long id, String label, String kind, int number, int year, String typeCode,
+                                      String typeName, String faculty, LocalDate issueDate, String subject,
+                                      String createdBy) {
     }
 
-    /** Values proposed for a new agreement of the Faculty. */
-    public record AgreementDefaultsDto(Long facultyId, String faculty, int year, int nextNumber, String councilTitle,
-                                       String city, String presidentName, String secretaryName) {
+    /** Values proposed for a new agreement or memorandum of the Faculty. */
+    public record AgreementDefaultsDto(Long facultyId, String faculty, int year, int nextNumber, int nextMemoNumber,
+                                       String councilTitle, String memoFrom, String city, String presidentName,
+                                       String secretaryName) {
     }
 }

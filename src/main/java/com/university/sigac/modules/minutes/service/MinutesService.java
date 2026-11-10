@@ -18,6 +18,7 @@ import com.university.sigac.modules.minutes.dto.MinutesDtos.MinutesDto;
 import com.university.sigac.modules.minutes.entity.Minutes;
 import com.university.sigac.modules.minutes.enums.MinutesStatus;
 import com.university.sigac.modules.minutes.repository.MinutesRepository;
+import com.university.sigac.modules.agreements.service.AgreementDraftService;
 import com.university.sigac.modules.notifications.service.EmailService;
 import com.university.sigac.modules.requests.entity.Session;
 import com.university.sigac.modules.requests.entity.SessionGuest;
@@ -66,6 +67,7 @@ public class MinutesService {
     private final AuditService audit;
     private final EmailService email;
     private final AppProperties props;
+    private final AgreementDraftService agreementDrafts;
 
     // ---------------------------------------------------------------- Generate and edit (Council Secretary)
 
@@ -103,8 +105,27 @@ public class MinutesService {
         a.setHtmlContent(html);
         minutes.save(a);
         release(a);
-        audit.record("EVENT_MINUTES_COMPILED", "MINUTES", a.getId(), serialNumber);
+        int drafts = agreementDrafts.createDraftsFromSession(s, serialNumber);
+        audit.record("EVENT_MINUTES_COMPILED", "MINUTES", a.getId(),
+                serialNumber + (drafts > 0 ? (", " + drafts + " agreement draft(s)") : ""));
         return toDto(a, true);
+    }
+
+    /**
+     * When the minutes already exist, create any missing agreement drafts for decided items.
+     * Idempotent: items that already have a draft are skipped.
+     */
+    @Transactional
+    public int ensureAgreementDrafts(Long sessionId) {
+        Session s = agenda.loadWithAccess(sessionId);
+        Minutes existing = minutes.findBySessionId(sessionId)
+                .orElseThrow(() -> ApiException.notFound("Minutes not found for this session"));
+        int created = agreementDrafts.createDraftsFromSession(s, existing.getSerialNumber());
+        if (created > 0) {
+            audit.record("EVENT_AGREEMENT_DRAFTS_ENSURED", "MINUTES", existing.getId(),
+                    existing.getSerialNumber() + ", " + created + " agreement draft(s)");
+        }
+        return created;
     }
 
     /** Actas left as drafts before generation itself closed and sent them. */

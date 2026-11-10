@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title th:text="${title}">Memorando</title>
+  <style>
+    @page {
+      size: letter;
+      margin: 3cm 3cm 2.8cm 3cm;
+      background-image: url('letterhead:usco');
+      background-size: 21.59cm 27.94cm;
+      background-repeat: no-repeat;
+    }
+    * { font-family: 'Arial', 'DejaVu Sans', sans-serif; }
+    body { font-size: 12pt; color: #000000; line-height: 1.2; }
+    h1 { font-size: 14pt; text-align: center; margin: 0 0 22pt 0; }
+    .date { margin: 0 0 22pt 0; }
+    table.head { border-collapse: collapse; margin: 0 0 22pt 0; }
+    table.head td { padding: 0 0 6pt 0; vertical-align: top; }
+    table.head td.key { width: 2.4cm; }
+    table.head td.strong { font-weight: bold; text-transform: uppercase; }
+    p { text-align: justify; margin: 0 0 14pt 0; }
+    table.data { width: 100%; border-collapse: collapse; margin: 0 0 14pt 0; }
+    table.data th, table.data td { border: 0.5pt solid #000000; padding: 2pt 4pt; font-size: 10.5pt; }
+    table.data th { font-weight: bold; text-align: center; }
+    .closing { margin: 8pt 0 0 0; }
+    .sign { margin-top: 56pt; page-break-inside: avoid; }
+    .sign p { margin: 0; text-align: left; }
+    .sign .name { font-weight: bold; text-transform: uppercase; }
+    .missing { background: #fff2a8; color: #7a5b00; }
+  </style>
+</head>
+<body>
+  <h1 th:text="${title}">MEMORANDO No. 001</h1>
+  <p class="date" th:text="${dateLine}">Neiva, 10 de octubre de 2025.</p>
+
+  <table class="head">
+    <tr><td class="key">Para:</td><td class="strong" th:utext="${to}">CONSEJO ACADÉMICO</td></tr>
+    <tr><td class="key">De:</td><td class="strong" th:utext="${from}">CONSEJO DE FACULTAD DE INGENIERÍA</td></tr>
+    <tr><td class="key">Ref.:</td><td th:utext="${subject}">Asunto</td></tr>
+  </table>
+
+  <th:block th:each="block : ${body}">
+    <p th:if="${block.type != 'table'}" th:utext="${block.html}">Texto</p>
+    <table class="data" th:if="${block.type == 'table'}">
+      <tr><th th:each="c : ${block.columns}" th:utext="${c}">No.</th></tr>
+      <tr th:each="row : ${block.rows}"><td th:each="cell : ${row}" th:utext="${cell}">valor</td></tr>
+    </table>
+  </th:block>
+
+  <p class="closing" th:utext="${closing}">Atentamente,</p>
+
+  <div class="sign">
+    <p class="name" th:text="${secretaryName}">SECRETARIA</p>
+    <p>Secretaría Académica</p>
+    <p th:text="${faculty}">Facultad de Ingeniería</p>
+  </div>
+</body>
+</html>

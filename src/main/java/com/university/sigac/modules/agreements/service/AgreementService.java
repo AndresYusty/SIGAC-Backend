@@ -13,6 +13,7 @@ import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementReques
 import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementSummaryDto;
 import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementTypeDto;
 import com.university.sigac.modules.agreements.entity.Agreement;
+import com.university.sigac.modules.agreements.enums.DocumentKind;
 import com.university.sigac.modules.agreements.repository.AgreementRepository;
 import com.university.sigac.modules.agreements.util.AgreementTypeCatalog;
 import com.university.sigac.modules.repository.service.RepositoryService;
@@ -62,10 +63,11 @@ public class AgreementService {
         Faculty faculty = faculty(facultyId);
         int year = LocalDate.now().getYear();
         var last = agreements.findTopByFacultyIdOrderByIdDesc(faculty.getId());
-        String name = FACULTY_PREFIX.matcher(faculty.getName().trim()).replaceFirst("");
+        String name = FACULTY_PREFIX.matcher(faculty.getName().trim()).replaceFirst("").toUpperCase();
         return new AgreementDefaultsDto(faculty.getId(), faculty.getName(), year,
-                agreements.lastNumber(faculty.getId(), year) + 1,
-                "EL CONSEJO DE FACULTAD DE " + name.toUpperCase(), city(faculty),
+                agreements.lastNumber(faculty.getId(), DocumentKind.AGREEMENT, year) + 1,
+                agreements.lastNumber(faculty.getId(), DocumentKind.MEMORANDUM, year) + 1,
+                "EL CONSEJO DE FACULTAD DE " + name, "CONSEJO DE FACULTAD DE " + name, city(faculty),
                 last.map(Agreement::getPresidentName).orElse(""), last.map(Agreement::getSecretaryName).orElse(""));
     }
 
@@ -100,14 +102,28 @@ public class AgreementService {
 
     @Transactional
     public AgreementDto create(AgreementRequest req) {
+        return create(req, null);
+    }
+
+    @Transactional
+    public AgreementDto create(AgreementRequest req, Long agendaItemId) {
         types.get(req.typeCode());
+        if (agendaItemId != null && agreements.existsByAgendaItemId(agendaItemId)) {
+            throw ApiException.conflict("An agreement draft already exists for this agenda item");
+        }
         Agreement a = new Agreement();
         a.setFaculty(faculty(req.facultyId()));
         a.setCreatedBy(SecurityUtils.current().email());
+        a.setAgendaItemId(agendaItemId);
         apply(a, req);
         agreements.save(a);
         audit.record("EVENT_AGREEMENT_CREATED", "AGREEMENT", a.getId(), label(a));
         return toDto(a);
+    }
+
+    @Transactional(readOnly = true)
+    public boolean hasDraftForAgendaItem(Long agendaItemId) {
+        return agendaItemId != null && agreements.existsByAgendaItemId(agendaItemId);
     }
 
     @Transactional
@@ -132,17 +148,20 @@ public class AgreementService {
     @Transactional(readOnly = true)
     public byte[] preview(AgreementRequest req) {
         Faculty faculty = faculty(req.facultyId());
+        DocumentKind kind = kindOf(req.typeCode());
         int number = req.number() != null ? req.number()
-                : agreements.lastNumber(faculty.getId(), req.issueDate().getYear()) + 1;
-        return renderer.render(req, number, city(faculty));
+                : agreements.lastNumber(faculty.getId(), kind, req.issueDate().getYear()) + 1;
+        return render(req, kind, number, faculty);
     }
 
     @Transactional(readOnly = true)
     public AgreementFile pdf(Long id) {
         Agreement a = find(id);
-        byte[] data = renderer.render(toRequest(a), a.getNumber(), city(a.getFaculty()));
-        String type = types.find(a.getTypeCode()).map(AgreementTypeDto::name).orElse(a.getTypeCode());
-        return new AgreementFile(label(a) + " - " + type + ".pdf", data);
+        byte[] data = render(toRequest(a), a.getKind(), a.getNumber(), a.getFaculty());
+        String name = a.getKind() == DocumentKind.MEMORANDUM
+                ? label(a) + " - " + a.getSubject()
+                : label(a) + " - " + types.find(a.getTypeCode()).map(AgreementTypeDto::name).orElse(a.getTypeCode());
+        return new AgreementFile(name.replaceAll("[\\\\/:*?\"<>|]", " ").trim() + ".pdf", data);
     }
 
     /** Consultation from the digital repository: same PDF, with a trace of who opened it. */
@@ -164,13 +183,17 @@ public class AgreementService {
 
     private void apply(Agreement a, AgreementRequest req) {
         int year = req.issueDate().getYear();
+        DocumentKind kind = kindOf(req.typeCode());
+        boolean keepsNumber = a.getId() != null && a.getYear() == year && a.getKind() == kind;
         int number = req.number() != null ? req.number()
-                : (a.getId() != null && a.getYear() == year ? a.getNumber()
-                : agreements.lastNumber(a.getFaculty().getId(), year) + 1);
-        if (agreements.existsByFacultyIdAndYearAndNumberAndIdNot(a.getFaculty().getId(), year, number,
+                : (keepsNumber ? a.getNumber() : agreements.lastNumber(a.getFaculty().getId(), kind, year) + 1);
+        if (agreements.existsByFacultyIdAndKindAndYearAndNumberAndIdNot(a.getFaculty().getId(), kind, year, number,
                 a.getId() == null ? 0L : a.getId())) {
-            throw ApiException.conflict(String.format("Agreement No. %03d of %d already exists in this Faculty", number, year));
+            throw ApiException.conflict(kind == DocumentKind.MEMORANDUM
+                    ? String.format("Memorandum No. %03d of %d already exists in this Faculty", number, year)
+                    : String.format("Agreement No. %03d of %d already exists in this Faculty", number, year));
         }
+        a.setKind(kind);
         a.setTypeCode(req.typeCode());
         a.setNumber(number);
         a.setYear(year);
@@ -226,7 +249,18 @@ public class AgreementService {
     }
 
     private static String label(Agreement a) {
-        return String.format("ACUERDO No. %03d DE %d", a.getNumber(), a.getYear());
+        String prefix = a.getKind() == DocumentKind.MEMORANDUM ? "MEMORANDO" : "ACUERDO";
+        return String.format("%s No. %03d DE %d", prefix, a.getNumber(), a.getYear());
+    }
+
+    private DocumentKind kindOf(String typeCode) {
+        return DocumentKind.of(types.get(typeCode).kind());
+    }
+
+    private byte[] render(AgreementRequest req, DocumentKind kind, int number, Faculty faculty) {
+        return kind == DocumentKind.MEMORANDUM
+                ? renderer.renderMemorandum(req, number, city(faculty), faculty.getName())
+                : renderer.render(req, number, city(faculty));
     }
 
     private AgreementContent read(Agreement a) {
@@ -257,13 +291,14 @@ public class AgreementService {
     }
 
     private AgreementSummaryDto toSummary(Agreement a) {
-        return new AgreementSummaryDto(a.getId(), label(a), a.getNumber(), a.getYear(), a.getTypeCode(),
-                typeName(a.getTypeCode()), a.getFaculty().getName(), a.getIssueDate(), a.getSubject(), a.getCreatedBy());
+        return new AgreementSummaryDto(a.getId(), label(a), a.getKind().name(), a.getNumber(), a.getYear(),
+                a.getTypeCode(), typeName(a.getTypeCode()), a.getFaculty().getName(), a.getIssueDate(),
+                a.getSubject(), a.getCreatedBy());
     }
 
     private AgreementDto toDto(Agreement a) {
         AgreementContent c = read(a);
-        return new AgreementDto(a.getId(), label(a), a.getNumber(), a.getYear(), a.getTypeCode(),
+        return new AgreementDto(a.getId(), label(a), a.getKind().name(), a.getNumber(), a.getYear(), a.getTypeCode(),
                 typeName(a.getTypeCode()), a.getFaculty().getId(), a.getFaculty().getName(), a.getIssueDate(),
                 a.getSubject(), a.getCouncilTitle(), a.getLegalBasis(), a.getClosing(), a.getPresidentName(),
                 a.getSecretaryName(), c.values(), c.recitals(), c.articles(), a.getCreatedBy(), a.getCreatedAt(),

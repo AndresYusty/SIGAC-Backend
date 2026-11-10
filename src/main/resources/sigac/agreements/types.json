@@ -3048,5 +3048,128 @@
         "text": "El presente Acuerdo rige a partir de la fecha de expedición."
       }
     ]
+  },
+  {
+    "code": "MEMORANDUM",
+    "kind": "MEMORANDUM",
+    "name": "Memorando de decisión del Consejo",
+    "nameEn": "Council decision memorandum",
+    "subject": "Decisión del Consejo de Facultad",
+    "legalBasis": "",
+    "closing": "Atentamente,",
+    "fields": [
+      {
+        "key": "facultyName",
+        "label": "Nombre de la facultad",
+        "labelEn": "Faculty name",
+        "example": "Ingeniería"
+      },
+      {
+        "key": "sessionDate",
+        "label": "Fecha de la sesión",
+        "labelEn": "Session date",
+        "example": "8 de octubre de 2025"
+      },
+      {
+        "key": "minutesNumber",
+        "label": "Número de acta",
+        "labelEn": "Minutes number",
+        "example": "028 C.V."
+      },
+      {
+        "key": "decision",
+        "label": "Decisión (AVALAR, APROBAR, NEGAR...)",
+        "labelEn": "Decision (ENDORSE, APPROVE, DENY...)",
+        "example": "AVALAR"
+      },
+      {
+        "key": "requestCode",
+        "label": "Código de la solicitud",
+        "labelEn": "Request code",
+        "example": "REQ-2026-000027"
+      },
+      {
+        "key": "requestTitle",
+        "label": "Asunto de la solicitud",
+        "labelEn": "Request subject",
+        "example": "Aval de proyecto"
+      },
+      {
+        "key": "requesterName",
+        "label": "Solicitante",
+        "labelEn": "Requester",
+        "example": "MARÍA FERNANDA PERDOMO"
+      }
+    ],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Cordial saludo,"
+      },
+      {
+        "type": "paragraph",
+        "text": "Comedidamente, desde el Consejo de Facultad de {{facultyName}}, nos permitimos informar que, en sesión del {{sessionDate}}, según acta No. {{minutesNumber}}, se decidió **{{decision}}** la solicitud relacionada a continuación:"
+      },
+      {
+        "type": "table",
+        "columns": [
+          "No.",
+          "CÓDIGO",
+          "ASUNTO",
+          "SOLICITANTE"
+        ],
+        "rows": [
+          [
+            "1",
+            "{{requestCode}}",
+            "{{requestTitle}}",
+            "{{requesterName}}"
+          ]
+        ]
+      }
+    ],
+    "articles": []
+  },
+  {
+    "code": "BLANK_AGREEMENT",
+    "name": "Acuerdo desde cero",
+    "nameEn": "Agreement from scratch",
+    "subject": "Por medio del cual se ",
+    "legalBasis": "En uso de sus facultades legales y,",
+    "closing": "COMUNÍQUESE Y CÚMPLASE",
+    "fields": [],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Que "
+      }
+    ],
+    "articles": [
+      {
+        "type": "article",
+        "text": ""
+      }
+    ]
+  },
+  {
+    "code": "BLANK_MEMORANDUM",
+    "kind": "MEMORANDUM",
+    "name": "Memorando desde cero",
+    "nameEn": "Memorandum from scratch",
+    "subject": "Asunto del memorando",
+    "legalBasis": "",
+    "closing": "Atentamente,",
+    "fields": [],
+    "recitals": [
+      {
+        "type": "paragraph",
+        "text": "Cordial saludo,"
+      },
+      {
+        "type": "paragraph",
+        "text": ""
+      }
+    ],
+    "articles": []
   }
 ]

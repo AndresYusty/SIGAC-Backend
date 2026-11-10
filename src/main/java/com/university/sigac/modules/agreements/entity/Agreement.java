@@ -1,5 +1,6 @@
 package com.university.sigac.modules.agreements.entity;
 
+import com.university.sigac.modules.agreements.enums.DocumentKind;
 import com.university.sigac.modules.users.entity.Faculty;
 import jakarta.persistence.*;
 import java.time.Instant;
@@ -8,10 +9,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/** Faculty Council agreement (acuerdo). The number is unique per Faculty and year. */
+/** Faculty Council agreement (acuerdo) or memorandum (memorando). The number is unique per Faculty, kind and year. */
 @Entity
-@Table(name = "agreements", uniqueConstraints = @UniqueConstraint(name = "uk_agreements_number",
-        columnNames = {"faculty_id", "agreement_year", "number"}))
+@Table(name = "agreements", uniqueConstraints = @UniqueConstraint(name = "uk_agreements_kind_number",
+        columnNames = {"faculty_id", "document_kind", "agreement_year", "number"}))
 @Getter @Setter @NoArgsConstructor
 public class Agreement {
 
@@ -22,6 +23,11 @@ public class Agreement {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "faculty_id", nullable = false)
     private Faculty faculty;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "document_kind", nullable = false, length = 20,
+            columnDefinition = "VARCHAR(20) NOT NULL DEFAULT 'AGREEMENT'")
+    private DocumentKind kind = DocumentKind.AGREEMENT;
 
     @Column(name = "type_code", nullable = false, length = 60)
     private String typeCode;
@@ -65,4 +71,8 @@ public class Agreement {
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    /** Agenda item that originated this draft (unique so drafts are not duplicated). */
+    @Column(name = "agenda_item_id", unique = true)
+    private Long agendaItemId;
 }

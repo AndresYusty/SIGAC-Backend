@@ -2,6 +2,7 @@ package com.university.sigac.modules.agreements.service;
 
 import com.university.sigac.core.pdf.Letterhead;
 import com.university.sigac.core.pdf.PdfService;
+import com.university.sigac.core.util.DateUtil;
 import com.university.sigac.core.util.HtmlSanitizer;
 import com.university.sigac.modules.agreements.dto.AgreementDtos.AgreementRequest;
 import com.university.sigac.modules.agreements.dto.AgreementDtos.Block;
@@ -18,12 +19,13 @@ import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/** Fills the agreement layout (sigac/templates/agreement.html) and compiles it to PDF/A. */
+/** Fills the agreement (agreement.html) or memorandum (memorandum.html) layout and compiles it to PDF/A. */
 @Component
 @RequiredArgsConstructor
 public class AgreementRenderer {
 
     private static final String LAYOUT = read("/sigac/templates/agreement.html");
+    private static final String MEMO_LAYOUT = read("/sigac/templates/memorandum.html");
     private static final Pattern FIELD = Pattern.compile("\\{\\{\\s*([A-Za-z0-9_]+)\\s*}}");
     private static final Pattern BOLD = Pattern.compile("\\*\\*(.+?)\\*\\*");
 
@@ -45,6 +47,23 @@ public class AgreementRenderer {
         m.put("presidentName", text(a.presidentName()));
         m.put("secretaryName", text(a.secretaryName()));
         String xhtml = HtmlSanitizer.sanitizeDocument(pdf.render(letterhead.embed(LAYOUT), m));
+        return pdf.generatePdfA(xhtml);
+    }
+
+    /** Memorandum: Para = legalBasis, De = councilTitle, Ref. = subject, body = recitals, signed by the secretary. */
+    public byte[] renderMemorandum(AgreementRequest a, int number, String city, String faculty) {
+        Map<String, String> values = a.values() == null ? Map.of() : a.values();
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("title", "MEMORANDO No. " + String.format("%03d", number));
+        m.put("dateLine", city + ", " + DateUtil.longDate(a.issueDate()) + ".");
+        m.put("to", html(a.legalBasis(), values));
+        m.put("from", html(a.councilTitle(), values));
+        m.put("subject", html(a.subject(), values));
+        m.put("body", blocks(a.recitals(), values));
+        m.put("closing", html(a.closing(), values));
+        m.put("secretaryName", text(a.secretaryName()));
+        m.put("faculty", text(faculty));
+        String xhtml = HtmlSanitizer.sanitizeDocument(pdf.render(letterhead.embed(MEMO_LAYOUT), m));
         return pdf.generatePdfA(xhtml);
     }
 
