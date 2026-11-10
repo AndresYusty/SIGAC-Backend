@@ -267,10 +267,15 @@ public class LiveSessionService {
     public List<AttendeeDto> attendees(Session s) {
         Map<Long, Boolean> present = attendances.findBySessionId(s.getId()).stream()
                 .collect(Collectors.toMap(a -> a.getUser().getId(), Attendance::isPresent));
+        return seated(s).stream().map(u -> new AttendeeDto(u.getId(), u.getName(), SessionMapper.seat(u),
+                present.getOrDefault(u.getId(), false))).toList();
+    }
+
+    /** The people listed in {@link #attendees}, in the same order. */
+    public List<User> seated(Session s) {
         List<User> people = new ArrayList<>(members(s));
         people.addAll(summonedProgramHeads(s));
-        return people.stream().map(u -> new AttendeeDto(u.getId(), u.getName(), SessionMapper.seat(u),
-                present.getOrDefault(u.getId(), false))).toList();
+        return people;
     }
 
     // ---------------------------------------------------------------- private

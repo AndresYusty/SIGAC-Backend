@@ -13,6 +13,7 @@ import com.university.sigac.modules.users.entity.Program;
 import com.university.sigac.modules.users.entity.User;
 import com.university.sigac.modules.users.enums.RoleName;
 import com.university.sigac.modules.users.repository.FacultyRepository;
+import com.university.sigac.modules.users.repository.PasswordResetTokenRepository;
 import com.university.sigac.modules.users.repository.ProgramRepository;
 import com.university.sigac.modules.users.repository.UserRepository;
 import java.util.Comparator;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,13 +38,14 @@ public class UserService {
     private final UserRepository users;
     private final FacultyRepository faculties;
     private final ProgramRepository programs;
+    private final PasswordResetTokenRepository passwordTokens;
     private final PasswordEncoder encoder;
     private final AuditService audit;
 
     @Transactional(readOnly = true)
     public Page<UserDto> list(String q, Pageable pageable) {
-        Page<User> page = (q == null || q.isBlank()) ? users.findAll(pageable)
-                : users.findByNameContainingIgnoreCaseOrEmailContainingIgnoreCase(q.trim(), q.trim(), pageable);
+        Page<User> page = (q == null || q.isBlank()) ? users.findAllWithScope(pageable)
+                : users.searchWithScope(q.trim(), pageable);
         return page.map(UserService::toDto);
     }
 
@@ -102,7 +105,7 @@ public class UserService {
         return toDto(u);
     }
 
-    /** Logical deactivation: a user is never physically deleted. */
+    /** Logical deactivation; physical removal is {@link #delete} and only for inactive accounts. */
     @Transactional
     public UserDto changeStatus(Long id, boolean active) {
         User actor = find(SecurityUtils.current().id());
@@ -116,6 +119,29 @@ public class UserService {
         u.setActive(active);
         audit.record(active ? "EVENT_USER_ACTIVATED" : "EVENT_USER_DEACTIVATED", "USER", u.getId(), null);
         return toDto(u);
+    }
+
+    /** Hard delete of an inactive user. Blocked if they still appear in sessions or requests. */
+    @Transactional
+    public void delete(Long id) {
+        User u = find(id);
+        if (u.getId().equals(SecurityUtils.current().id())) {
+            throw ApiException.badRequest("You cannot delete your own account");
+        }
+        if (u.isActive()) {
+            throw ApiException.badRequest("Deactivate the user before deleting them");
+        }
+        String name = u.getName();
+        try {
+            passwordTokens.deleteByUserId(id);
+            u.getRoles().clear();
+            users.delete(u);
+            users.flush();
+        } catch (DataIntegrityViolationException ex) {
+            throw ApiException.conflict(
+                    "The user cannot be deleted because they have session attendance, summons or filed requests");
+        }
+        audit.record("EVENT_USER_DELETED", "USER", id, name);
     }
 
     @Transactional
@@ -139,8 +165,12 @@ public class UserService {
     // ---------------------------------------------------------------- mappings (also used by AuthService)
 
     public static UserDto toDto(User u) {
-        Faculty f = u.getFaculty();
         Program p = u.getProgram();
+        Faculty f = u.getFaculty();
+        // Program heads always have a program; if faculty was not loaded/set, take it from there.
+        if (f == null && p != null) {
+            f = p.getFaculty();
+        }
         return new UserDto(u.getId(), u.getName(), u.getEmail(), u.isActive(), roleNames(u),
                 f == null ? null : f.getId(), f == null ? null : f.getName(),
                 p == null ? null : p.getId(), p == null ? null : p.getName(), u.getLastLogin());

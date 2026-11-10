@@ -119,12 +119,12 @@ public class MinutesService {
         }
     }
 
-    /** Rewrites unpublished minutes that were compiled on the previous sheet. */
+    /** Rewrites unpublished minutes that were compiled on a previous layout. */
     @Transactional
     public void refreshOpenLayout() {
         for (Minutes a : minutes.findByStatusIn(List.of(
                 MinutesStatus.DRAFT, MinutesStatus.EDITING, MinutesStatus.PENDING_SIGNATURE))) {
-            if (a.getHtmlContent() != null && a.getHtmlContent().contains("<h1>ACTA ")) {
+            if (a.getHtmlContent() != null && a.getHtmlContent().contains("EV-CAL-FO-05")) {
                 continue;
             }
             Session s = a.getSession();

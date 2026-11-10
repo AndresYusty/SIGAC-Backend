@@ -80,7 +80,9 @@ public final class HtmlSanitizer {
         }
         for (Element img : doc.select("img")) {
             String src = img.attr("src").trim();
-            if (!src.toLowerCase().startsWith("data:image/") && !src.equals("letterhead:usco")) {
+            if (!src.toLowerCase().startsWith("data:image/")
+                    && !src.equals("letterhead:usco") && !src.equals("letterhead:usco-logo")
+                    && !src.equals("letterhead:usco-seals")) {
                 r.add("Only embedded images (data:image/...;base64) are allowed. Source not allowed in <img>");
             }
         }

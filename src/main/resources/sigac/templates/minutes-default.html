@@ -6,81 +6,237 @@
   <style>
     @page {
       size: letter;
-      margin: 2.5cm 3cm 2.8cm 3cm;
-      background-image: url('letterhead:usco');
-      background-size: 21.59cm 27.94cm;
-      background-repeat: no-repeat;
+      margin: 4.4cm 1.8cm 2.9cm 1.8cm;
+      @top-center { content: element(header); }
+      @bottom-center { content: element(footer); }
     }
     * { font-family: 'Arial', 'DejaVu Sans', sans-serif; }
-    body { font-size: 12pt; color: #000000; line-height: 1.15; }
-    h1 { font-size: 14pt; text-align: center; margin: 0 0 4pt 0; }
-    h3 { font-size: 12pt; text-align: center; margin: 14pt 0 8pt 0; }
-    p { text-align: justify; margin: 0 0 10pt 0; }
-    .center { text-align: center; margin: 0 0 4pt 0; }
-    table.data { width: 100%; border-collapse: collapse; margin: 0 0 12pt 0; }
-    table.data th, table.data td { border: 0.5pt solid #000000; padding: 3pt 5pt; font-size: 10pt; text-align: left; }
-    table.data th { font-weight: bold; text-align: center; }
-    .decision { font-weight: bold; }
-    ol { margin: 0 0 12pt 1.2em; }
-    li { margin-bottom: 4pt; }
+    body { font-size: 11pt; color: #000000; line-height: 1.2; }
+    p { text-align: justify; margin: 0 0 6pt 0; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    td, th { border: 0.6pt solid #000000; padding: 2pt 4pt; vertical-align: middle; }
+    .dark { background-color: #3c3c3c; color: #ffffff; font-weight: bold; }
+    .center { text-align: center; }
+    .upper { text-transform: uppercase; }
+    .small { font-size: 8pt; }
+
+    #header { position: running(header); width: 100%; }
+    #header td { font-size: 9pt; text-align: center; }
+    #header .band { font-size: 12pt; line-height: 1.15; }
+    #header .title { font-size: 11pt; font-weight: bold; }
+    #header .page::after { content: counter(page) " DE " counter(pages); }
+
+    #footer { position: running(footer); text-align: center; font-size: 7pt; line-height: 1.2; }
+    #footer p { text-align: center; margin: 0; }
+
+    .block { margin: 0 0 6pt 0; }
+    .band-row td { text-align: center; }
+    .frame { border: 0.6pt solid #000000; border-top: none; padding: 5pt 7pt; }
+    .frame h4 { font-size: 11pt; margin: 6pt 0 2pt 0; }
+    .frame h5 { font-size: 11pt; margin: 4pt 0 2pt 0; }
+    .point { margin: 0 0 6pt 0; page-break-inside: avoid; }
+    .point-title { margin: 0 0 2pt 0; }
+    .decision { margin: 0 0 2pt 0; }
+    .agenda-line { margin: 0 0 1pt 0; text-align: left; }
+    .signatures td { border: none; width: 50%; padding-top: 34pt; vertical-align: top; }
   </style>
 </head>
 <body>
-  <h1>ACTA <span th:text="${serialNumber}">MIN-CO-2026-001</span></h1>
-  <p class="center" th:text="${councilType}">Consejo ordinario</p>
-  <p class="center" th:text="${faculty}">Facultad de Ingeniería</p>
-
-  <table class="data">
-    <tr>
-      <th>Fecha</th><td th:text="${sessionDate}">15 de agosto de 2026</td>
-      <th>Lugar</th><td th:text="${location}">Sala del consejo</td>
-    </tr>
-    <tr>
-      <th>Inicio</th><td th:text="${startTime}">08:00</td>
-      <th>Finalización</th><td th:text="${endTime}">10:00</td>
-    </tr>
-  </table>
-
-  <h3>Asistencia y quórum</h3>
-  <table class="data">
-    <tr><th>Integrante</th><th>Calidad</th><th>Asistencia</th></tr>
-    <tr th:each="a : ${attendees}">
-      <td th:text="${a.name}">Nombre</td>
-      <td th:text="${a.role}">Presidente</td>
-      <td th:text="${a.present} ? 'Presente' : 'Ausente'">Presente</td>
-    </tr>
-  </table>
-  <p th:text="${quorum}">Quórum</p>
-
-  <div th:if="${hasGuests}">
-    <h3>Invitados (voz y sin voto)</h3>
-    <table class="data">
-      <tr><th>Invitado</th><th>Calidad</th></tr>
-      <tr th:each="g : ${guests}">
-        <td th:text="${g.name}">Nombre</td>
-        <td th:text="${g.affiliation}">Dependencia</td>
+  <div id="header">
+    <table>
+      <colgroup>
+        <col style="width: 12%"/><col style="width: 15%"/><col style="width: 11%"/><col style="width: 7%"/>
+        <col style="width: 12%"/><col style="width: 9%"/><col style="width: 11%"/><col style="width: 23%"/>
+      </colgroup>
+      <tr>
+        <td rowspan="2"><img src="letterhead:usco-logo" alt="USCO" style="height: 1.45cm"/></td>
+        <td colspan="5" class="dark band">UNIVERSIDAD SURCOLOMBIANA<br/>GESTIÓN DE LA CALIDAD</td>
+        <td colspan="2" rowspan="2"><img src="letterhead:usco-seals" alt="Certificaciones" style="width: 4.4cm"/></td>
+      </tr>
+      <tr>
+        <td colspan="5" class="title">ACTA DE REUNIÓN</td>
+      </tr>
+      <tr>
+        <td class="dark">CÓDIGO</td>
+        <td>EV-CAL-FO-05</td>
+        <td class="dark">VERSIÓN</td>
+        <td>2</td>
+        <td class="dark">VIGENCIA</td>
+        <td>2025</td>
+        <td class="dark">PÁGINA</td>
+        <td><span class="page"></span></td>
       </tr>
     </table>
   </div>
 
-  <h3>Orden del día</h3>
-  <ol>
-    <li th:each="o : ${agenda}" th:text="${o.urgent} ? ${o.title} + ' (Asunto urgente)' : ${o.title}">Punto</li>
-  </ol>
-
-  <h3>Desarrollo y decisiones</h3>
-  <div th:each="ag : ${agreements}">
-    <p>
-      <strong th:text="${ag.number} + '. ' + ${ag.title}">1. Título</strong>
-      <span th:if="${ag.miscellaneous}"> (Punto de varios)</span>
-      <span th:if="${ag.urgent}"> (Asunto urgente)</span>
-    </p>
-    <p th:if="${ag.description}" th:text="${ag.description}">Descripción</p>
-    <p class="decision" th:text="'Decisión: ' + ${ag.decision}">Decisión: Aprobado</p>
-    <p th:text="'Votos a favor: ' + ${ag.votesFor} + ' | En contra: ' + ${ag.votesAgainst} + ' | Abstenciones: ' + ${ag.abstentions}">Votos</p>
-    <div th:utext="${ag.notes}"></div>
+  <div id="footer">
+    <p>Vigilada Mineducación</p>
+    <p>La versión vigente y controlada de este documento, solo podrá ser consultada a través del sitio web Institucional
+      www.usco.edu.co, link Sistema Gestión de Calidad. La copia o impresión diferente a la publicada, será considerada como
+      documento no controlado y su uso indebido no es de responsabilidad de la Universidad Surcolombiana.</p>
   </div>
 
-  <p>Se levanta la sesión a las <span th:text="${endTime}">10:00</span>. Para constancia se expide la presente acta.</p>
+  <table class="block">
+    <tr>
+      <td class="dark center" rowspan="2">ACTA No.</td>
+      <td class="dark center" colspan="3">FECHA</td>
+      <td class="dark center" colspan="4">HORA</td>
+    </tr>
+    <tr>
+      <td class="center small">Día</td>
+      <td class="center small">Mes</td>
+      <td class="center small">Año</td>
+      <td class="dark center" rowspan="2">Inicio</td>
+      <td class="center" rowspan="2" th:text="${startTime}">14:30</td>
+      <td class="dark center" rowspan="2">Final</td>
+      <td class="center" rowspan="2" th:text="${endTime}">17:30</td>
+    </tr>
+    <tr>
+      <td class="center" th:text="${minutesNumber}">015</td>
+      <td class="center" th:text="${day}">07</td>
+      <td class="center" th:text="${month}">09</td>
+      <td class="center" th:text="${year}">2026</td>
+    </tr>
+  </table>
+
+  <table class="block">
+    <colgroup>
+      <col style="width: 20%"/><col style="width: 38%"/><col style="width: 10%"/><col style="width: 32%"/>
+    </colgroup>
+    <tr>
+      <td class="dark">Dependencia, Programa o Facultad</td>
+      <td class="center upper" th:text="${faculty}">FACULTAD DE INGENIERÍA</td>
+      <td class="dark center">Tema</td>
+      <td class="center upper" th:text="${sessionKind}">SESIÓN ORDINARIA</td>
+    </tr>
+  </table>
+
+  <table class="block">
+    <colgroup>
+      <col style="width: 7%"/><col style="width: 41%"/><col style="width: 40%"/><col style="width: 6%"/><col style="width: 6%"/>
+    </colgroup>
+    <tr class="band-row"><td class="dark" colspan="5">CONVOCADOS / ASISTENTES</td></tr>
+    <tr>
+      <td class="dark center" rowspan="2">No.</td>
+      <td class="dark center" rowspan="2">NOMBRE</td>
+      <td class="dark center" rowspan="2">CARGO</td>
+      <td class="dark center" colspan="2">ASISTIÓ</td>
+    </tr>
+    <tr>
+      <td class="dark center">SI</td>
+      <td class="dark center">NO</td>
+    </tr>
+    <tr th:each="a : ${attendees}">
+      <td class="center" th:text="${a.number}">1</td>
+      <td class="upper" th:text="${a.name}">Nombre</td>
+      <td th:text="${a.role}">Cargo</td>
+      <td class="center" th:text="${a.present} ? 'X' : ''">X</td>
+      <td class="center" th:text="${a.present} ? '' : 'X'"></td>
+    </tr>
+    <tr th:each="g : ${guests}">
+      <td class="center" th:text="${g.number}">1</td>
+      <td class="upper" th:text="${g.name}">Invitado</td>
+      <td th:text="${g.affiliation}">Invitado</td>
+      <td class="center"></td>
+      <td class="center"></td>
+    </tr>
+  </table>
+
+  <table class="block">
+    <tr><td class="dark" colspan="2">SECRETARÍA</td></tr>
+    <tr><td class="small">Nombre</td><td class="small">Cargo</td></tr>
+    <tr>
+      <td class="upper" th:text="${secretaryName}">Nombre</td>
+      <td th:text="${secretaryRole}">Secretaría académica</td>
+    </tr>
+  </table>
+
+  <table>
+    <colgroup><col style="width: 10%"/><col style="width: 60%"/><col style="width: 30%"/></colgroup>
+    <tr class="band-row"><td class="dark" colspan="3">AGENDA</td></tr>
+    <tr>
+      <td class="dark center">No.</td>
+      <td class="dark center">TEMÁTICA</td>
+      <td class="dark center">RESPONSABLE</td>
+    </tr>
+  </table>
+  <div class="frame">
+    <p class="center"><strong>ORDEN DEL DÍA</strong></p>
+    <h4>1. Verificación del quórum</h4>
+    <p th:if="${quorumReached}">La sesión inició con la presencia de los señores consejeros: [[${presentList}]], y se verificó quórum
+      deliberatorio y decisorio, quedando instalada la sesión de la fecha a partir de las [[${installedAt}]]</p>
+    <p th:unless="${quorumReached}">La sesión inició con la presencia de: [[${presentList}]]. No se alcanzó el quórum deliberatorio y
+      decisorio: se requerían [[${quorumRequired}]] de [[${votingMembers}]] integrantes con voto.</p>
+    <h4>2. Aprobación del orden del día</h4>
+    <div th:if="${hasSections}">
+      <p class="agenda-line"><strong>3. SOLICITUDES</strong></p>
+      <div th:each="s : ${sections}">
+        <p class="agenda-line upper" th:text="${s.number} + '. ' + ${s.title}">3.1. Programa</p>
+        <p class="agenda-line" th:each="it : ${s.items}" th:text="${it.number} + '. ' + ${it.title}">3.1.1. Asunto</p>
+      </div>
+    </div>
+    <div th:if="${hasVarios}">
+      <p class="agenda-line"><strong>VARIOS</strong></p>
+      <p class="agenda-line" th:each="v : ${varios}" th:text="${v.number} + '. ' + ${v.title}">1. Asunto</p>
+    </div>
+    <p th:if="${hasVarios}">El orden del día se aprobó, incluyendo los varios presentados.</p>
+    <p th:unless="${hasVarios}">El orden del día se aprobó.</p>
+  </div>
+
+  <table style="margin-top: 6pt">
+    <colgroup><col style="width: 10%"/><col style="width: 90%"/></colgroup>
+    <tr>
+      <td class="dark center">No.</td>
+      <td class="dark center">DESARROLLO DE LA AGENDA</td>
+    </tr>
+  </table>
+  <div class="frame">
+    <h4>1. Verificación del quórum</h4>
+    <p th:if="${quorumReached}">Se verificó el quórum deliberatorio y decisorio.</p>
+    <p th:unless="${quorumReached}">No se alcanzó el quórum deliberatorio y decisorio.</p>
+    <h4>2. Aprobación del orden del día</h4>
+    <p>Se aprobó el orden del día.</p>
+
+    <div th:if="${hasSections}">
+      <h4>3. SOLICITUDES</h4>
+      <div th:each="s : ${sections}">
+        <h5 class="upper" th:text="${s.number} + '. ' + ${s.title}">3.1. Programa</h5>
+        <div class="point" th:each="it : ${s.items}">
+          <p class="point-title" th:text="${it.number} + '. ' + ${it.title}">3.1.1. Asunto</p>
+          <p th:if="${it.description}" th:text="${it.description}">Descripción del punto</p>
+          <div th:utext="${it.notes}"></div>
+          <p class="decision" th:text="'Decisión: ' + ${it.decision}">Decisión: APROBAR con 12 votos</p>
+        </div>
+      </div>
+    </div>
+
+    <div th:if="${hasVarios}">
+      <h4>VARIOS</h4>
+      <div class="point" th:each="v : ${varios}">
+        <p class="point-title" th:text="${v.number} + '. ' + ${v.title}">1. Asunto</p>
+        <p th:if="${v.description}" th:text="${v.description}">Descripción del punto</p>
+        <div th:utext="${v.notes}"></div>
+        <p class="decision" th:text="'Decisión: ' + ${v.decision}">Decisión: AVALAR con 12 votos</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame" style="border-top: 0.6pt solid #000000; margin-top: 6pt; page-break-inside: avoid;">
+    <p>Agotada la agenda, siendo las [[${endTime}]] horas del día [[${endDate}]], se da por terminada la [[${sessionKind}]]
+      del Consejo de [[${faculty}]].</p>
+    <p>En constancia firman</p>
+    <table class="signatures">
+      <tr>
+        <td>
+          <p class="upper" style="margin: 0" th:text="${presidentName}">Presidente</p>
+          <p style="margin: 0">Presidente</p>
+        </td>
+        <td>
+          <p class="upper" style="margin: 0" th:text="${secretaryName}">Secretaria</p>
+          <p style="margin: 0" th:text="${secretaryRole}">Secretaría académica</p>
+        </td>
+      </tr>
+    </table>
+  </div>
 </body>
 </html>

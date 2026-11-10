@@ -24,27 +24,42 @@ import org.springframework.stereotype.Component;
 public class Letterhead {
 
     public static final String TOKEN = "letterhead:usco";
+    /** Institutional logo alone, for documents with their own header (EV-CAL-FO-05). */
+    public static final String LOGO_TOKEN = "letterhead:usco-logo";
+    /** ICONTEC and IQNET certification seals taken from the USCO sheet. */
+    public static final String SEALS_TOKEN = "letterhead:usco-seals";
 
     private static final String SHEET_FILE = "branding/sheet";
     private static final String LOGO_FILE = "branding/logo";
     private static final int MAX_BYTES = 5 * 1024 * 1024;
     /** Header area of the 1224x1584 USCO sheet where its logo sits (pixels). */
     private static final Rectangle LOGO_AREA = new Rectangle(76, 28, 560, 96);
+    /** Footer area of the 1224x1584 USCO sheet with the certification seals (pixels). */
+    private static final Rectangle SEALS_AREA = new Rectangle(900, 1452, 255, 110);
 
     private final StorageService storage;
     private final byte[] defaultSheet = resource("/sigac/templates/letterhead.png");
     private final byte[] sheetWithoutLogo = resource("/sigac/templates/letterhead-blank.png");
+    private final byte[] defaultLogo = onWhite(resource("/sigac/brand/usco-logo.png"));
+    private final byte[] seals = onWhite(crop(defaultSheet, SEALS_AREA));
 
     public Letterhead(StorageService storage) {
         this.storage = storage;
     }
 
-    /** Replaces the token with the embedded sheet so the PDF engine can draw it. */
+    /** Replaces the tokens with the embedded images so the PDF engine can draw them. */
     public String embed(String html) {
         if (html == null || !html.contains(TOKEN)) {
             return html;
         }
-        return html.replace(TOKEN, dataUri(sheet()));
+        String out = html;
+        if (out.contains(LOGO_TOKEN)) {
+            out = out.replace(LOGO_TOKEN, dataUri(hasLogo() ? onWhite(storage.read(LOGO_FILE)) : defaultLogo));
+        }
+        if (out.contains(SEALS_TOKEN)) {
+            out = out.replace(SEALS_TOKEN, dataUri(seals));
+        }
+        return out.contains(TOKEN) ? out.replace(TOKEN, dataUri(sheet())) : out;
     }
 
     /** Sheet in use: the uploaded one or the USCO one, with the uploaded logo in the header. */
@@ -78,6 +93,38 @@ public class Letterhead {
             return png.toByteArray();
         } catch (IOException e) {
             throw new IllegalStateException("Could not compose the letterhead", e);
+        }
+    }
+
+    private static byte[] crop(byte[] image, Rectangle area) {
+        try {
+            BufferedImage source = ImageIO.read(new ByteArrayInputStream(image));
+            double k = source.getWidth() / 1224.0;
+            BufferedImage part = source.getSubimage((int) Math.round(area.x * k), (int) Math.round(area.y * k),
+                    (int) Math.round(area.width * k), (int) Math.round(area.height * k));
+            ByteArrayOutputStream png = new ByteArrayOutputStream();
+            ImageIO.write(part, "png", png);
+            return png.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not crop the letterhead", e);
+        }
+    }
+
+    /** PDF/A-1 does not allow transparency, so small images are flattened on white. */
+    private static byte[] onWhite(byte[] image) {
+        try {
+            BufferedImage source = ImageIO.read(new ByteArrayInputStream(image));
+            BufferedImage out = new BufferedImage(source.getWidth(), source.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = out.createGraphics();
+            g.setColor(Color.WHITE);
+            g.fillRect(0, 0, out.getWidth(), out.getHeight());
+            g.drawImage(source, 0, 0, null);
+            g.dispose();
+            ByteArrayOutputStream png = new ByteArrayOutputStream();
+            ImageIO.write(out, "png", png);
+            return png.toByteArray();
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not prepare the image", e);
         }
     }
 

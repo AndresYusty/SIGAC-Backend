@@ -30,6 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class TemplateService {
 
     private static final String DEFAULT_TEMPLATE = "/sigac/templates/minutes-default.html";
+    private static final String PREVIOUS_BUNDLED_HEADING =
+            "<h1>ACTA <span th:text=\"${serialNumber}\">MIN-CO-2026-001</span></h1>";
 
     private final MinutesTemplateRepository templates;
     private final CouncilTypeService councilTypes;
@@ -121,13 +123,14 @@ public class TemplateService {
         templates.save(p);
     }
 
-    /** Replaces the bundled minutes layout when a council still has the previous sheet. */
+    /** Replaces earlier bundled minutes layouts with the EV-CAL-FO-05 one; templates written by hand are kept. */
     @Transactional
     public void replaceBundledMinutesLayout() {
         String fresh = readResource(DEFAULT_TEMPLATE);
         for (MinutesTemplate template : templates.findAllByOrderByIdDesc()) {
             String content = template.getContent();
-            if (content == null || !content.contains("letterhead:usco") || content.contains("${agreementNumber}")) {
+            if (content == null || !content.contains("letterhead:usco") || content.contains("${agreementNumber}")
+                    || content.contains(PREVIOUS_BUNDLED_HEADING)) {
                 template.setContent(fresh);
             }
         }

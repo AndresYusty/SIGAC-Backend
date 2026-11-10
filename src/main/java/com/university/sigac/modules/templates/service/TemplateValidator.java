@@ -104,8 +104,8 @@ public class TemplateValidator {
             }
         }
 
-        if (!(used.contains("serialNumber") && used.contains("agreements"))) {
-            errors.add("The template must include ${serialNumber} and iterate ${agreements}");
+        if (!(used.contains("serialNumber") && (used.contains("agreements") || used.contains("sections")))) {
+            errors.add("The template must include ${serialNumber} and iterate ${agreements} or ${sections}");
         }
         return errors;
     }

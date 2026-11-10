@@ -24,18 +24,30 @@ class DefaultTemplateRenderingTest {
     void rendersTheDefaultTemplateIntoPdf() throws Exception {
         String html = pdf.render(defaultTemplate(), MockDataFactory.create());
         assertTrue(html.contains("MIN-CO-2026-001"));
-        assertTrue(html.contains("Approval of course equivalences"));
+        assertTrue(html.contains("EV-CAL-FO-05"));
+        assertTrue(html.contains("3.1.1. Homologación de asignaturas de Juan Camilo Ruiz"));
+        assertTrue(html.contains("Decisión: APROBAR con 4 votos"));
         assertTrue(html.contains("Diana Ortiz"));
         byte[] file = pdf.generatePdfA(html);
         assertTrue(new String(file, 0, 5, StandardCharsets.US_ASCII).startsWith("%PDF"));
     }
 
     @Test
-    void omitsTheGuestsSectionWhenThereAreNoGuests() throws Exception {
+    void omitsTheGuestRowsWhenThereAreNoGuests() throws Exception {
         Map<String, Object> data = MockDataFactory.create();
         data.put("guests", List.of());
         data.put("hasGuests", false);
         String html = pdf.render(defaultTemplate(), data);
-        assertFalse(html.contains("Invitados"));
+        assertFalse(html.contains("Diana Ortiz"));
+    }
+
+    @Test
+    void omitsTheMiscellaneousBlockWhenThereAreNone() throws Exception {
+        Map<String, Object> data = MockDataFactory.create();
+        data.put("varios", List.of());
+        data.put("hasVarios", false);
+        String html = pdf.render(defaultTemplate(), data);
+        assertFalse(html.contains("VARIOS"));
+        assertTrue(html.contains("El orden del día se aprobó."));
     }
 }
