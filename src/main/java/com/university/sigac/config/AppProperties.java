@@ -25,7 +25,17 @@ public class AppProperties {
 
     @Getter @Setter
     public static class Storage {
+        /** "local" (base-path directory) or "s3" (bucket). */
+        private String type = "local";
         private String basePath = "./storage";
+        private S3 s3 = new S3();
+    }
+
+    /** Credentials come from the AWS default chain (EC2 instance role or AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY). */
+    @Getter @Setter
+    public static class S3 {
+        private String bucket;
+        private String region;
     }
 
     @Getter @Setter

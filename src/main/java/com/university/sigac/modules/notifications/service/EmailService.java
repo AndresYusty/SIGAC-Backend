@@ -9,8 +9,6 @@ import jakarta.mail.internet.MimeMessage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -164,13 +162,12 @@ public class EmailService {
             }
             long totalBytes = 0;
             for (String rel : attachments) {
-                Path p = storage.resolve(rel);
-                if (!Files.exists(p)) {
+                if (!storage.exists(rel)) {
                     continue;
                 }
-                byte[] data = Files.readAllBytes(p);
+                byte[] data = storage.read(rel);
                 totalBytes += data.length;
-                String name = displayName(p);
+                String name = displayName(rel);
                 h.addAttachment(name, new ByteArrayResource(data) {
                     @Override
                     public String getFilename() {
@@ -209,8 +206,8 @@ public class EmailService {
     }
 
     /** Attachments are stored as "<uuid>-<name>.pdf": only the original name is shown. */
-    private String displayName(Path p) {
-        String name = p.getFileName().toString().replaceFirst("^[0-9a-fA-F-]{36}-", "");
+    private String displayName(String relativePath) {
+        String name = StorageService.fileName(relativePath).replaceFirst("^[0-9a-fA-F-]{36}-", "");
         if (name.equalsIgnoreCase("citacion.pdf")) {
             return "Citación.pdf";
         }

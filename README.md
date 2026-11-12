@@ -86,7 +86,40 @@ To start from an empty database:
 
 All settings live in `src/main/resources/application.yml` and can be overridden with environment variables
 (see `.env.example`): `DB_URL`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET` (at least 32 characters),
-`FRONTEND_URL`, `CORS_ORIGINS`, `MAIL_ENABLED`, `SMTP_*`, `SIGAC_STORAGE_PATH`, `SIGAC_SEED_DEMO`, etc.
+`FRONTEND_URL`, `PUBLIC_API_URL`, `CORS_ORIGINS`, `TRUST_PROXY_HEADERS`, `MAIL_ENABLED`, `SMTP_*`,
+`SIGAC_STORAGE_TYPE` (`local` | `s3`), `SIGAC_STORAGE_PATH`, `SIGAC_S3_BUCKET`, `SIGAC_S3_REGION`, `SIGAC_SEED_DEMO`, etc.
+
+The defaults in `application.yml` (JWT secret, `Admin12345*`, demo data) are for development only:
+change them in production.
+
+## Despliegue (deployment)
+
+Target: one EC2 instance with Docker Compose, RDS MySQL 8, an S3 bucket for files and SES for email.
+
+**Requirements:** Docker with the Compose plugin on the instance; an RDS MySQL 8 database and user reachable
+from the instance; a private S3 bucket and an IAM role on the instance with `s3:GetObject`, `s3:PutObject` and
+`s3:DeleteObject` on it; a verified SES identity and its SMTP credentials; ports 80/443 open and the domain
+pointing to the instance (Caddy obtains the HTTPS certificate automatically).
+
+1. Clone both repositories into one folder, and put `docker-compose.yml` and `.env.example`
+   (kept next to the two repositories, outside both) in that folder:
+   ```
+   sigac/
+   ├── docker-compose.yml
+   ├── .env               (copied from .env.example)
+   ├── sigac-backend/sigac-v1   ← SIGAC-Backend
+   └── sigac-frontend           ← SIGAC-Frontend
+   ```
+2. `cp .env.example .env` and fill it in. Every variable is commented; `JWT_SECRET`, `SIGAC_ADMIN_PASSWORD`,
+   the database variables and the URLs are mandatory (Compose refuses to start without them). Keep
+   `SIGAC_SEED_DEMO=false`.
+3. Start (or update after a `git pull`):
+   ```bash
+   docker compose up -d --build
+   ```
+
+`backend` is this image (`Dockerfile`: Maven build + JRE 21, healthcheck on `/actuator/health`); `web` is Caddy
+serving the Angular build and proxying `/api` to the backend. Logs: `docker compose logs -f backend`.
 
 ## Demo users
 

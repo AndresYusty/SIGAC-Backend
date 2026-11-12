@@ -2,19 +2,20 @@ package com.university.sigac.core.storage;
 
 import com.university.sigac.config.AppProperties;
 import com.university.sigac.core.exception.ApiException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.text.Normalizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 /**
- * Persistent local storage (volume /var/sigac/storage in Docker).
+ * Persistent storage: a local directory (sigac.storage.type=local) or an S3 bucket (type=s3).
  * Every path stored in the database is RELATIVE to the root; it is validated against path traversal.
  */
 @Service
@@ -22,19 +23,17 @@ public class StorageService {
 
     private static final Logger log = LoggerFactory.getLogger(StorageService.class);
 
-    private final Path base;
+    private final FileStore store;
 
     public StorageService(AppProperties props) {
-        this.base = Paths.get(props.getStorage().getBasePath()).toAbsolutePath().normalize();
-        try {
-            Files.createDirectories(base);
-        } catch (IOException e) {
-            throw new IllegalStateException("Could not create the storage directory: " + base, e);
+        AppProperties.Storage cfg = props.getStorage();
+        if ("s3".equalsIgnoreCase(cfg.getType())) {
+            this.store = new S3FileStore(cfg.getS3().getBucket(), cfg.getS3().getRegion());
+            log.info("File storage: S3 bucket {}", cfg.getS3().getBucket());
+        } else {
+            this.store = new LocalFileStore(Paths.get(cfg.getBasePath()).toAbsolutePath().normalize());
+            log.info("File storage: local directory {}", cfg.getBasePath());
         }
-    }
-
-    public Path getBase() {
-        return base;
     }
 
     /** Normalizes a path segment (no diacritics, separators or special characters). */
@@ -50,58 +49,83 @@ public class StorageService {
         return n.isBlank() ? "unnamed" : n;
     }
 
-    public Path resolve(String relativePath) {
-        Path p = base.resolve(relativePath).normalize();
-        if (!p.startsWith(base)) {
-            throw ApiException.forbidden("Storage path not allowed");
-        }
-        return p;
+    /** Last segment of a stored path. */
+    public static String fileName(String relativePath) {
+        String key = relativePath.replace('\\', '/');
+        return key.substring(key.lastIndexOf('/') + 1);
     }
 
     public String save(String relativePath, byte[] data) {
-        Path p = resolve(relativePath);
+        String key = key(relativePath);
         try {
-            Files.createDirectories(p.getParent());
-            Files.write(p, data);
+            store.write(key, data);
         } catch (IOException e) {
-            log.error("Error writing {}", p, e);
-            throw new ApiException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Could not save the file to storage");
+            log.error("Error writing {}", key, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not save the file to storage");
         }
         return relativePath;
     }
 
     public String save(String relativePath, InputStream in) {
-        Path p = resolve(relativePath);
+        String key = key(relativePath);
         try {
-            Files.createDirectories(p.getParent());
-            Files.copy(in, p, StandardCopyOption.REPLACE_EXISTING);
+            store.write(key, in);
         } catch (IOException e) {
-            log.error("Error writing {}", p, e);
-            throw new ApiException(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Could not save the file to storage");
+            log.error("Error writing {}", key, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not save the file to storage");
         }
         return relativePath;
     }
 
     public byte[] read(String relativePath) {
-        Path p = resolve(relativePath);
+        String key = key(relativePath);
         try {
-            return Files.readAllBytes(p);
-        } catch (IOException e) {
+            return store.read(key);
+        } catch (FileNotFoundException e) {
             throw ApiException.conflict("The file was not found in storage: " + relativePath);
+        } catch (IOException e) {
+            log.error("Error reading {}", key, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not read the file from storage");
         }
     }
 
     public boolean exists(String relativePath) {
-        return Files.exists(resolve(relativePath));
+        return store.exists(key(relativePath));
+    }
+
+    /** Size in bytes, or -1 when the file does not exist or cannot be inspected. */
+    public long size(String relativePath) {
+        String key = key(relativePath);
+        try {
+            return store.size(key);
+        } catch (IOException e) {
+            log.warn("Could not read the size of {}", key);
+            return -1;
+        }
     }
 
     public void deleteQuietly(String relativePath) {
         try {
-            Files.deleteIfExists(resolve(relativePath));
+            store.delete(key(relativePath));
         } catch (IOException | RuntimeException e) {
             log.warn("Could not delete {}", relativePath);
+        }
+    }
+
+    /** Relative, normalized key with "/" separators; rejects absolute paths and "..". */
+    static String key(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            throw ApiException.forbidden("Storage path not allowed");
+        }
+        try {
+            Path p = Paths.get(relativePath.replace('\\', '/')).normalize();
+            String key = p.toString().replace('\\', '/');
+            if (p.isAbsolute() || p.getRoot() != null || key.isEmpty() || key.equals("..") || key.startsWith("../")) {
+                throw ApiException.forbidden("Storage path not allowed");
+            }
+            return key;
+        } catch (InvalidPathException e) {
+            throw ApiException.forbidden("Storage path not allowed");
         }
     }
 }

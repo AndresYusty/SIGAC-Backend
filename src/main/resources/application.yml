@@ -53,6 +53,9 @@ management:
     web:
       exposure:
         include: health
+  health:
+    mail:
+      enabled: false   # an SMTP outage must not mark the container unhealthy
 
 sigac:
   zone: America/Bogota
@@ -60,7 +63,12 @@ sigac:
   public-api-url: ${PUBLIC_API_URL:http://localhost:8080/api/v1}
   trust-proxy-headers: ${TRUST_PROXY_HEADERS:false}
   storage:
-    base-path: ${SIGAC_STORAGE_PATH:./storage}
+    type: ${SIGAC_STORAGE_TYPE:local}           # local | s3
+    base-path: ${SIGAC_STORAGE_PATH:./storage}  # only for type=local
+    s3:
+      bucket: ${SIGAC_S3_BUCKET:}
+      region: ${SIGAC_S3_REGION:}
+  # The defaults below (JWT secret, admin password, demo data) are for development only: change them in production.
   jwt:
     secret: ${JWT_SECRET:change-this-secret-in-production-sigac-2026-minimum-32}   # at least 32 characters
     expiration-hours: 8

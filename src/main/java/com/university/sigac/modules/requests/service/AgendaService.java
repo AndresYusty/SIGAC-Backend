@@ -510,11 +510,8 @@ public class AgendaService {
     }
 
     private long storageSize(String relativePath) {
-        try {
-            return java.nio.file.Files.size(storage.resolve(relativePath));
-        } catch (IOException e) {
-            return Long.MAX_VALUE;
-        }
+        long size = storage.size(relativePath);
+        return size < 0 ? Long.MAX_VALUE : size;
     }
 
     private byte[] renderNotice(Session s) {

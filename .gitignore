@@ -1,7 +1,32 @@
+# Build
 target/
-storage/
+/build/
+/out/
+
+# Runtime files (uploads, generated PDFs) and logs; anchored so src/**/storage stays tracked
+/storage/
+/logs/
+*.log
+
+# Secrets
 .env
-*.iml
+.env.*
+!.env.example
+
+# IDE
 .idea/
 .vscode/
-*.log
+*.iml
+
+# Temporary files and OS
+/tmp/
+*.tmp
+*.bak
+*.orig
+*.swp
+.DS_Store
+Thumbs.db
+
+# Database dumps
+*.sql.gz
+dump*.sql
