@@ -102,8 +102,6 @@ public class AgendaService {
     private final AuditService audit;
     private final MinutesRepository minutes;
     private final AttendanceRepository attendance;
-    private final SessionSupportsLinkService supportsLinks;
-
     @Transactional
     public SessionDto create(SessionRequest req) {
         AuthenticatedUser u = SecurityUtils.current();
@@ -453,8 +451,10 @@ public class AgendaService {
         String downloadToken = null;
         String supportsZip = buildSupportsZip(s);
         if (supportsZip != null) {
-            // Commit the token before SMTP so a failed recipient cannot invalidate the link.
-            downloadToken = supportsLinks.ensureToken(s.getId());
+            downloadToken = s.getSupportsDownloadToken();
+            if (downloadToken == null || downloadToken.isBlank()) {
+                downloadToken = java.util.UUID.randomUUID().toString().replace("-", "");
+            }
             s.setSupportsDownloadToken(downloadToken);
             long zipBytes = storageSize(supportsZip);
             if (notice.length + zipBytes <= MAX_NOTICE_EMAIL_BYTES) {
